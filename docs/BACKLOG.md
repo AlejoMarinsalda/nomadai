@@ -62,6 +62,7 @@ _(nada en este momento — ver Pendiente)_
 
 | # | Tarea | Fecha |
 |---|-------|-------|
+| ✅ | Dead Letter Queue: mensajes que fallan 3 veces van a nomadai-chat-jobs-dlq + alarma CloudWatch | 2026-04-29 |
 | ✅ | CloudWatch Alarms: errores Lambda, duración > 90s, SQS backlog > 50 — notificación por email vía SNS | 2026-04-29 |
 | ✅ | Rate limiting: 30 req/hora por usuario via DynamoDB sliding window, fail-open en errores | 2026-04-29 |
 | ✅ | Autenticación real: Google ID token validado en cada request vía FastAPI Depends | 2026-04-29 |

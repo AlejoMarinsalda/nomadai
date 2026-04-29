@@ -34,9 +34,12 @@ async def _process_sqs(event):
     from app.services.profile_store import get_profile, save_profile
     from app.services.job_store import save_job_result
 
+    batch_item_failures = []
+
     for record in event["Records"]:
         body = json.loads(record["body"])
         job_id = body["job_id"]
+        message_id = record["messageId"]
 
         try:
             session_id = body["session_id"]
@@ -81,6 +84,11 @@ async def _process_sqs(event):
 
         except Exception:
             logger.error("Error procesando job %s:\n%s", job_id, traceback.format_exc())
-            await asyncio.to_thread(save_job_result, job_id, {"status": "error", "error": "Error interno procesando la solicitud."})
+            await asyncio.to_thread(
+                save_job_result, job_id,
+                {"status": "error", "error": "Error interno procesando la solicitud."},
+            )
+            # Reportar como fallo para que SQS reintente y eventualmente mande a la DLQ
+            batch_item_failures.append({"itemIdentifier": message_id})
 
-    return {"batchItemFailures": []}
+    return {"batchItemFailures": batch_item_failures}

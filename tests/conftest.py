@@ -10,8 +10,11 @@ from unittest.mock import MagicMock, AsyncMock, patch
 
 
 def pytest_configure(config):
-    """Corre antes de la recolección de tests — parchea AWS globalmente."""
+    """Corre antes de la recolección de tests — parchea AWS y deps de Lambda globalmente."""
+    import sys
     from langgraph.checkpoint.memory import MemorySaver
+    # mangum solo existe en el contenedor Lambda, no en el entorno de desarrollo
+    sys.modules.setdefault("mangum", MagicMock())
     # DynamoDBSaver se reemplaza por MemorySaver: mismo contrato, sin AWS
     patch("langgraph_checkpoint_aws.DynamoDBSaver", lambda **kwargs: MemorySaver()).start()
     patch("boto3.client", return_value=MagicMock()).start()

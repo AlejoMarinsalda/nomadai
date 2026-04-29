@@ -1,24 +1,30 @@
 """
-Fixtures compartidos. Parchea AWS y Google antes de que el app se importe
-para que los tests corran sin credenciales reales.
+Fixtures compartidos.
+
+pytest_configure parchea AWS ANTES de que cualquier módulo de la app se importe,
+evitando que DynamoDBSaver intente conectarse a AWS durante la recolección de tests.
 """
 
 import pytest
 from unittest.mock import MagicMock, AsyncMock, patch
-from langchain_core.messages import AIMessage
 
-from app.graph.state import (
-    NomadState, UserProfile, Destination,
-    DestinationMedia, ClimateInfo, VisaInfo,
-)
+
+def pytest_configure(config):
+    """Corre antes de la recolección de tests — parchea AWS globalmente."""
+    from langgraph.checkpoint.memory import MemorySaver
+    # DynamoDBSaver se reemplaza por MemorySaver: mismo contrato, sin AWS
+    patch("langgraph_checkpoint_aws.DynamoDBSaver", lambda **kwargs: MemorySaver()).start()
+    patch("boto3.client", return_value=MagicMock()).start()
+    patch("boto3.resource", return_value=MagicMock()).start()
 
 
 # ---------------------------------------------------------------------------
-# Fixtures de datos
+# Fixtures de datos — imports de app DENTRO del fixture (no a nivel de módulo)
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
 def sample_profile():
+    from app.graph.state import UserProfile
     return UserProfile(
         hobbies=["fútbol", "poker"],
         budget_usd_monthly=2000,
@@ -31,6 +37,7 @@ def sample_profile():
 
 @pytest.fixture
 def sample_destination():
+    from app.graph.state import Destination, DestinationMedia, ClimateInfo, VisaInfo
     return Destination(
         city="Medellín",
         country="Colombia",
@@ -46,6 +53,7 @@ def sample_destination():
 @pytest.fixture
 def complete_state(sample_profile, sample_destination):
     from langchain_core.messages import HumanMessage
+    from app.graph.state import NomadState
     return NomadState(
         messages=[HumanMessage(content="Quiero viajar como nómada")],
         user_profile=sample_profile,
@@ -55,7 +63,7 @@ def complete_state(sample_profile, sample_destination):
 
 
 # ---------------------------------------------------------------------------
-# Mock del cliente DynamoDB (reutilizable entre tests)
+# Mock de DynamoDB reutilizable
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
@@ -68,12 +76,14 @@ def mock_dynamodb():
 
 
 # ---------------------------------------------------------------------------
-# Cliente FastAPI con dependencias mockeadas
+# Cliente FastAPI con servicios mockeados
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
 def api_client(mock_dynamodb):
-    """TestClient con AWS y LangGraph mockeados."""
+    from langchain_core.messages import AIMessage
+    from app.graph.state import UserProfile
+
     mock_graph = MagicMock()
     mock_graph.aget_state = AsyncMock(return_value=MagicMock(values={}))
     mock_graph.ainvoke = AsyncMock(return_value={
@@ -83,10 +93,7 @@ def api_client(mock_dynamodb):
         "user_profile": UserProfile(),
     })
 
-    with patch("boto3.client", return_value=mock_dynamodb), \
-         patch("boto3.resource", return_value=MagicMock()), \
-         patch("langgraph_checkpoint_aws.DynamoDBSaver", return_value=MagicMock()), \
-         patch("app.api.main.graph", mock_graph), \
+    with patch("app.api.main.graph", mock_graph), \
          patch("app.services.rag_store._load", return_value=None), \
          patch("app.services.job_store._db", return_value=mock_dynamodb), \
          patch("app.services.profile_store._db", return_value=mock_dynamodb):

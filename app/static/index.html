@@ -262,6 +262,7 @@
   let sessionId = null;
   let userId = null;
   let userName = null;
+  let credential = null; // Google JWT — sent as Bearer token on every request
 
   const renderer = new marked.Renderer();
   renderer.link = ({ href, title, text }) =>
@@ -277,6 +278,26 @@
   const input = document.getElementById("input");
   const sendBtn = document.getElementById("send");
 
+  function authHeader() {
+    return credential ? { "Authorization": `Bearer ${credential}` } : {};
+  }
+
+  function handleUnauthorized() {
+    ["nomadai_credential", "nomadai_user_id", "nomadai_user_name", "nomadai_user_picture"]
+      .forEach(k => localStorage.removeItem(k));
+    credential = null;
+    userId = null;
+    sessionId = null;
+    chatEl.innerHTML = "";
+    chatEl.classList.add("hidden");
+    inputArea.classList.add("hidden");
+    userInfo.classList.add("hidden");
+    loginScreen.classList.remove("hidden");
+    google.accounts.id.disableAutoSelect();
+    addBubble("assistant", "⚠️ Tu sesión expiró. Por favor iniciá sesión de nuevo.");
+    loginScreen.classList.remove("hidden");
+  }
+
   async function handleGoogleLogin(response) {
     try {
       const res = await fetch(`${API}/auth/google`, {
@@ -290,10 +311,12 @@
       const data = await res.json();
       userId = data.user_id;
       userName = data.name;
+      credential = response.credential;
 
       localStorage.setItem("nomadai_user_id", userId);
       localStorage.setItem("nomadai_user_name", userName);
       localStorage.setItem("nomadai_user_picture", data.picture);
+      localStorage.setItem("nomadai_credential", credential);
 
       showChat(data);
     } catch (e) {
@@ -311,7 +334,12 @@
     userNameEl.textContent = userData.name || "";
 
     // Verificar si ya tiene perfil guardado
-    const profileRes = await fetch(`${API}/profile/${userId}`).then(r => r.json()).catch(() => ({ found: false }));
+    const profileRes = await fetch(`${API}/profile/${userId}`, {
+      headers: authHeader(),
+    }).then(async r => {
+      if (r.status === 401) { handleUnauthorized(); return { found: false }; }
+      return r.json();
+    }).catch(() => ({ found: false }));
 
     if (profileRes.found) {
       const firstName = (userData.name || "").split(" ")[0];
@@ -323,14 +351,16 @@
     input.focus();
   }
 
-  // Auto-login si ya hay sesión guardada
+  // Auto-login si ya hay sesión guardada (credential no expirado)
   window.addEventListener("load", () => {
     const savedId = localStorage.getItem("nomadai_user_id");
     const savedName = localStorage.getItem("nomadai_user_name");
     const savedPicture = localStorage.getItem("nomadai_user_picture");
-    if (savedId && savedName) {
+    const savedCredential = localStorage.getItem("nomadai_credential");
+    if (savedId && savedName && savedCredential) {
       userId = savedId;
       userName = savedName;
+      credential = savedCredential;
       showChat({ user_id: savedId, name: savedName, picture: savedPicture });
     }
   });
@@ -338,7 +368,10 @@
   document.getElementById("reset-profile-btn").addEventListener("click", async () => {
     if (!userId) return;
     if (!confirm("¿Borrar tu perfil guardado? La próxima vez vas a tener que completarlo de nuevo.")) return;
-    await fetch(`${API}/profile/${userId}`, { method: "DELETE" }).catch(() => {});
+    await fetch(`${API}/profile/${userId}`, {
+      method: "DELETE",
+      headers: authHeader(),
+    }).catch(() => {});
     sessionId = null;
     chatEl.innerHTML = "";
     addBubble("assistant", "Perfil borrado. Contame de nuevo sobre vos para encontrar tu próximo destino.");
@@ -346,6 +379,7 @@
   });
 
   document.getElementById("logout-btn").addEventListener("click", () => {
+    localStorage.removeItem("nomadai_credential");
     localStorage.removeItem("nomadai_user_id");
     localStorage.removeItem("nomadai_user_name");
     localStorage.removeItem("nomadai_user_picture");
@@ -396,9 +430,15 @@
       // Paso 1: enviar mensaje → recibir job_id inmediatamente (~100ms)
       const res = await fetch(`${API}/chat/async`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, session_id: sessionId, user_id: userId }),
+        headers: { "Content-Type": "application/json", ...authHeader() },
+        body: JSON.stringify({ message: text, session_id: sessionId }),
       });
+
+      if (res.status === 401) {
+        thinking.remove();
+        handleUnauthorized();
+        return;
+      }
 
       const { job_id, session_id: newSessionId } = await res.json();
       sessionId = newSessionId;

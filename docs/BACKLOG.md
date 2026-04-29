@@ -8,9 +8,7 @@ Prioridades: 🔴 Alta | 🟡 Media | 🟢 Baja
 
 ## En progreso
 
-| # | Tarea | Prioridad | Notas |
-|---|-------|-----------|-------|
-| 1 | Autenticación real en cada request | 🔴 | Ver detalle abajo |
+_(nada en este momento)_
 
 ---
 
@@ -64,6 +62,7 @@ Prioridades: 🔴 Alta | 🟡 Media | 🟢 Baja
 
 | # | Tarea | Fecha |
 |---|-------|-------|
+| ✅ | Autenticación real: Google ID token validado en cada request vía FastAPI Depends | 2026-04-29 |
 | ✅ | SQS async pipeline (HTTP retorna en 100ms) | 2026-04-28 |
 | ✅ | async/await en FastAPI | 2026-04-28 |
 | ✅ | Paralelización del enrichment node (asyncio.gather) | 2026-04-28 |

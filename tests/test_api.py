@@ -6,6 +6,8 @@ from unittest.mock import patch, MagicMock, AsyncMock
 from langchain_core.messages import AIMessage
 from app.graph.state import UserProfile
 
+TEST_USER = "test-user-1"
+
 
 def test_health(api_client):
     client, _, _ = api_client
@@ -27,14 +29,13 @@ class TestChatAsync:
         res = client.post("/chat/async", json={
             "message": "Quiero viajar como nómada",
             "session_id": "sess-1",
-            "user_id": "user-1",
         })
         assert res.status_code == 200
         data = res.json()
         assert "job_id" in data
         assert data["status"] == "pending"
         assert data["session_id"] == "sess-1"
-        assert data["user_id"] == "user-1"
+        assert data["user_id"] == TEST_USER
 
     def test_generates_ids_when_missing(self, api_client):
         client, _, _ = api_client
@@ -42,7 +43,7 @@ class TestChatAsync:
         assert res.status_code == 200
         data = res.json()
         assert data["session_id"]
-        assert data["user_id"]
+        assert data["user_id"] == TEST_USER
 
     def test_creates_pending_job_in_dynamo(self, api_client):
         client, _, mock_db = api_client
@@ -82,7 +83,6 @@ class TestChat:
         res = client.post("/chat", json={
             "message": "Hola",
             "session_id": "sess-2",
-            "user_id": "user-2",
         })
         assert res.status_code == 200
         assert res.json()["reply"] == "Te recomiendo Medellín"
@@ -101,7 +101,7 @@ class TestChat:
             "profile_complete": True,
             "user_profile": profile,
         })
-        res = client.post("/chat", json={"message": "Mi perfil", "user_id": "user-3"})
+        res = client.post("/chat", json={"message": "Mi perfil"})
         assert res.status_code == 200
         assert res.json()["profile_complete"] is True
         mock_db.put_item.assert_called()
@@ -111,14 +111,14 @@ class TestProfile:
     def test_get_profile_not_found(self, api_client):
         client, _, mock_db = api_client
         mock_db.get_item.return_value = {"Item": None}
-        res = client.get("/profile/user-inexistente")
+        res = client.get(f"/profile/{TEST_USER}")
         assert res.status_code == 200
         assert res.json()["found"] is False
 
     def test_get_profile_found(self, api_client):
         client, _, mock_db = api_client
         stored = {
-            "user_id": {"S": "user-1"},
+            "user_id": {"S": TEST_USER},
             "profile_json": {"S": json.dumps({
                 "hobbies": ["fútbol"], "budget_usd_monthly": 2000,
                 "work_timezone": "UTC-3", "nationality": "argentina",
@@ -127,13 +127,23 @@ class TestProfile:
             })},
         }
         mock_db.get_item.return_value = {"Item": stored}
-        res = client.get("/profile/user-1")
+        res = client.get(f"/profile/{TEST_USER}")
         assert res.status_code == 200
         assert res.json()["found"] is True
 
     def test_delete_profile(self, api_client):
         client, _, mock_db = api_client
-        res = client.delete("/profile/user-1")
+        res = client.delete(f"/profile/{TEST_USER}")
         assert res.status_code == 200
         assert res.json()["deleted"] is True
         mock_db.delete_item.assert_called()
+
+    def test_get_profile_forbidden_for_other_user(self, api_client):
+        client, _, _ = api_client
+        res = client.get("/profile/another-user")
+        assert res.status_code == 403
+
+    def test_delete_profile_forbidden_for_other_user(self, api_client):
+        client, _, _ = api_client
+        res = client.delete("/profile/another-user")
+        assert res.status_code == 403

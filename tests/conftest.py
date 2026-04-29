@@ -100,5 +100,10 @@ def api_client(mock_dynamodb):
 
         from fastapi.testclient import TestClient
         from app.api.main import app
-        with TestClient(app, raise_server_exceptions=True) as client:
-            yield client, mock_graph, mock_dynamodb
+        from app.services.auth import get_current_user
+        app.dependency_overrides[get_current_user] = lambda: "test-user-1"
+        try:
+            with TestClient(app, raise_server_exceptions=True) as client:
+                yield client, mock_graph, mock_dynamodb
+        finally:
+            app.dependency_overrides.pop(get_current_user, None)

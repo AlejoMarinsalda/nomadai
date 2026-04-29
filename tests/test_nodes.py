@@ -61,11 +61,11 @@ class TestDestinationNode:
         import json
 
         destinations_json = json.dumps([{
-            "city": "Medellín",
-            "country": "Colombia",
+            "city": "Dublín",
+            "country": "Irlanda",
             "match_score": 92,
-            "match_reasons": ["Clima ideal"],
-            "monthly_cost_usd": 1200,
+            "match_reasons": ["Inglés nativo", "Comunidad expat activa"],
+            "monthly_cost_usd": 1800,
         }])
 
         mock_llm = MagicMock()
@@ -75,8 +75,39 @@ class TestDestinationNode:
             result = destination_node(complete_state)
 
         assert len(result["destinations"]) == 1
-        assert result["destinations"][0].city == "Medellín"
+        assert result["destinations"][0].city == "Dublín"
         assert result["destinations"][0].match_score == 92
+
+    def test_english_goal_adds_constraint_to_prompt(self, complete_state):
+        from app.nodes.destination_node import destination_node, _has_english_goal
+        import json
+
+        assert _has_english_goal(["inmersión en inglés", "networking"]) is True
+        assert _has_english_goal(["networking", "aventura"]) is False
+        assert _has_english_goal(["aprender ingles"]) is True
+
+    def test_english_constraint_in_prompt(self, complete_state):
+        from app.nodes.destination_node import destination_node
+        import json
+
+        complete_state.user_profile.goals = ["inmersión en inglés", "networking"]
+
+        captured_prompt = []
+        mock_llm = MagicMock()
+        mock_llm.invoke.side_effect = lambda msgs: (
+            captured_prompt.extend(msgs) or
+            AIMessage(content=json.dumps([{
+                "city": "Dublín", "country": "Irlanda",
+                "match_score": 90, "match_reasons": ["inglés"], "monthly_cost_usd": 1800
+            }]))
+        )
+
+        with patch("app.nodes.destination_node.ChatGoogleGenerativeAI", return_value=mock_llm):
+            destination_node(complete_state)
+
+        prompt_text = " ".join(m.content for m in captured_prompt)
+        assert "EXCLUIDOS" in prompt_text
+        assert "Colombia" in prompt_text
 
 
 class TestCompilerNode:

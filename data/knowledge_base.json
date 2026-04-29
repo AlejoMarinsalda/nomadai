@@ -1,0 +1,182 @@
+[
+  {
+    "id": "medellin_visa_arg",
+    "destination": "Medellín", "country": "Colombia", "category": "visa", "nationality": "argentina",
+    "text": "Los ciudadanos argentinos no necesitan visa para ingresar a Colombia como turistas. Pueden permanecer hasta 180 días por año calendario. Colombia ofrece la Visa V Nómada Digital (Resolución 5477 de 2022) que permite hasta 2 años de estadía (730 días). Requisitos: pasaporte vigente con mínimo 6 meses de validez, prueba de ingresos mensuales de al menos 3 SMLMV colombianos (~$750 USD) provenientes del exterior, seguro médico con cobertura en Colombia, carta de empleador o contrato de trabajo remoto o prueba de actividad freelance. Se tramita online en cancilleria.gov.co. Costo aproximado: $52 USD."
+  },
+  {
+    "id": "medellin_clima",
+    "destination": "Medellín", "country": "Colombia", "category": "clima",
+    "text": "Medellín tiene clima primaveral permanente, temperatura promedio de 22°C todo el año. Los mejores meses para visitar son diciembre, enero, febrero, julio y agosto (temporadas secas). Temporadas de lluvia: marzo-mayo y septiembre-noviembre. Noviembre es el mes más lluvioso. El valle en el que está ubicada la ciudad protege del viento. La humedad es moderada. No hay estaciones definidas por su ubicación ecuatorial a 1495 metros sobre el nivel del mar."
+  },
+  {
+    "id": "medellin_hobbies",
+    "destination": "Medellín", "country": "Colombia", "category": "hobbies",
+    "text": "Fútbol en Medellín: la liga amateur más activa está en El Poblado y Laureles con torneos organizados por la Liga Antioqueña de Fútbol. Lugares populares para jugar fútbol 5: Futbol 5 El Estadio, Cancha Oficial El Poblado, Complejo Deportivo Ditaires en Itagüí. Hay grupos de WhatsApp para partidos improvisados en parques como el Parque de los Pies Descalzos. Póker en vivo: el Casino del Parque (Carrera 43A) y el Gran Casino Royal tienen mesas de póker en vivo activas. El Casino Viva Laureles también tiene torneos regulares los fines de semana. La comunidad de póker de Medellín es activa con torneos en Casino Majestic."
+  },
+  {
+    "id": "medellin_networking",
+    "destination": "Medellín", "country": "Colombia", "category": "networking",
+    "text": "Medellín es uno de los hubs de nómadas digitales más importantes de Latinoamérica. Coworkings populares: Selina Medellín (El Poblado), Atomhouse, Espacio Coworking, Places (Laureles). Comunidades activas: Nómadas Digitales Medellín en Facebook (más de 15,000 miembros), grupo Medellín Digital Nomads en Meetup.com con eventos semanales. El barrio El Poblado concentra la mayor cantidad de nómadas. Hay eventos regulares de networking en Pergamino Café y Pergamino El Estadio. La comunidad de startups en Ruta N organiza eventos mensuales abiertos. Slack: Colombia Digital Nomads es el canal principal."
+  },
+  {
+    "id": "cdmx_visa_arg",
+    "destination": "Ciudad de México", "country": "México", "category": "visa", "nationality": "argentina",
+    "text": "Los ciudadanos argentinos pueden ingresar a México sin visa por hasta 180 días como turistas. México no tiene visa específica de nómada digital, pero la visa de turista (FMM) se puede renovar. Para estancias largas la alternativa es entrar como visitante con permiso de actividades lucrativas (si facturás a clientes extranjeros desde México es zona gris). No se requiere visa de turista. El pasaporte debe tener vigencia mínima de 6 meses. No hay requisito de seguro médico para turistas."
+  },
+  {
+    "id": "cdmx_clima",
+    "destination": "Ciudad de México", "country": "México", "category": "clima",
+    "text": "Ciudad de México tiene clima templado a 2240 metros sobre el nivel del mar. Temperatura promedio de 18°C. Mejores meses: octubre, noviembre, diciembre, enero, febrero, marzo (temporada seca). Temporada de lluvias: junio a septiembre con lluvias vespertinas intensas pero cortas. Los meses más fríos son enero y febrero (mínimas de 6°C). La contaminación puede ser alta en invierno por inversión térmica. El smog es menor en temporada de lluvias."
+  },
+  {
+    "id": "cdmx_hobbies",
+    "destination": "Ciudad de México", "country": "México", "category": "hobbies",
+    "text": "Fútbol en CDMX: hay ligas amateur muy activas en Reforma, Condesa, Roma y Coyoacán. Canchas populares: Complejo Deportivo Magdalena Mixhuca, Ciudad Deportiva Magdalena Mixhuca, canchas en el Parque Hundido y Parque España. La liga 'Futbol 7 CDMX' organiza torneos con +500 equipos. Grupos en Facebook 'Fútbol Amateur CDMX' para sumarte a partidos. Póker en vivo: el Casino Caliente (Insurgentes), Casino Life y Casino Gran Madrid (Polanco) tienen mesas activas de póker en vivo. Torneo mensual en Casino Caliente con buy-in accesible. La escena de póker es grande comparado con otras ciudades de LATAM."
+  },
+  {
+    "id": "cdmx_networking",
+    "destination": "Ciudad de México", "country": "México", "category": "networking",
+    "text": "CDMX tiene una de las escenas de nómadas y startups más grandes de LATAM. Los barrios de Roma Norte, Condesa y Polanco concentran la comunidad. Coworkings: WeWork (múltiples locaciones), Communal Coworking Roma, Homework Condesa, Taller Cowork. Comunidades: CDMX Digital Nomads en Facebook (+20,000 miembros), Meetup.com Nómadas CDMX con eventos semanales. La comunidad de startups de Santa Fe y Polanco organiza Demo Days mensuales. Slack: Mexico Digital Nomads es el canal más activo. La Cuauhtémoc tiene docenas de cafés con buena conexión aptos para trabajar."
+  },
+  {
+    "id": "lisboa_visa_arg",
+    "destination": "Lisboa", "country": "Portugal", "category": "visa", "nationality": "argentina",
+    "text": "Los ciudadanos argentinos pueden ingresar a Portugal (Espacio Schengen) sin visa por hasta 90 días en un período de 180 días. Para estadías más largas Portugal tiene la Visa D8 Nómada Digital, una de las mejores del mundo. Requisitos D8: pasaporte vigente, prueba de ingresos mínimos de 3280 EUR/mes (o 760 EUR/mes para zona interior), seguro de salud con cobertura en Portugal, contrato de trabajo remoto o prueba de actividad freelance. La D8 permite residir en Portugal y trabajar para clientes fuera de la UE. Después de 5 años se puede aplicar a residencia permanente. Se tramita en el consulado portugués en Buenos Aires."
+  },
+  {
+    "id": "lisboa_clima",
+    "destination": "Lisboa", "country": "Portugal", "category": "clima",
+    "text": "Lisboa tiene el clima más cálido de Europa occidental. Temperatura media anual de 17°C. Mejores meses: mayo, junio, septiembre, octubre (primavera y otoño). Julio y agosto son muy turísticos y calurosos (30-35°C). Invierno suave: enero promedia 12°C con lluvia. La temporada de lluvias es octubre a marzo. El verano es seco. Hay más de 300 días de sol al año. La zona horaria es GMT+1 (verano) / GMT (invierno), compatible con trabajo para LATAM en horario matutino."
+  },
+  {
+    "id": "lisboa_hobbies",
+    "destination": "Lisboa", "country": "Portugal", "category": "hobbies",
+    "text": "Fútbol en Lisboa: la ciudad es muy futbolera con Benfica y Sporting. Para jugar hay ligas amateur muy activas: Futebol Amador Lisboa en Facebook organiza partidos en varios parques. El Complexo Desportivo do Casal Vistoso y las instalaciones de la Junta de Freguesia de Marvila tienen canchas disponibles. El grupo 'Football in Lisbon for Expats' en Meetup organiza partidos semanales con nómadas. Póker en vivo: Casino Lisboa (Parque das Nações) es el más grande con torneos regulares. Casino Estoril (a 30 min en tren) tiene los torneos más importantes de Portugal. Hay torneos de bajo buy-in los jueves y viernes en Casino Lisboa."
+  },
+  {
+    "id": "lisboa_networking",
+    "destination": "Lisboa", "country": "Portugal", "category": "networking",
+    "text": "Lisboa es uno de los principales hubs de nómadas digitales de Europa. Barrios: LX Factory (Alcântara), Príncipe Real y Mouraria concentran la comunidad. Coworkings: Second Home Lisboa (mercado de Campo de Ourique), Heden, Avila Spaces, The Surf Office. La conferencia anual Web Summit se celebra en Lisboa en noviembre (la mayor de tecnología de Europa). Comunidades: Lisboa Digital Nomads en Facebook (+30,000 miembros), Nomad List Lisboa es uno de los destinos mejor puntuados. Slack: Lisbon Expats y Portugal Digital Nomads son los canales más activos. El barrio de Intendente tiene cafés de trabajo muy populares."
+  },
+  {
+    "id": "bangkok_visa_arg",
+    "destination": "Bangkok", "country": "Tailandia", "category": "visa", "nationality": "argentina",
+    "text": "Los ciudadanos argentinos reciben visa on arrival en Tailandia por 30 días, extensible una vez por 30 días adicionales en oficinas de inmigración (costo ~$60 USD). Para estadías más largas la opción popular es el tourist visa doble entrada (60 días × 2 entradas = 120 días) tramitada en consulado tailandés. También existe el Thailand LTR Visa (Long Term Resident) para nómadas digitales con ingresos de $80,000 USD/año o trabajo para empresa extranjera con salario mínimo $40,000 USD/año. El Thailand Elite Visa da 5-20 años de residencia con costo de $15,000-$30,000 USD. La práctica de 'visa runs' a países vecinos es común pero cada vez más restringida."
+  },
+  {
+    "id": "bangkok_hobbies",
+    "destination": "Bangkok", "country": "Tailandia", "category": "hobbies",
+    "text": "Fútbol en Bangkok: hay múltiples canchas de fútbol 5 y fútbol 7 en toda la ciudad. Bangkok expat football league organiza partidos para extranjeros los fines de semana. Lumpini Park y Benjakitti Park tienen canchas públicas. El grupo 'Football Bangkok Expats' en Facebook organiza partidos improvisados. Póker en vivo: el póker es ilegal en Tailandia en casinos terrestres, pero hay juegos underground conocidos en áreas de Sukhumvit y Silom. Los resorts de la frontera con Camboya (Poipet) y Koh Kong tienen casinos con póker. Muchos nómadas juegan online desde Bangkok aprovechando las VPN."
+  },
+  {
+    "id": "bangkok_networking",
+    "destination": "Bangkok", "country": "Tailandia", "category": "networking",
+    "text": "Bangkok tiene una comunidad de nómadas grande pero más dispersa. Los barrios de Sukhumvit, Silom y Ari concentran la comunidad. Coworkings: Hubba-TO (Ekkamai), The Hive (Thonglor y Ekkamai), Common Ground (Sathorn), Mango (Sukhumvit 49). La comunidad más activa está en Chiang Mai (norte de Tailandia). Comunidades: Bangkok Digital Nomads en Facebook, Internations Bangkok para expatriados. Meetup.com Bangkok Entrepreneurs & Digital Nomads tiene eventos mensuales. Bangkok es excelente para tech: costos bajos, internet rápido, fácil acceso a SEA."
+  },
+  {
+    "id": "chiangmai_visa_arg",
+    "destination": "Chiang Mai", "country": "Tailandia", "category": "visa", "nationality": "argentina",
+    "text": "Mismas condiciones de visa que Bangkok - los ciudadanos argentinos reciben 30 días de visa on arrival en Tailandia. Chiang Mai es la ciudad nómada más establecida de Asia. Para estadías largas en Chiang Mai la opción más usada por nómadas es el tourist visa con extensiones y border runs a Myanmar (Mae Sai) o Laos (Chiang Khong). El costo de vida más bajo que Bangkok hace que valga más la pena gestionar las extensiones de visa. Ver opciones LTR y Elite Visa mencionadas para Bangkok."
+  },
+  {
+    "id": "chiangmai_hobbies",
+    "destination": "Chiang Mai", "country": "Tailandia", "category": "hobbies",
+    "text": "Fútbol en Chiang Mai: hay ligas de expats bien organizadas. El Chiang Mai FC Stadium tiene canchas auxiliares disponibles. Grupos como 'Football Chiang Mai' en Facebook organizan partidos semanales con mezcla de locales y extranjeros. El Nimmanhaemin Stadium es popular para picados. Póker en Chiang Mai: al igual que Bangkok, el póker en casinos es ilegal. Hay clubes privados de póker en la zona de Nimman y Old City. El Royal Flora Ratchaphruek resort organiza partidos ocasionalmente. Muchos nómadas viajan a Vientiane (Laos) o Golden Triangle para casinos con póker legal."
+  },
+  {
+    "id": "chiangmai_networking",
+    "destination": "Chiang Mai", "country": "Tailandia", "category": "networking",
+    "text": "Chiang Mai es el hub nómada número 1 de Asia según Nomad List. El barrio de Nimman (Nimmanhemin) es el epicentro. Coworkings: CAMP (en Maya Mall, funciona 24hs), MANA (coworking 24h muy conocido), Yellow (Nimman), Alt_ChiangMai. Comunidades: Chiang Mai Digital Nomads en Facebook (+50,000 miembros), uno de los grupos más grandes del mundo. Hay eventos de networking todas las semanas en Punspace. Slack: Chiang Mai Nomads es muy activo. El costo de un coworking mensual es de $50-80 USD con café incluido. La zona de Nimman tiene decenas de cafés con excelente WiFi aptos para trabajar."
+  },
+  {
+    "id": "bali_visa_arg",
+    "destination": "Bali (Canggu)", "country": "Indonesia", "category": "visa", "nationality": "argentina",
+    "text": "Los ciudadanos argentinos reciben visa on arrival en Indonesia por 30 días (costo $35 USD), extensible una vez por 30 días adicionales. Para estancias más largas Indonesia lanzó la Visa B211A (Social-Cultural) de 60 días, extensible hasta 180 días (costo ~$200-300 USD total). La Visa E33G Nómada Digital (Indonesia Digital Nomad Visa) de 2023 permite hasta 1 año con ingreso mínimo de $2000 USD/mes y no paga impuestos en Indonesia si los ingresos son del extranjero. También está la opción del Second Home Visa (10 años) para mayores inversiones. Los border runs a Singapur o Malaysia se pueden hacer para renovar."
+  },
+  {
+    "id": "bali_hobbies",
+    "destination": "Bali (Canggu)", "country": "Indonesia", "category": "hobbies",
+    "text": "Fútbol en Bali: Canggu tiene una comunidad futbolera activa de expats. El grupo 'Football in Canggu' en Facebook organiza partidos los martes y jueves en las canchas de Echo Beach y Pererenan. Hay torneos mensuales en el Seminyak Sports Club. El Bali United Stadium en Gianyar es el más grande de la isla. Póker en Bali: el juego es ilegal en Indonesia. Los casinos más cercanos están en Singapur (Marina Bay Sands, Resorts World Sentosa) a 3 horas de vuelo. En Bali hay torneos privados underground en zonas de Seminyak y Kuta pero sin garantías legales. Muchos nómadas juegan online."
+  },
+  {
+    "id": "bali_networking",
+    "destination": "Bali (Canggu)", "country": "Indonesia", "category": "networking",
+    "text": "Canggu es uno de los destinos nómadas más populares del mundo, especialmente para surfistas-programadores. El área de Batu Bolong y Echo Beach concentra la comunidad. Coworkings: Dojo Bali (el más conocido), Outpost Canggu, Hubud (Ubud), Livit (Seminyak). La comunidad de Canggu es muy activa: Canggu Community Facebook tiene eventos diarios. El edificio MILK y los cafés alrededor de Old Man's Bar son puntos de encuentro. Slack: Bali Digital Nomads. Hay speed networking mensual en Dojo Bali. Canggu tiene una vibra muy festiva que puede distraer del trabajo."
+  },
+  {
+    "id": "budapest_visa_arg",
+    "destination": "Budapest", "country": "Hungría", "category": "visa", "nationality": "argentina",
+    "text": "Los ciudadanos argentinos pueden ingresar a Hungría (Espacio Schengen) sin visa por hasta 90 días en un período de 180 días. Hungría lanzó el White Card (Fehér Kártya) en 2022, una visa de nómada digital que permite hasta 1 año de residencia (renovable). Requisitos White Card: pasaporte vigente, prueba de empleo remoto o freelance con ingresos mínimos de $2000 USD/mes, seguro de salud, extracto bancario. Se tramita en el consulado húngaro. Costo: ~$110 USD. Hungría no es parte del euro (usa florín húngaro HUF), lo que la hace más económica que Europa occidental."
+  },
+  {
+    "id": "budapest_hobbies",
+    "destination": "Budapest", "country": "Hungría", "category": "hobbies",
+    "text": "Fútbol en Budapest: hay ligas amateur muy activas. ExpatsFootball Budapest organiza partidos los domingos en el Puskás Aréna Area y en canchas de Zugló. El grupo 'Expats Playing Football Budapest' en Facebook es el más activo con +2000 miembros. Canchas populares: Sportcentrum Zuglói, Puskás Akadémia grass pitches. Póker en vivo: Budapest tiene una escena de póker sorprendentemente activa. Casinos con mesas de póker en vivo: Las Vegas Casino Budapest (Andrássy út), Tropicana Casino, Casino Vienna House. El Trophy Poker Club y el Poker House Budapest organizan torneos semanales con buy-ins accesibles. La escena de póker es una de las mejores de Europa central."
+  },
+  {
+    "id": "budapest_networking",
+    "destination": "Budapest", "country": "Hungría", "category": "networking",
+    "text": "Budapest es uno de los destinos nómadas más económicos de Europa con excelente infraestructura. El barrio de los Jardines del Palacio (Belvárosi) y el Distrito VII concentran la comunidad. Coworkings: Loffice Budapest, Akvárium Klub Coworking, Impact Hub Budapest, MOM Park Coworking. Comunidades: Budapest Digital Nomads en Facebook (+10,000 miembros), Internations Budapest es muy activo con eventos mensuales. El Budapest Startup Campus organiza Demo Days y eventos de networking. Slack: Budapest Nomads. El costo del coworking mensual es de $150-250 EUR. La ciudad tiene excelente transporte público y está muy bien conectada con el resto de Europa."
+  },
+  {
+    "id": "tbilisi_visa_arg",
+    "destination": "Tbilisi", "country": "Georgia", "category": "visa", "nationality": "argentina",
+    "text": "Georgia es uno de los países más amigables del mundo con la visa. Los ciudadanos argentinos pueden entrar sin visa y permanecer hasta 365 días (1 año completo) sin ningún trámite. No se requiere seguro médico, no hay requisito de ingresos mínimos. Para estadías más largas hay opciones de residencia. Georgia tiene un régimen fiscal muy atractivo: los ingresos provenientes de fuentes extranjeras pueden estar exentos de impuestos bajo el estatus de Virtuous Taxpayer. No se pagan impuestos sobre ingresos generados fuera de Georgia si no se prestan servicios a clientes georgianos."
+  },
+  {
+    "id": "tbilisi_hobbies",
+    "destination": "Tbilisi", "country": "Georgia", "category": "hobbies",
+    "text": "Fútbol en Tbilisi: hay canchas de fútbol en casi todos los barrios. El grupo 'Football for Expats in Tbilisi' en Telegram organiza partidos semanales en el Dinamo Arena Area. El Locomotiv Stadium tiene canchas auxiliares disponibles para alquiler. La liga amateur de Tbilisi es activa con torneos de fútbol 7. Póker en vivo: Tbilisi tiene una escena de póker muy activa y en crecimiento. Casinos con póker: Adjara Casino, Mardi Casino, Shangri La Casino y Vbet Casino tienen mesas de póker en vivo y torneos regulares. Los buy-ins son bajos comparados con Europa occidental. La confluencia de nómadas rusos post-2022 amplió mucho la escena de póker."
+  },
+  {
+    "id": "tbilisi_networking",
+    "destination": "Tbilisi", "country": "Georgia", "category": "networking",
+    "text": "Tbilisi se convirtió en uno de los hubs nómadas más sorprendentes gracias a la política de visa de 365 días y al costo de vida muy bajo. Los barrios de Vera, Vake y Fabrika concentran la comunidad. Coworkings: Fabrika Coworking (el más conocido, en una ex fábrica de ropa), Impact Hub Tbilisi, Garage (Mtatsminda). Comunidades: Tbilisi Digital Nomads en Facebook (+25,000 miembros, creció exponencialmente desde 2022), Nomads in Georgia en Telegram. Hay eventos de networking semanales en Fabrika. El costo de un apartamento de 1 habitación en zona céntrica es de $400-600 USD/mes. Internet muy rápido y confiable en toda la ciudad."
+  },
+  {
+    "id": "barcelona_visa_arg",
+    "destination": "Barcelona", "country": "España", "category": "visa", "nationality": "argentina",
+    "text": "Los ciudadanos argentinos pueden ingresar a España (Espacio Schengen) sin visa por hasta 90 días. Para estadías más largas España tiene la Visa de Nómada Digital (desde enero 2023), parte de la Ley de Startups. Requisitos: pasaporte vigente, prueba de trabajo remoto para empresa fuera de España (máximo 20% de ingresos puede provenir de clientes españoles), ingresos mínimos de 200% del salario mínimo español (~$2500 USD/mes), seguro de salud privado en España, certificado de antecedentes penales. La visa es por 1 año renovable a residencia de 3 años. Los argentinos tienen acceso especial: el convenio de doble nacionalidad España-Argentina facilita el proceso."
+  },
+  {
+    "id": "barcelona_hobbies",
+    "destination": "Barcelona", "country": "España", "category": "hobbies",
+    "text": "Fútbol en Barcelona: la ciudad es una meca del fútbol. Hay ligas amateur en todos los barrios. La Liga Barcelonesa de Fútbol amateur tiene cientos de equipos. Instalaciones municipales: Poliesportiu Municipal Mar Bella, Camp Municipal de Beisbol Les Corts. El grupo 'Football Barcelona Expats' en Facebook organiza partidos semanales en la Barceloneta y Diagonal. Póker en vivo: Casino Barcelona (Port Olímpic) es el mayor casino de España con torneo de póker diario. Gran Casino Royal tiene sala de póker en vivo. El Barcelona Poker Tour atrae jugadores de toda Europa. El casino tiene buy-ins desde $50 USD hasta torneos de $500+."
+  },
+  {
+    "id": "barcelona_networking",
+    "destination": "Barcelona", "country": "España", "category": "networking",
+    "text": "Barcelona es uno de los principales hubs de startups y nómadas de Europa. El barrio del Poblenou (22@ tech district) concentra el ecosistema tech. Coworkings: Aticco (múltiples ubicaciones), Betahaus, Cloud Coworking, The Circular Lab. La Mobile World Congress (MWC) se celebra en Barcelona en febrero atrayendo a 100,000+ profesionales tech. Comunidades: Barcelona Digital Nomads en Facebook (+40,000 miembros), Meetup.com Entrepreneurs Barcelona muy activo. El Barcelona Tech City organiza eventos mensuales gratuitos. Slack: Barcelona Nomads. La red de coworkings del 22@ tiene más de 30 espacios en 10 manzanas."
+  },
+  {
+    "id": "montevideo_visa_arg",
+    "destination": "Montevideo", "country": "Uruguay", "category": "visa", "nationality": "argentina",
+    "text": "Los ciudadanos argentinos no necesitan visa para ingresar a Uruguay. Con DNI argentino se puede ingresar sin pasaporte. Uruguay no tiene visa específica de nómada digital pero es muy sencillo obtener la residencia: con 6 meses de estadía se puede tramitar residencia permanente. Requisitos residencia permanente: certificado de nacimiento apostillado, certificado de antecedentes penales, demostrar medios de vida (cuenta bancaria, trabajo remoto). Uruguay tiene el sistema bancario más confiable de LATAM. El régimen fiscal para nuevos residentes exime de impuestos los ingresos extranjeros por 11 años (régimen de exención fiscal para nuevos residentes)."
+  },
+  {
+    "id": "montevideo_hobbies",
+    "destination": "Montevideo", "country": "Uruguay", "category": "hobbies",
+    "text": "Fútbol en Montevideo: el fútbol es una religión en Uruguay. Hay docenas de ligas amateur en todos los barrios. Los estadios Centenario y Estadio Franzini tienen instalaciones para ligas amateur. La OFI (Organización del Fútbol del Interior) organiza torneos accesibles para equipos nuevos. Canchas populares para alquilar: Complejo Palermo, Canchas del Parque Rodó. Póker en vivo: el Conrad Casino en Punta del Este (a 130km) es el principal casino de Uruguay con torneos regulares de póker. En Montevideo el Maralba Club Privado y el Hotel Casino Carrasco tienen mesas de póker en vivo. Los torneos del Conrad atraen jugadores de toda la región."
+  },
+  {
+    "id": "montevideo_networking",
+    "destination": "Montevideo", "country": "Uruguay", "category": "networking",
+    "text": "Montevideo es un hub nómada emergente con muy buena calidad de vida. El barrio de Pocitos y Ciudad Vieja concentran la comunidad tech. Coworkings: Sinergia Design (Ciudad Vieja), CTC Coworking, HUB Montevideo, Areatec. Comunidades: Nómadas Digitales Uruguay en Facebook, Meetup.com Emprendedores Montevideo. Uruguay tiene el ecosistema startup más maduro del Río de la Plata con empresas como dLocal, PedidosYa, Wicket. La red de fibra óptica estatal (ANTEL) da internet muy rápido y estable. El WTC Montevideo concentra empresas tech y organiza eventos de networking."
+  },
+  {
+    "id": "praga_visa_arg",
+    "destination": "Praga", "country": "República Checa", "category": "visa", "nationality": "argentina",
+    "text": "Los ciudadanos argentinos pueden ingresar a República Checa (Espacio Schengen) sin visa por hasta 90 días. Para estadías más largas la opción es la Visa de Larga Estancia (tipo D) por actividades empresariales o la Zivnostensky list (licencia de autónomo checa). República Checa no tiene visa específica de nómada digital pero el Zivnostensky permite trabajar legalmente como freelance con clientes internacionales. El proceso tarda 2-3 meses. Costo de vida más bajo que Europa occidental con Praga siendo una de las ciudades más seguras de Europa."
+  },
+  {
+    "id": "praga_hobbies",
+    "destination": "Praga", "country": "República Checa", "category": "hobbies",
+    "text": "Fútbol en Praga: hay ligas para expats bien organizadas. El grupo 'Expat Football Prague' organiza partidos los sábados en Stromovka Park y las instalaciones del AC Sparta Prague B. Las canchas de Letná y Žižkov son populares para ligas amateur. Futbol expat league Prague tiene temporadas de otoño y primavera. Póker en vivo: Praga tiene una de las mejores escenas de póker de Europa. Los casinos más conocidos: Casino Banco (Václavské náměstí), Casino Palais Savarin, El Casino de Praga en el Hotel Hilton. El Prague Poker Festival atrae jugadores de toda Europa. Los torneos diarios tienen buy-ins desde €50 y la competencia es variada."
+  },
+  {
+    "id": "praga_networking",
+    "destination": "Praga", "country": "República Checa", "category": "networking",
+    "text": "Praga es un hub nómada creciente con costos más bajos que Europa occidental. Los barrios de Žižkov, Vinohrady y Smíchov concentran la comunidad. Coworkings: HubHub (centro), Node5, Locus Workspace, Creative Dock. El Prague Startup Centre organiza eventos mensuales. Comunidades: Prague Digital Nomads en Facebook (+12,000 miembros), Internations Prague muy activo. La conferencia Startup Grind Prague es anual. Internet muy rápido y coworking mensual de $150-200 EUR. Praga tiene excelente transporte y conexiones baratas a toda Europa con aerolíneas low cost."
+  }
+]

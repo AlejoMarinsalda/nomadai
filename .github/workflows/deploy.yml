@@ -34,14 +34,8 @@ jobs:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: |
           pip install -q google-generativeai
-          python - <<'EOF'
-import os, google.generativeai as genai
-key = os.environ.get("GOOGLE_API_KEY", "")
-print(f"Key present: {bool(key)}, starts with: {key[:4] if key else 'EMPTY'}")
-genai.configure(api_key=key)
-models = [m.name for m in genai.list_models() if 'embedContent' in m.supported_generation_methods]
-print(f"Embedding models available: {models}")
-EOF
+          python scripts/check_google_api.py
+
 
       - name: Build Docker image (RAG index baked in)
         id: build

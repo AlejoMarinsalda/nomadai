@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
     paths-ignore:
       - 'docs/**'
       - '**.md'
@@ -10,18 +10,30 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: nomadai
-  LAMBDA_FUNCTION: nomadai
 
 concurrency:
-  group: deploy-production
+  group: deploy-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
   deploy:
-    name: Build & deploy to Lambda
+    name: Deploy → ${{ github.ref_name == 'main' && 'production' || 'development' }}
     runs-on: ubuntu-latest
 
     steps:
+      - name: Set environment variables
+        id: env
+        run: |
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            echo "LAMBDA_FUNCTION=nomadai"      >> $GITHUB_OUTPUT
+            echo "ECR_TAG=latest"               >> $GITHUB_OUTPUT
+            echo "ENV_LABEL=production"         >> $GITHUB_OUTPUT
+          else
+            echo "LAMBDA_FUNCTION=nomadai-dev"  >> $GITHUB_OUTPUT
+            echo "ECR_TAG=dev"                  >> $GITHUB_OUTPUT
+            echo "ENV_LABEL=development"        >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -41,6 +53,7 @@ jobs:
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
+          ECR_TAG: ${{ steps.env.outputs.ECR_TAG }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: |
           docker build \
@@ -48,7 +61,7 @@ jobs:
             --platform linux/amd64 \
             --provenance=false \
             -t $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            -t $REGISTRY/$ECR_REPOSITORY:latest \
+            -t $REGISTRY/$ECR_REPOSITORY:$ECR_TAG \
             .
           echo "image=$REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
@@ -56,20 +69,27 @@ jobs:
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
+          ECR_TAG: ${{ steps.env.outputs.ECR_TAG }}
         run: |
           docker push $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $REGISTRY/$ECR_REPOSITORY:latest
+          docker push $REGISTRY/$ECR_REPOSITORY:$ECR_TAG
 
       - name: Update Lambda function
+        env:
+          LAMBDA_FUNCTION: ${{ steps.env.outputs.LAMBDA_FUNCTION }}
         run: |
           aws lambda update-function-code \
-            --function-name ${{ env.LAMBDA_FUNCTION }} \
+            --function-name $LAMBDA_FUNCTION \
             --image-uri ${{ steps.build.outputs.image }}
-          aws lambda wait function-updated --function-name ${{ env.LAMBDA_FUNCTION }}
+          aws lambda wait function-updated --function-name $LAMBDA_FUNCTION
 
       - name: Deployment summary
+        env:
+          LAMBDA_FUNCTION: ${{ steps.env.outputs.LAMBDA_FUNCTION }}
+          ENV_LABEL: ${{ steps.env.outputs.ENV_LABEL }}
         run: |
           echo "### Deploy completado ✅" >> $GITHUB_STEP_SUMMARY
-          echo "**Lambda:** ${{ env.LAMBDA_FUNCTION }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Imagen:** ${{ steps.build.outputs.image }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Entorno:** $ENV_LABEL"                           >> $GITHUB_STEP_SUMMARY
+          echo "**Lambda:** $LAMBDA_FUNCTION"                      >> $GITHUB_STEP_SUMMARY
+          echo "**Imagen:** ${{ steps.build.outputs.image }}"      >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}"                     >> $GITHUB_STEP_SUMMARY

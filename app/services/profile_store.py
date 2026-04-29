@@ -2,11 +2,15 @@ import logging
 import boto3
 from datetime import datetime, timezone
 from app.graph.state import UserProfile
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-_TABLE = "nomadai-profiles"
 _client = None
+
+
+def _table() -> str:
+    return settings.profiles_table
 
 
 def _db():
@@ -19,7 +23,7 @@ def _db():
 def get_profile(user_id: str) -> UserProfile | None:
     try:
         item = _db().get_item(
-            TableName=_TABLE,
+            TableName=_table(),
             Key={"user_id": {"S": user_id}},
         ).get("Item")
         if not item:
@@ -33,7 +37,7 @@ def get_profile(user_id: str) -> UserProfile | None:
 def save_profile(user_id: str, profile: UserProfile) -> None:
     try:
         _db().put_item(
-            TableName=_TABLE,
+            TableName=_table(),
             Item={
                 "user_id": {"S": user_id},
                 "profile_json": {"S": profile.model_dump_json()},
@@ -47,7 +51,7 @@ def save_profile(user_id: str, profile: UserProfile) -> None:
 def delete_profile(user_id: str) -> None:
     try:
         _db().delete_item(
-            TableName=_TABLE,
+            TableName=_table(),
             Key={"user_id": {"S": user_id}},
         )
     except Exception as e:

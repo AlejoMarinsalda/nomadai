@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     google_client_id: str = ""
     sqs_queue_url: str = "https://sqs.us-east-1.amazonaws.com/237216011543/nomadai-chat-jobs"
     log_level: str = "INFO"
+    # DynamoDB table names — override per environment (dev uses *-dev suffix)
+    profiles_table: str = "nomadai-profiles"
+    jobs_table: str = "nomadai-jobs"
+    checkpoints_table: str = "nomadai-checkpoints"
+    checkpoints_s3_bucket: str = "nomadai-checkpoints-offload"
     rate_limit_table: str = "nomadai-rate-limits"
     rate_limit_requests: int = 30  # max requests per user per hour
 

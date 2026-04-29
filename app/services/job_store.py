@@ -2,10 +2,14 @@ import json
 import logging
 import time
 import boto3
+from app.config import settings
 
 logger = logging.getLogger(__name__)
-_TABLE = "nomadai-jobs"
 _client = None
+
+
+def _table() -> str:
+    return settings.jobs_table
 
 
 def _db():
@@ -18,7 +22,7 @@ def _db():
 def create_pending_job(job_id: str) -> None:
     try:
         _db().put_item(
-            TableName=_TABLE,
+            TableName=_table(),
             Item={
                 "job_id": {"S": job_id},
                 "result_json": {"S": json.dumps({"status": "pending"})},
@@ -32,7 +36,7 @@ def create_pending_job(job_id: str) -> None:
 def save_job_result(job_id: str, result: dict) -> None:
     try:
         _db().put_item(
-            TableName=_TABLE,
+            TableName=_table(),
             Item={
                 "job_id": {"S": job_id},
                 "result_json": {"S": json.dumps(result)},
@@ -46,7 +50,7 @@ def save_job_result(job_id: str, result: dict) -> None:
 def get_job(job_id: str) -> dict | None:
     try:
         item = _db().get_item(
-            TableName=_TABLE,
+            TableName=_table(),
             Key={"job_id": {"S": job_id}},
         ).get("Item")
         if not item:

@@ -111,8 +111,9 @@ class TestProfileStore:
         with patch("app.services.profile_store._db", return_value=mock_db):
             delete_profile("user-1")
 
+        from app.config import settings
         mock_db.delete_item.assert_called_once_with(
-            TableName="nomadai-profiles",
+            TableName=settings.profiles_table,
             Key={"user_id": {"S": "user-1"}},
         )
 

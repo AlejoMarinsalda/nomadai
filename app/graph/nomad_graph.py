@@ -2,6 +2,7 @@ from langgraph.graph import StateGraph, END
 from langgraph_checkpoint_aws import DynamoDBSaver
 
 from app.graph.state import NomadState
+from app.config import settings
 from app.nodes.profile_node import profile_node
 from app.nodes.destination_node import destination_node
 from app.nodes.enrichment_node import enrichment_node
@@ -46,11 +47,11 @@ def build_graph() -> StateGraph:
     builder.add_edge("followup", END)
 
     checkpointer = DynamoDBSaver(
-        table_name="nomadai-checkpoints",
+        table_name=settings.checkpoints_table,
         region_name="us-east-1",
         ttl_seconds=86400 * 30,
         s3_offload_config={
-            "bucket_name": "nomadai-checkpoints-offload",
+            "bucket_name": settings.checkpoints_s3_bucket,
             "key_prefix": "checkpoints",
         },
     )

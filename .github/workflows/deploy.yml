@@ -12,6 +12,10 @@ env:
   ECR_REPOSITORY: nomadai
   LAMBDA_FUNCTION: nomadai
 
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
 jobs:
   deploy:
     name: Build & deploy to Lambda

@@ -78,7 +78,7 @@ def main() -> None:
 
     print("Generando embeddings (text-embedding-004)...")
     embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/text-embedding-004",
+        model="models/embedding-001",
         google_api_key=api_key,
     )
 

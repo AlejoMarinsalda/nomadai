@@ -62,6 +62,9 @@ _(nada en este momento — ver Pendiente)_
 
 | # | Tarea | Fecha |
 |---|-------|-------|
+| ✅ | Filtro de zona horaria: excluye destinos con diferencia > 6h respecto al trabajo del usuario | 2026-04-29 |
+| ✅ | Fallback cuando no hay matches: siempre retorna 3 destinos con match_score reducido y explicación | 2026-04-29 |
+| ✅ | Knowledge base expandida: 21 destinos (Buenos Aires, Porto, Valencia, Tallin, Berlín, Ciudad del Cabo, Ho Chi Minh, KL, Bogotá, Playa del Carmen) | 2026-04-29 |
 | ✅ | Dead Letter Queue: mensajes que fallan 3 veces van a nomadai-chat-jobs-dlq + alarma CloudWatch | 2026-04-29 |
 | ✅ | CloudWatch Alarms: errores Lambda, duración > 90s, SQS backlog > 50 — notificación por email vía SNS | 2026-04-29 |
 | ✅ | Rate limiting: 30 req/hora por usuario via DynamoDB sliding window, fail-open en errores | 2026-04-29 |

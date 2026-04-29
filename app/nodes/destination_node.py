@@ -1,3 +1,4 @@
+import re
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from app.graph.state import NomadState, Destination
@@ -20,9 +21,15 @@ Antes de recomendar cualquier destino, aplicá estos filtros estrictos:
 2. **Presupuesto**: El costo mensual estimado DEBE ser menor o igual al presupuesto declarado.
    Un destino que supera el presupuesto está automáticamente descartado.
 
-3. **Zona horaria**: Si el usuario trabaja en horario de Buenos Aires (UTC-3), priorizá destinos
-   con diferencia máxima de ±5 horas. Para inmersión en inglés esto puede flexibilizarse,
-   pero mencionalo explícitamente en match_reasons.
+3. **Zona horaria**: Si se especifica una zona horaria de trabajo, la diferencia con el destino
+   no debe superar 6 horas. Los rangos aceptables se indican en los filtros del usuario.
+
+## REGLA DE FALLBACK (importante)
+
+Si no encontrás 3 destinos que cumplan TODOS los filtros obligatorios, retorná de todas formas
+los 3 mejores disponibles aunque no cumplan todos los filtros. En ese caso:
+- Bajá el match_score proporcionalmente (puede ser menor a 60)
+- En match_reasons explicá explícitamente qué filtro no pudo cumplirse y por qué
 
 ## FORMATO DE RESPUESTA
 
@@ -44,15 +51,48 @@ Nunca uses frases genéricas como "buena comunidad de nómadas". En cambio:
 - Poker: nombres de casinos o salas de póker en vivo
 - Networking: nombres de coworkings populares, comunidades activas
 - Inglés: por qué ese destino es ideal para inmersión (acento, comunidad expat, escuelas, etc.)
-- Zona horaria: diferencia horaria exacta con Buenos Aires y si es viable"""
+- Zona horaria: diferencia horaria exacta y si es viable para el horario de trabajo del usuario"""
 
 
 _LANGUAGE_GOALS = {"inglés", "ingles", "english", "inmersión en inglés", "inmersion en ingles"}
+_MAX_TZ_DIFF_HOURS = 6
 
 
 def _has_english_goal(goals: list[str]) -> bool:
     goals_lower = " ".join(goals).lower()
     return any(kw in goals_lower for kw in _LANGUAGE_GOALS)
+
+
+def _parse_utc_offset(tz: str | None) -> float | None:
+    """Parsea 'UTC-3', 'UTC+5:30', 'GMT+1' a horas numéricas. Retorna None si no reconoce el formato."""
+    if not tz:
+        return None
+    tz = tz.strip().upper()
+    if tz in ("UTC", "GMT"):
+        return 0.0
+    match = re.match(r"(?:UTC|GMT)([+-])(\d{1,2})(?::(\d{2}))?$", tz)
+    if match:
+        sign = 1 if match.group(1) == "+" else -1
+        hours = int(match.group(2))
+        minutes = int(match.group(3) or "0")
+        return sign * (hours + minutes / 60)
+    return None
+
+
+def _timezone_constraint(work_timezone: str | None) -> str | None:
+    offset = _parse_utc_offset(work_timezone)
+    if offset is None:
+        return None
+    lo = int(offset - _MAX_TZ_DIFF_HOURS)
+    hi = int(offset + _MAX_TZ_DIFF_HOURS)
+    lo_str = f"UTC{lo:+d}"
+    hi_str = f"UTC{hi:+d}"
+    return (
+        f"⚠️ ZONA HORARIA OBLIGATORIA: El usuario trabaja en {work_timezone}. "
+        f"La diferencia horaria con el destino no debe superar {_MAX_TZ_DIFF_HOURS} horas. "
+        f"Rango aceptable: {lo_str} a {hi_str}. "
+        f"EXCLUIR destinos fuera de este rango (p.ej. si el usuario es UTC-3, quedan EXCLUIDOS destinos en UTC+4 o más)."
+    )
 
 
 def destination_node(state: NomadState) -> dict:
@@ -62,10 +102,9 @@ def destination_node(state: NomadState) -> dict:
     )
 
     profile = state.user_profile
-    english_goal = _has_english_goal(profile.goals or [])
 
     constraints = []
-    if english_goal:
+    if _has_english_goal(profile.goals or []):
         constraints.append(
             "⚠️ FILTRO OBLIGATORIO: El usuario quiere INMERSIÓN EN INGLÉS. "
             "Solo recomendá países de habla inglesa oficial. "
@@ -77,6 +116,10 @@ def destination_node(state: NomadState) -> dict:
             f"⚠️ PRESUPUESTO MÁXIMO: ${profile.budget_usd_monthly} USD/mes. "
             "No recomendés destinos que superen este monto."
         )
+
+    tz_constraint = _timezone_constraint(profile.work_timezone)
+    if tz_constraint:
+        constraints.append(tz_constraint)
 
     constraint_block = "\n".join(constraints)
 
@@ -90,7 +133,8 @@ def destination_node(state: NomadState) -> dict:
 
 {constraint_block}
 
-Recomendá exactamente 3 destinos que cumplan TODOS los filtros anteriores."""
+Recomendá exactamente 3 destinos. Si no hay 3 que cumplan todos los filtros, retorná
+los mejores disponibles con match_score reducido y la razón del incumplimiento en match_reasons."""
 
     response = llm.invoke([SystemMessage(content=_SYSTEM), HumanMessage(content=prompt)])
 

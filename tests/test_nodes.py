@@ -109,6 +109,63 @@ class TestDestinationNode:
         assert "EXCLUIDOS" in prompt_text
         assert "Colombia" in prompt_text
 
+    def test_timezone_parse(self):
+        from app.nodes.destination_node import _parse_utc_offset
+
+        assert _parse_utc_offset("UTC-3") == -3.0
+        assert _parse_utc_offset("UTC+5:30") == 5.5
+        assert _parse_utc_offset("UTC+0") == 0.0
+        assert _parse_utc_offset("UTC") == 0.0
+        assert _parse_utc_offset("GMT+1") == 1.0
+        assert _parse_utc_offset("America/Buenos_Aires") is None
+        assert _parse_utc_offset(None) is None
+
+    def test_timezone_constraint_in_prompt(self, complete_state):
+        from app.nodes.destination_node import destination_node
+        import json
+
+        complete_state.user_profile.work_timezone = "UTC-3"
+
+        captured_prompt = []
+        mock_llm = MagicMock()
+        mock_llm.invoke.side_effect = lambda msgs: (
+            captured_prompt.extend(msgs) or
+            AIMessage(content=json.dumps([{
+                "city": "Lisboa", "country": "Portugal",
+                "match_score": 85, "match_reasons": ["UTC+1, 4h diferencia"], "monthly_cost_usd": 1800
+            }]))
+        )
+
+        with patch("app.nodes.destination_node.ChatGoogleGenerativeAI", return_value=mock_llm):
+            destination_node(complete_state)
+
+        prompt_text = " ".join(m.content for m in captured_prompt)
+        assert "ZONA HORARIA" in prompt_text
+        assert "UTC-9" in prompt_text
+        assert "UTC+3" in prompt_text
+
+    def test_no_timezone_constraint_when_unset(self, complete_state):
+        from app.nodes.destination_node import destination_node
+        import json
+
+        complete_state.user_profile.work_timezone = None
+
+        captured_prompt = []
+        mock_llm = MagicMock()
+        mock_llm.invoke.side_effect = lambda msgs: (
+            captured_prompt.extend(msgs) or
+            AIMessage(content=json.dumps([{
+                "city": "Bangkok", "country": "Tailandia",
+                "match_score": 80, "match_reasons": ["bajo costo"], "monthly_cost_usd": 1000
+            }]))
+        )
+
+        with patch("app.nodes.destination_node.ChatGoogleGenerativeAI", return_value=mock_llm):
+            destination_node(complete_state)
+
+        prompt_text = " ".join(m.content for m in captured_prompt)
+        assert "ZONA HORARIA OBLIGATORIA" not in prompt_text
+
 
 class TestCompilerNode:
     def test_generates_final_report(self, complete_state):

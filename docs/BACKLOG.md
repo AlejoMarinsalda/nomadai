@@ -56,6 +56,7 @@ Prioridades: 🔴 Alta | 🟡 Media | 🟢 Baja
 |---|-------|-----------|-------|
 | 16 | Textos del spinner más representativos del proceso real | 🟢 | Hoy: "Analizando tu perfil", "Buscando destinos", etc. Mejorar con pasos más específicos |
 | 17 | Manejo de error visible para el usuario | 🟢 | Si el job falla, hoy no hay feedback claro. Mostrar mensaje de error amigable |
+| 18 | Migración del frontend a React | 🟢 | Reemplazar el `index.html` + vanilla JS por una SPA en React + Vite. Prerequisito: tener más de una vista o estado complejo que justifique el cambio. Hosting: S3 + CloudFront (separado de Lambda) o servido desde el mismo contenedor. Incluye: componentes reutilizables para el chat, el reporte y el perfil de usuario |
 
 ---
 

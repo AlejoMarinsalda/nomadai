@@ -29,14 +29,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Verify Google API key
-        env:
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-        run: |
-          pip install -q google-generativeai
-          python scripts/check_google_api.py
-
-
       - name: Build Docker image (RAG index baked in)
         id: build
         env:

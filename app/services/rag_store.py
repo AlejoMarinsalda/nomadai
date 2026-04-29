@@ -34,7 +34,7 @@ def _load():
         from app.config import settings
 
         embeddings = GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001",
+            model="models/gemini-embedding-001",
             google_api_key=settings.google_api_key,
         )
 

@@ -117,6 +117,44 @@ class TestProfileStore:
         )
 
 
+class TestRateLimiter:
+    def _make_db(self, count: int) -> MagicMock:
+        mock_db = MagicMock()
+        mock_db.update_item.return_value = {"Attributes": {"count": {"N": str(count)}}}
+        return mock_db
+
+    def test_allows_request_under_limit(self):
+        from app.services.rate_limiter import is_allowed
+
+        mock_db = self._make_db(1)
+        with patch("app.services.rate_limiter._get_db", return_value=mock_db):
+            assert is_allowed("user-1") is True
+
+    def test_blocks_request_over_limit(self):
+        from app.services.rate_limiter import is_allowed
+        from app.config import settings
+
+        mock_db = self._make_db(settings.rate_limit_requests + 1)
+        with patch("app.services.rate_limiter._get_db", return_value=mock_db):
+            assert is_allowed("user-1") is False
+
+    def test_allows_at_exact_limit(self):
+        from app.services.rate_limiter import is_allowed
+        from app.config import settings
+
+        mock_db = self._make_db(settings.rate_limit_requests)
+        with patch("app.services.rate_limiter._get_db", return_value=mock_db):
+            assert is_allowed("user-1") is True
+
+    def test_fails_open_on_dynamo_error(self):
+        from app.services.rate_limiter import is_allowed
+
+        mock_db = MagicMock()
+        mock_db.update_item.side_effect = Exception("DynamoDB timeout")
+        with patch("app.services.rate_limiter._get_db", return_value=mock_db):
+            assert is_allowed("user-1") is True
+
+
 class TestRagStore:
     def test_search_returns_empty_when_unavailable(self):
         from app.services.rag_store import search_rag

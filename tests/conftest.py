@@ -101,9 +101,12 @@ def api_client(mock_dynamodb):
         from fastapi.testclient import TestClient
         from app.api.main import app
         from app.services.auth import get_current_user
+        from app.services.rate_limiter import rate_limit
         app.dependency_overrides[get_current_user] = lambda: "test-user-1"
+        app.dependency_overrides[rate_limit] = lambda: "test-user-1"
         try:
             with TestClient(app, raise_server_exceptions=True) as client:
                 yield client, mock_graph, mock_dynamodb
         finally:
             app.dependency_overrides.pop(get_current_user, None)
+            app.dependency_overrides.pop(rate_limit, None)

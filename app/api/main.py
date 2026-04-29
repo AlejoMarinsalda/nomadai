@@ -25,6 +25,7 @@ from app.graph import graph
 from app.services.profile_store import get_profile, save_profile, delete_profile
 from app.services.job_store import create_pending_job, get_job
 from app.services.auth import get_current_user
+from app.services.rate_limiter import rate_limit
 from app.config import settings
 
 _sqs = None
@@ -118,7 +119,7 @@ def delete_user_profile(user_id: str, current_user: str = Depends(get_current_us
 
 
 @app.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest, user_id: str = Depends(get_current_user)):
+async def chat(request: ChatRequest, user_id: str = Depends(rate_limit)):
     session_id = request.session_id or str(uuid.uuid4())
     config = {"configurable": {"thread_id": session_id}}
 
@@ -162,7 +163,7 @@ async def chat(request: ChatRequest, user_id: str = Depends(get_current_user)):
 
 
 @app.post("/chat/async")
-def chat_async(request: ChatRequest, user_id: str = Depends(get_current_user)):
+def chat_async(request: ChatRequest, user_id: str = Depends(rate_limit)):
     job_id = str(uuid.uuid4())
     session_id = request.session_id or str(uuid.uuid4())
 

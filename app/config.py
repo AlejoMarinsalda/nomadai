@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     google_client_id: str = ""
     sqs_queue_url: str = "https://sqs.us-east-1.amazonaws.com/237216011543/nomadai-chat-jobs"
     log_level: str = "INFO"
+    rate_limit_table: str = "nomadai-rate-limits"
+    rate_limit_requests: int = 30  # max requests per user per hour
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 

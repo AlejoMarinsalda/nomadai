@@ -46,7 +46,8 @@ _(nada en este momento — ver Pendiente)_
 |---|-------|-----------|-------|
 | 13 | Custom domain (Route 53 + ACM) | 🟡 | Reemplazar la URL de Lambda Function URL por un dominio propio |
 | 14 | Separar entornos dev/prod | 🟡 | Hoy todo va a producción. Crear stack `nomadai-dev` para testing sin afectar usuarios reales |
-| 15 | Caché de resultados por perfil similar | 🟢 | Si dos usuarios tienen perfiles casi idénticos, reusar el reporte (ahorra ~$0.10 en APIs por request) |
+| 15 | Migrar mensajería de SQS a Kafka (MSK) | 🟢 | Amazon MSK como broker. Habilita: múltiples consumers, replay de mensajes, streams en tiempo real y particionado por user_id para ordenamiento garantizado. Prerequisito: volumen de mensajes que justifique la complejidad operativa (>10k msg/día) |
+| 16 | Caché de resultados por perfil similar | 🟢 | Si dos usuarios tienen perfiles casi idénticos, reusar el reporte (ahorra ~$0.10 en APIs por request) |
 
 ### Frontend
 

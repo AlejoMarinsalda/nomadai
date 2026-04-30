@@ -76,6 +76,12 @@ jobs:
         env:
           LAMBDA_FUNCTION: ${{ steps.env.outputs.LAMBDA_FUNCTION }}
         run: |
+          if ! aws lambda get-function --function-name $LAMBDA_FUNCTION > /dev/null 2>&1; then
+            echo "⚠️  Lambda '$LAMBDA_FUNCTION' no existe todavía."
+            echo "Correr infrastructure/setup_dev_environment.sh para crearla."
+            echo "La imagen ECR fue pusheada correctamente y puede usarse al crear la función."
+            exit 0
+          fi
           aws lambda update-function-code \
             --function-name $LAMBDA_FUNCTION \
             --image-uri ${{ steps.build.outputs.image }}

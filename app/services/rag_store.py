@@ -1,20 +1,17 @@
 """
-RAG store: carga el índice FAISS que fue bakeado en la imagen Docker durante el build.
-El índice vive en LAMBDA_TASK_ROOT/rag_index/ — no se descarga nada en runtime.
+RAG store: conecta con Qdrant Cloud para búsqueda semántica sobre el knowledge base.
 
-Se cachea a nivel de módulo para que los Lambda calientes reusen el vectorstore
-sin recargarlo en cada invocación.
+El vectorstore se cachea a nivel de módulo — las Lambda calientes reusan la conexión
+sin reinicializarla en cada invocación.
+
+Si QDRANT_URL no está configurada, search_rag() retorna lista vacía y el pipeline
+continúa usando Tavily como fuente de información.
 """
 
 import logging
-import os
-from pathlib import Path
+from app.config import settings
 
 logger = logging.getLogger(__name__)
-
-# En Lambda: /var/task/rag_index (LAMBDA_TASK_ROOT es /var/task)
-# En local: sobreescribir con RAG_INDEX_PATH=<ruta>
-_INDEX_PATH = Path(os.environ.get("RAG_INDEX_PATH", "/var/task/rag_index"))
 
 _vectorstore = None
 
@@ -24,36 +21,41 @@ def _load():
     if _vectorstore is not None:
         return _vectorstore
 
-    if not (_INDEX_PATH / "index.faiss").exists():
-        logger.warning("RAG index no encontrado en %s — se usarán APIs externas", _INDEX_PATH)
+    if not settings.qdrant_url:
+        logger.warning("QDRANT_URL no configurada — RAG no disponible")
         return None
 
     try:
-        from langchain_community.vectorstores import FAISS
+        from qdrant_client import QdrantClient
+        from langchain_qdrant import QdrantVectorStore
         from langchain_google_genai import GoogleGenerativeAIEmbeddings
-        from app.config import settings
 
         embeddings = GoogleGenerativeAIEmbeddings(
             model="models/gemini-embedding-001",
             google_api_key=settings.google_api_key,
         )
 
-        _vectorstore = FAISS.load_local(
-            str(_INDEX_PATH),
-            embeddings,
-            allow_dangerous_deserialization=True,
+        client = QdrantClient(
+            url=settings.qdrant_url,
+            api_key=settings.qdrant_api_key or None,
         )
-        logger.info("RAG cargado: %d vectores desde %s", _vectorstore.index.ntotal, _INDEX_PATH)
+
+        _vectorstore = QdrantVectorStore(
+            client=client,
+            collection_name=settings.qdrant_collection,
+            embedding=embeddings,
+        )
+        logger.info("RAG conectado a Qdrant: %s / %s", settings.qdrant_url, settings.qdrant_collection)
 
     except Exception as e:
-        logger.warning("RAG no disponible — se usarán APIs externas: %s", e)
+        logger.warning("RAG no disponible: %s", e)
         _vectorstore = None
 
     return _vectorstore
 
 
 def search_rag(query: str, k: int = 3) -> list[str]:
-    """Retorna hasta k fragmentos relevantes. Lista vacía si el RAG no está disponible."""
+    """Retorna hasta k fragmentos relevantes del knowledge base. Lista vacía si no disponible."""
     vs = _load()
     if vs is None:
         return []

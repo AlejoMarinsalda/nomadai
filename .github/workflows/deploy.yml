@@ -48,16 +48,14 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build Docker image (RAG index baked in)
+      - name: Build Docker image
         id: build
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
           ECR_TAG: ${{ steps.env.outputs.ECR_TAG }}
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
         run: |
           docker build \
-            --secret id=google_api_key,env=GOOGLE_API_KEY \
             --platform linux/amd64 \
             --provenance=false \
             -t $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \

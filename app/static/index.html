@@ -4,265 +4,422 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NomadAI — Tu próximo destino</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #0f1117;
-      color: #e8e8e8;
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #09090b;
+      color: #f4f4f5;
       height: 100dvh;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      overflow: hidden;
     }
 
+    .gradient-text {
+      background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────────── */
     header {
+      flex-shrink: 0;
       width: 100%;
+      background: rgba(9, 9, 11, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #1c1c1f;
+      z-index: 50;
+    }
+
+    .header-inner {
       max-width: 780px;
-      padding: 20px 24px 12px;
+      margin: 0 auto;
+      padding: 0 20px;
+      height: 54px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #1e2130;
     }
 
-    .header-left { display: flex; align-items: center; gap: 10px; }
+    .logo { display: flex; align-items: center; gap: 8px; }
+    .logo-text { font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em; }
 
-    header h1 {
-      font-size: 1.2rem;
-      font-weight: 700;
-      background: linear-gradient(90deg, #6ee7b7, #3b82f6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+    #user-info { display: flex; align-items: center; gap: 6px; }
 
-    header span { font-size: 1.4rem; }
-
-    #user-info {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.85rem;
-      color: #9ca3af;
-    }
-
-    #user-info img {
-      width: 28px;
-      height: 28px;
+    #user-avatar {
+      width: 28px; height: 28px;
       border-radius: 50%;
+      border: 1px solid #3f3f46;
+      object-fit: cover;
     }
 
-    #logout-btn, #reset-profile-btn {
-      background: none;
-      border: 1px solid #2d3148;
+    #user-name { font-size: 0.8rem; color: #71717a; }
+
+    .header-btn {
+      font-size: 0.72rem;
+      font-family: 'Inter', sans-serif;
+      color: #71717a;
+      border: 1px solid #27272a;
       border-radius: 6px;
-      color: #9ca3af;
-      font-size: 0.75rem;
-      padding: 3px 8px;
+      padding: 3px 9px;
+      background: none;
       cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
     }
+    .header-btn:hover { color: #d4d4d8; border-color: #52525b; }
+    #reset-profile-btn:hover { color: #f87171; border-color: rgba(248,113,113,0.5); }
 
-    #logout-btn:hover { border-color: #6b7280; color: #e8e8e8; }
-    #reset-profile-btn:hover { border-color: #ef4444; color: #ef4444; }
-
-    /* Login screen */
+    /* ── Login Screen ────────────────────────────────────────────────────── */
     #login-screen {
       flex: 1;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 24px;
-      padding: 24px;
+      padding: 32px 20px;
+      position: relative;
+      overflow: hidden;
     }
 
-    #login-screen h2 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      background: linear-gradient(90deg, #6ee7b7, #3b82f6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-align: center;
+    .login-glow {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 40%,
+          rgba(16, 185, 129, 0.07) 0%,
+          rgba(99, 102, 241, 0.04) 50%,
+          transparent 100%);
+      pointer-events: none;
     }
 
-    #login-screen p {
-      color: #6b7280;
-      text-align: center;
-      max-width: 380px;
-      line-height: 1.6;
-    }
-
-    #chat {
-      flex: 1;
+    .login-card {
+      position: relative;
+      z-index: 1;
       width: 100%;
-      max-width: 780px;
-      overflow-y: auto;
-      padding: 24px 24px 12px;
+      max-width: 380px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .login-hero { text-align: center; }
+
+    .login-globe {
+      font-size: 3.25rem;
+      display: block;
+      margin-bottom: 14px;
+      filter: drop-shadow(0 0 24px rgba(16, 185, 129, 0.3));
+    }
+
+    .login-title {
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .login-subtitle {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #71717a;
+      line-height: 1.55;
+    }
+
+    .feature-list {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 11px;
+      padding: 11px 15px;
+      transition: border-color 0.15s;
+    }
+
+    .feature-item:hover { border-color: #3f3f46; }
+    .feature-icon { font-size: 1rem; flex-shrink: 0; }
+    .feature-text { font-size: 0.82rem; color: #a1a1aa; line-height: 1.4; }
+
+    .login-footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .login-note { font-size: 0.72rem; color: #52525b; }
+
+    /* ── Chat ────────────────────────────────────────────────────────────── */
+    #chat {
+      flex: 1;
+      overflow-y: auto;
       scroll-behavior: smooth;
     }
 
-    .bubble {
-      max-width: 80%;
-      padding: 12px 16px;
-      border-radius: 16px;
-      line-height: 1.6;
-      font-size: 0.95rem;
+    #chat::-webkit-scrollbar { width: 4px; }
+    #chat::-webkit-scrollbar-track { background: transparent; }
+    #chat::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 2px; }
+
+    #chat-inner {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 24px 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
+
+    /* ── Bubbles ─────────────────────────────────────────────────────────── */
+    @keyframes bubbleIn {
+      from { opacity: 0; transform: translateY(7px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .bubble { animation: bubbleIn 0.22s ease-out; font-size: 0.9rem; line-height: 1.65; }
 
     .bubble.user {
       align-self: flex-end;
+      max-width: 72%;
       background: #1d4ed8;
       color: #fff;
+      padding: 10px 15px;
+      border-radius: 18px;
       border-bottom-right-radius: 4px;
     }
 
     .bubble.assistant {
       align-self: flex-start;
-      background: #1e2130;
-      color: #e8e8e8;
+      width: 100%;
+      background: #18181b;
+      border: 1px solid #27272a;
+      color: #d4d4d8;
+      padding: 16px 20px;
+      border-radius: 18px;
       border-bottom-left-radius: 4px;
     }
 
-    .bubble.assistant h3 { color: #6ee7b7; margin: 12px 0 4px; }
-    .bubble.assistant h2 { color: #6ee7b7; margin: 14px 0 6px; }
-    .bubble.assistant ul, .bubble.assistant ol { padding-left: 20px; }
-    .bubble.assistant li { margin: 4px 0; }
-    .bubble.assistant a { color: #60a5fa; }
-    .bubble.assistant strong { color: #fff; }
-    .bubble.assistant code {
-      background: #0f1117;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.85em;
-    }
-    .bubble.assistant hr { border-color: #2d3148; margin: 12px 0; }
+    /* markdown inside assistant */
+    .bubble.assistant h1 { font-size: 1.15rem; font-weight: 700; color: #fafafa; margin: 1.1rem 0 0.4rem; }
+    .bubble.assistant h2 { font-size: 1rem; font-weight: 600; color: #10b981; margin: 1rem 0 0.35rem; }
+    .bubble.assistant h3 { font-size: 0.9rem; font-weight: 600; color: #e4e4e7; margin: 0.75rem 0 0.2rem; }
+    .bubble.assistant p { margin: 0.35rem 0; color: #d4d4d8; }
+    .bubble.assistant ul, .bubble.assistant ol { padding-left: 1.25rem; margin: 0.35rem 0; }
+    .bubble.assistant li { margin: 0.2rem 0; color: #d4d4d8; }
+    .bubble.assistant a { color: #60a5fa; text-decoration: underline; text-underline-offset: 2px; }
+    .bubble.assistant a:hover { color: #93c5fd; }
+    .bubble.assistant strong { color: #fafafa; font-weight: 600; }
+    .bubble.assistant hr { border: none; border-top: 1px solid #3f3f46; margin: 0.9rem 0; }
+    .bubble.assistant code { background: #09090b; padding: 1px 5px; border-radius: 3px; font-size: 0.82em; color: #10b981; }
+    .bubble.assistant blockquote { border-left: 2px solid #10b981; padding-left: 12px; color: #a1a1aa; margin: 0.5rem 0; }
+    .bubble.assistant h1:first-child, .bubble.assistant h2:first-child, .bubble.assistant h3:first-child { margin-top: 0; }
 
+    /* thinking */
     .bubble.thinking {
       align-self: flex-start;
-      background: #1e2130;
-      color: #6b7280;
-      font-style: italic;
-      font-size: 0.88rem;
-      padding: 10px 14px;
+      background: #18181b;
+      border: 1px solid #27272a;
+      padding: 12px 16px;
+      border-radius: 18px;
+      border-bottom-left-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    .bubble.thinking::after {
-      content: "";
+    .thinking-dots { display: flex; align-items: center; gap: 4px; }
+
+    @keyframes dotBounce {
+      0%, 70%, 100% { transform: translateY(0); opacity: 0.3; }
+      35% { transform: translateY(-4px); opacity: 1; }
+    }
+
+    .dot {
       display: inline-block;
-      width: 6px;
-      height: 6px;
-      background: #6b7280;
+      width: 5px; height: 5px;
+      background: #52525b;
       border-radius: 50%;
-      margin-left: 6px;
-      animation: blink 1s infinite;
-      vertical-align: middle;
+      animation: dotBounce 1.4s infinite ease-in-out;
+    }
+    .dot:nth-child(2) { animation-delay: 0.18s; }
+    .dot:nth-child(3) { animation-delay: 0.36s; }
+
+    .thinking-label { font-size: 0.78rem; color: #71717a; }
+
+    /* ── Input Area ──────────────────────────────────────────────────────── */
+    #input-area {
+      flex-shrink: 0;
+      width: 100%;
+      background: rgba(9, 9, 11, 0.9);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid #1c1c1f;
     }
 
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-
-    #input-area {
-      width: 100%;
+    .input-inner {
       max-width: 780px;
-      padding: 12px 24px 24px;
+      margin: 0 auto;
+      padding: 12px 20px 18px;
       display: flex;
       gap: 10px;
+      align-items: flex-end;
     }
 
     #input {
       flex: 1;
-      background: #1e2130;
-      border: 1px solid #2d3148;
-      border-radius: 12px;
-      padding: 12px 16px;
-      color: #e8e8e8;
-      font-size: 0.95rem;
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 14px;
+      padding: 11px 16px;
+      color: #f4f4f5;
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
       resize: none;
       outline: none;
       max-height: 160px;
-      line-height: 1.5;
-      transition: border-color 0.2s;
+      line-height: 1.55;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
 
-    #input:focus { border-color: #3b82f6; }
-    #input::placeholder { color: #4b5563; }
+    #input:focus {
+      border-color: rgba(16, 185, 129, 0.45);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.07);
+    }
+
+    #input::placeholder { color: #52525b; }
 
     #send {
-      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      flex-shrink: 0;
+      width: 42px; height: 42px;
       border: none;
       border-radius: 12px;
-      padding: 0 20px;
-      color: #fff;
-      font-size: 1.2rem;
+      background: linear-gradient(135deg, #10b981, #6366f1);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      transition: opacity 0.2s;
-      align-self: flex-end;
-      height: 48px;
+      transition: opacity 0.15s, transform 0.1s;
     }
 
-    #send:hover { opacity: 0.85; }
-    #send:disabled { opacity: 0.4; cursor: not-allowed; }
+    #send:hover { opacity: 0.88; transform: scale(1.04); }
+    #send:active { transform: scale(0.96); }
+    #send:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
 
     .hidden { display: none !important; }
+
+    @media (max-width: 480px) {
+      #user-name { display: none; }
+      .login-title { font-size: 2rem; }
+    }
   </style>
 </head>
 <body>
 
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
 <header>
-  <div class="header-left">
-    <span>🌍</span>
-    <h1>NomadAI — Encontrá tu próximo destino</h1>
-  </div>
-  <div id="user-info" class="hidden">
-    <img id="user-avatar" src="" alt="avatar" />
-    <span id="user-name"></span>
-    <button id="reset-profile-btn" title="Borrá tu perfil guardado para empezar de cero">↺ Reset</button>
-    <button id="logout-btn">Salir</button>
+  <div class="header-inner">
+    <div class="logo">
+      <span style="font-size:1.15rem">🌍</span>
+      <span class="logo-text gradient-text">NomadAI</span>
+    </div>
+    <div id="user-info" class="hidden">
+      <img id="user-avatar" src="" alt="avatar" />
+      <span id="user-name"></span>
+      <button id="reset-profile-btn" class="header-btn" title="Borrá tu perfil guardado para empezar de cero">↺ Reset</button>
+      <button id="logout-btn" class="header-btn">Salir</button>
+    </div>
   </div>
 </header>
 
-<!-- Pantalla de login -->
+<!-- ── Login Screen ────────────────────────────────────────────────────────── -->
 <div id="login-screen">
-  <h2>Bienvenido a NomadAI</h2>
-  <p>Tu asistente para encontrar el próximo destino como nómada digital. Iniciá sesión para que recuerde tu perfil entre visitas.</p>
-  <div id="g_id_onload"
-    data-client_id="496610892208-7ejbi9l76b71hjdd28lghc7pruu9tr1t.apps.googleusercontent.com"
-    data-callback="handleGoogleLogin"
-    data-auto_prompt="false">
-  </div>
-  <div class="g_id_signin"
-    data-type="standard"
-    data-size="large"
-    data-theme="outline"
-    data-text="signin_with"
-    data-shape="rectangular"
-    data-logo_alignment="left">
+  <div class="login-glow"></div>
+  <div class="login-card">
+
+    <div class="login-hero">
+      <span class="login-globe">🌍</span>
+      <h1 class="login-title gradient-text">NomadAI</h1>
+      <p class="login-subtitle">Tu asistente para encontrar el próximo destino como nómada digital</p>
+    </div>
+
+    <div class="feature-list">
+      <div class="feature-item">
+        <span class="feature-icon">🎯</span>
+        <span class="feature-text">Recomendaciones personalizadas según tu perfil, hobbies y zona horaria</span>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🛂</span>
+        <span class="feature-text">Información actualizada de visas para nómadas digitales</span>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🏠</span>
+        <span class="feature-text">Links directos de alojamiento en Airbnb, Booking y Hostelworld</span>
+      </div>
+    </div>
+
+    <div class="login-footer">
+      <div id="g_id_onload"
+        data-client_id="496610892208-7ejbi9l76b71hjdd28lghc7pruu9tr1t.apps.googleusercontent.com"
+        data-callback="handleGoogleLogin"
+        data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin"
+        data-type="standard"
+        data-size="large"
+        data-theme="filled_black"
+        data-text="signin_with"
+        data-shape="rectangular"
+        data-logo_alignment="left">
+      </div>
+      <p class="login-note">Tu perfil se guarda entre sesiones</p>
+    </div>
+
   </div>
 </div>
 
-<!-- Pantalla de chat (oculta hasta login) -->
-<div id="chat" class="hidden"></div>
+<!-- ── Chat ────────────────────────────────────────────────────────────────── -->
+<div id="chat" class="hidden">
+  <div id="chat-inner"></div>
+</div>
 
+<!-- ── Input Area ──────────────────────────────────────────────────────────── -->
 <div id="input-area" class="hidden">
-  <textarea
-    id="input"
-    rows="1"
-    placeholder="Contame sobre vos... hobbies, presupuesto, zona horaria..."
-  ></textarea>
-  <button id="send">➤</button>
+  <div class="input-inner">
+    <textarea
+      id="input"
+      rows="1"
+      placeholder="Contame sobre vos... hobbies, presupuesto, zona horaria..."
+    ></textarea>
+    <button id="send">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
 </div>
 
 <script>
   const API = "";
   let sessionId = null;
-  let userId = null;
-  let userName = null;
-  let credential = null; // Google JWT — sent as Bearer token on every request
+  let userId    = null;
+  let userName  = null;
+  let credential = null;
 
   const renderer = new marked.Renderer();
   renderer.link = ({ href, title, text }) =>
@@ -270,32 +427,29 @@
   marked.use({ renderer });
 
   const loginScreen = document.getElementById("login-screen");
-  const chatEl = document.getElementById("chat");
-  const inputArea = document.getElementById("input-area");
-  const userInfo = document.getElementById("user-info");
-  const userAvatar = document.getElementById("user-avatar");
-  const userNameEl = document.getElementById("user-name");
-  const input = document.getElementById("input");
-  const sendBtn = document.getElementById("send");
+  const chatEl      = document.getElementById("chat");
+  const chatInner   = document.getElementById("chat-inner");
+  const inputArea   = document.getElementById("input-area");
+  const userInfo    = document.getElementById("user-info");
+  const userAvatar  = document.getElementById("user-avatar");
+  const userNameEl  = document.getElementById("user-name");
+  const input       = document.getElementById("input");
+  const sendBtn     = document.getElementById("send");
 
   function authHeader() {
     return credential ? { "Authorization": `Bearer ${credential}` } : {};
   }
 
   function handleUnauthorized() {
-    ["nomadai_credential", "nomadai_user_id", "nomadai_user_name", "nomadai_user_picture"]
+    ["nomadai_credential","nomadai_user_id","nomadai_user_name","nomadai_user_picture"]
       .forEach(k => localStorage.removeItem(k));
-    credential = null;
-    userId = null;
-    sessionId = null;
-    chatEl.innerHTML = "";
+    credential = null; userId = null; sessionId = null;
+    chatInner.innerHTML = "";
     chatEl.classList.add("hidden");
     inputArea.classList.add("hidden");
     userInfo.classList.add("hidden");
     loginScreen.classList.remove("hidden");
     google.accounts.id.disableAutoSelect();
-    addBubble("assistant", "⚠️ Tu sesión expiró. Por favor iniciá sesión de nuevo.");
-    loginScreen.classList.remove("hidden");
   }
 
   async function handleGoogleLogin(response) {
@@ -305,21 +459,17 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ credential: response.credential }),
       });
-
       if (!res.ok) throw new Error("Auth fallida");
-
       const data = await res.json();
-      userId = data.user_id;
-      userName = data.name;
+      userId     = data.user_id;
+      userName   = data.name;
       credential = response.credential;
-
-      localStorage.setItem("nomadai_user_id", userId);
-      localStorage.setItem("nomadai_user_name", userName);
+      localStorage.setItem("nomadai_user_id",      userId);
+      localStorage.setItem("nomadai_user_name",    userName);
       localStorage.setItem("nomadai_user_picture", data.picture);
-      localStorage.setItem("nomadai_credential", credential);
-
+      localStorage.setItem("nomadai_credential",   credential);
       showChat(data);
-    } catch (e) {
+    } catch {
       alert("Error al iniciar sesión. Intentá de nuevo.");
     }
   }
@@ -329,11 +479,9 @@
     chatEl.classList.remove("hidden");
     inputArea.classList.remove("hidden");
     userInfo.classList.remove("hidden");
+    userAvatar.src       = userData.picture || "";
+    userNameEl.textContent = userData.name  || "";
 
-    userAvatar.src = userData.picture || "";
-    userNameEl.textContent = userData.name || "";
-
-    // Verificar si ya tiene perfil guardado
     const profileRes = await fetch(`${API}/profile/${userId}`, {
       headers: authHeader(),
     }).then(async r => {
@@ -341,26 +489,22 @@
       return r.json();
     }).catch(() => ({ found: false }));
 
+    const firstName = (userData.name || "").split(" ")[0];
     if (profileRes.found) {
-      const firstName = (userData.name || "").split(" ")[0];
       addBubble("assistant", `¡Bienvenido de vuelta, **${firstName}**! 🎉 Ya tengo tu perfil guardado. ¿Querés explorar nuevos destinos o tenés alguna pregunta sobre tus recomendaciones anteriores?`);
     } else {
-      addBubble("assistant", `¡Hola, **${userData.name.split(" ")[0]}**! 👋 Soy **NomadAI**. Te ayudo a encontrar tu próximo destino como nómada digital.\n\nContame sobre vos: ¿qué hobbies tenés, cuál es tu presupuesto mensual, desde qué zona horaria trabajás y cuál es tu nacionalidad?`);
+      addBubble("assistant", `¡Hola, **${firstName}**! 👋 Soy **NomadAI**. Te ayudo a encontrar tu próximo destino como nómada digital.\n\nContame sobre vos: ¿qué hobbies tenés, cuál es tu presupuesto mensual, desde qué zona horaria trabajás y cuál es tu nacionalidad?`);
     }
-
     input.focus();
   }
 
-  // Auto-login si ya hay sesión guardada (credential no expirado)
   window.addEventListener("load", () => {
-    const savedId = localStorage.getItem("nomadai_user_id");
-    const savedName = localStorage.getItem("nomadai_user_name");
-    const savedPicture = localStorage.getItem("nomadai_user_picture");
+    const savedId         = localStorage.getItem("nomadai_user_id");
+    const savedName       = localStorage.getItem("nomadai_user_name");
+    const savedPicture    = localStorage.getItem("nomadai_user_picture");
     const savedCredential = localStorage.getItem("nomadai_credential");
     if (savedId && savedName && savedCredential) {
-      userId = savedId;
-      userName = savedName;
-      credential = savedCredential;
+      userId = savedId; userName = savedName; credential = savedCredential;
       showChat({ user_id: savedId, name: savedName, picture: savedPicture });
     }
   });
@@ -368,24 +512,18 @@
   document.getElementById("reset-profile-btn").addEventListener("click", async () => {
     if (!userId) return;
     if (!confirm("¿Borrar tu perfil guardado? La próxima vez vas a tener que completarlo de nuevo.")) return;
-    await fetch(`${API}/profile/${userId}`, {
-      method: "DELETE",
-      headers: authHeader(),
-    }).catch(() => {});
+    await fetch(`${API}/profile/${userId}`, { method: "DELETE", headers: authHeader() }).catch(() => {});
     sessionId = null;
-    chatEl.innerHTML = "";
+    chatInner.innerHTML = "";
     addBubble("assistant", "Perfil borrado. Contame de nuevo sobre vos para encontrar tu próximo destino.");
     input.focus();
   });
 
   document.getElementById("logout-btn").addEventListener("click", () => {
-    localStorage.removeItem("nomadai_credential");
-    localStorage.removeItem("nomadai_user_id");
-    localStorage.removeItem("nomadai_user_name");
-    localStorage.removeItem("nomadai_user_picture");
-    sessionId = null;
-    userId = null;
-    chatEl.innerHTML = "";
+    ["nomadai_credential","nomadai_user_id","nomadai_user_name","nomadai_user_picture"]
+      .forEach(k => localStorage.removeItem(k));
+    sessionId = null; userId = null;
+    chatInner.innerHTML = "";
     chatEl.classList.add("hidden");
     inputArea.classList.add("hidden");
     userInfo.classList.add("hidden");
@@ -393,15 +531,12 @@
     google.accounts.id.disableAutoSelect();
   });
 
-  function addBubble(role, html) {
+  function addBubble(role, text) {
     const div = document.createElement("div");
     div.className = `bubble ${role}`;
-    if (role === "assistant") {
-      div.innerHTML = marked.parse(html);
-    } else {
-      div.textContent = html;
-    }
-    chatEl.appendChild(div);
+    div.innerHTML = role === "assistant" ? marked.parse(text) : "";
+    if (role !== "assistant") div.textContent = text;
+    chatInner.appendChild(div);
     chatEl.scrollTop = chatEl.scrollHeight;
     return div;
   }
@@ -409,8 +544,12 @@
   function addThinking() {
     const div = document.createElement("div");
     div.className = "bubble thinking";
-    div.textContent = "Analizando tu perfil";
-    chatEl.appendChild(div);
+    div.innerHTML = `
+      <div class="thinking-dots">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+      <span class="thinking-label">Analizando tu perfil</span>`;
+    chatInner.appendChild(div);
     chatEl.scrollTop = chatEl.scrollHeight;
     return div;
   }
@@ -418,100 +557,76 @@
   async function send() {
     const text = input.value.trim();
     if (!text || !userId) return;
-
     input.value = "";
     input.style.height = "auto";
     sendBtn.disabled = true;
-
     addBubble("user", text);
     const thinking = addThinking();
 
     try {
-      // Paso 1: enviar mensaje → recibir job_id inmediatamente (~100ms)
       const res = await fetch(`${API}/chat/async`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...authHeader() },
         body: JSON.stringify({ message: text, session_id: sessionId }),
       });
-
-      if (res.status === 401) {
-        thinking.remove();
-        handleUnauthorized();
-        return;
-      }
-
-      const { job_id, session_id: newSessionId } = await res.json();
-      sessionId = newSessionId;
-
-      // Paso 2: hacer polling hasta que el job esté listo
+      if (res.status === 401) { thinking.remove(); handleUnauthorized(); return; }
+      const { job_id, session_id: newSid } = await res.json();
+      sessionId = newSid;
       const data = await pollJob(job_id, thinking);
-
       thinking.remove();
-
-      if (data.final_report) {
-        addBubble("assistant", data.final_report);
-      } else if (data.reply) {
-        addBubble("assistant", data.reply);
-      } else {
-        addBubble("assistant", "⚠️ Error procesando la solicitud.");
-      }
-    } catch (e) {
+      if (data.final_report)  addBubble("assistant", data.final_report);
+      else if (data.reply)    addBubble("assistant", data.reply);
+      else                    addBubble("assistant", "⚠️ Error procesando la solicitud.");
+    } catch {
       thinking.remove();
       addBubble("assistant", "⚠️ Error conectando con la API.");
     }
-
     sendBtn.disabled = false;
     input.focus();
   }
 
   async function pollJob(jobId, thinkingBubble) {
-    const POLL_INTERVAL = 3000; // cada 3 segundos
-    const MAX_WAIT = 360000;    // máximo 6 minutos
-    const started = Date.now();
-    let dots = 0;
-    const labels = ["Analizando tu perfil", "Buscando destinos", "Enriqueciendo resultados", "Preparando tu reporte"];
+    const POLL_INTERVAL = 3000;
+    const MAX_WAIT      = 360000;
+    const started       = Date.now();
+    const labels        = [
+      "Analizando tu perfil",
+      "Buscando destinos",
+      "Enriqueciendo resultados",
+      "Preparando tu reporte",
+    ];
+    const labelEl = thinkingBubble.querySelector(".thinking-label");
+    let idx = 0;
 
     return new Promise((resolve, reject) => {
       const interval = setInterval(async () => {
-        // Actualizar texto del spinner para que no se sienta estático
-        dots = (dots + 1) % labels.length;
-        thinkingBubble.textContent = labels[dots];
-
+        idx = (idx + 1) % labels.length;
+        if (labelEl) labelEl.textContent = labels[idx];
         if (Date.now() - started > MAX_WAIT) {
           clearInterval(interval);
-          reject(new Error("Timeout esperando resultado"));
+          reject(new Error("Timeout"));
           return;
         }
-
         try {
-          const res = await fetch(`${API}/chat/status/${jobId}`);
+          const res  = await fetch(`${API}/chat/status/${jobId}`);
           const data = await res.json();
-
           if (data.status === "done" || data.status === "error") {
             clearInterval(interval);
             resolve(data);
           }
-        } catch (e) {
-          // ignorar errores de red transitorios, seguir polling
-        }
+        } catch { /* ignorar errores de red transitorios */ }
       }, POLL_INTERVAL);
     });
   }
 
   sendBtn.addEventListener("click", send);
-
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      send();
-    }
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
   });
-
   input.addEventListener("input", () => {
     input.style.height = "auto";
     input.style.height = Math.min(input.scrollHeight, 160) + "px";
   });
 </script>
-
 </body>
 </html>

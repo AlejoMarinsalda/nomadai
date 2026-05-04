@@ -180,6 +180,24 @@ class TestCompilerNode:
         assert result["final_report"]
         assert "Medellín" in result["final_report"]
 
+    def test_accommodation_links_always_appended(self, complete_state, sample_destination):
+        from app.nodes.compiler_node import compiler_node
+        from app.tools.accommodation_tool import get_accommodation_links
+
+        sample_destination.accommodation_links = get_accommodation_links("Medellín", "Colombia")
+        complete_state.destinations = [sample_destination]
+
+        mock_llm = MagicMock()
+        mock_llm.invoke.return_value = AIMessage(content="Reporte sin links de alojamiento.")
+
+        with patch("app.nodes.compiler_node.ChatGoogleGenerativeAI", return_value=mock_llm):
+            result = compiler_node(complete_state)
+
+        report = result["final_report"]
+        assert "🏠 Dónde alojarte" in report
+        assert "airbnb.com" in report
+        assert "booking.com" in report
+
     def test_includes_local_info_when_present(self, complete_state, sample_destination):
         from app.nodes.compiler_node import compiler_node, _format_destination
 

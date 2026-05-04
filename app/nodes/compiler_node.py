@@ -15,14 +15,26 @@ Cuando recibas datos de destinos recomendados, armalos en un reporte en español
    meetups, grupos de Slack/WhatsApp/Facebook conocidos en esa ciudad. Mencioná nombres reales.
 5. Mejor época para visitar + clima
 6. Info de visa
-7. Sección "🏠 Dónde alojarte": mostrá cada link de alojamiento como link markdown clickeable. Uno por línea.
-8. Videos de YouTube (formateá cada URL como un link markdown: [Mirá este video](URL))
+7. Videos de YouTube (formateá cada URL como un link markdown: [Mirá este video](URL))
 
 Importante:
 - Los links de YouTube SIEMPRE en formato markdown: [texto descriptivo](https://youtube.com/...)
 - Nunca uses la palabra "undefined"
 - Usá emojis y markdown para que sea visualmente agradable
 - Cierre motivador al final del reporte completo"""
+
+
+def _accommodation_section(destinations: list) -> str:
+    """Construye la sección de alojamiento fuera del LLM para garantizar que los links aparezcan."""
+    lines = ["\n---\n## 🏠 Dónde alojarte\n"]
+    for dest in destinations:
+        if not dest.accommodation_links:
+            continue
+        lines.append(f"### {dest.city}, {dest.country}\n")
+        for link in dest.accommodation_links:
+            lines.append(f"- [{link['label']}]({link['url']})")
+        lines.append("")
+    return "\n".join(lines)
 
 
 def _format_destination(dest: Destination) -> str:
@@ -36,10 +48,6 @@ def _format_destination(dest: Destination) -> str:
     )
 
     local_info_section = f"\nInformación local verificada:\n{dest.local_info}" if dest.local_info else ""
-
-    accommodation = "\n".join(
-        f"  - [{link['label']}]({link['url']})" for link in dest.accommodation_links
-    ) or "  - Buscar en Airbnb, Booking.com o Hostelworld"
 
     return f"""
 **{dest.city}, {dest.country}** — Match: {dest.match_score:.0f}/100
@@ -55,9 +63,6 @@ Clima:
 Visa ({dest.visa.visa_type or "info"}): {visa_status}
   Requisitos:
 {requirements}
-
-Alojamiento:
-{accommodation}
 
 Videos YouTube:
 {youtube}
@@ -83,4 +88,5 @@ Perfil del usuario:
 - Objetivos: {state.user_profile.goals}"""
 
     response = llm.invoke([SystemMessage(content=_SYSTEM), HumanMessage(content=prompt)])
-    return {"final_report": response.content}
+    final_report = response.content + _accommodation_section(state.destinations)
+    return {"final_report": final_report}

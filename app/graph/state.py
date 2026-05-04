@@ -15,6 +15,13 @@ class UserProfile(BaseModel):
     preferred_climate: str | None = None
     remote_work: bool = True
 
+    @field_validator("preferred_climate", mode="before")
+    @classmethod
+    def coerce_climate(cls, v):
+        if isinstance(v, list):
+            return ", ".join(str(i) for i in v)
+        return v
+
 
 class DestinationMedia(BaseModel):
     youtube_links: list[str] = Field(default_factory=list)

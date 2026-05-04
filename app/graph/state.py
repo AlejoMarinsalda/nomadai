@@ -58,6 +58,7 @@ class Destination(BaseModel):
     visa: VisaInfo = Field(default_factory=VisaInfo)
     climate: ClimateInfo = Field(default_factory=ClimateInfo)
     local_info: str = ""
+    accommodation_links: list[dict] = Field(default_factory=list)
 
 
 class NomadState(BaseModel):

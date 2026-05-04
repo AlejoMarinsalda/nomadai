@@ -15,7 +15,8 @@ Cuando recibas datos de destinos recomendados, armalos en un reporte en español
    meetups, grupos de Slack/WhatsApp/Facebook conocidos en esa ciudad. Mencioná nombres reales.
 5. Mejor época para visitar + clima
 6. Info de visa
-7. Videos de YouTube (formateá cada URL como un link markdown: [Mirá este video](URL))
+7. Sección "🏠 Dónde alojarte": mostrá cada link de alojamiento como link markdown clickeable. Uno por línea.
+8. Videos de YouTube (formateá cada URL como un link markdown: [Mirá este video](URL))
 
 Importante:
 - Los links de YouTube SIEMPRE en formato markdown: [texto descriptivo](https://youtube.com/...)
@@ -36,6 +37,10 @@ def _format_destination(dest: Destination) -> str:
 
     local_info_section = f"\nInformación local verificada:\n{dest.local_info}" if dest.local_info else ""
 
+    accommodation = "\n".join(
+        f"  - [{link['label']}]({link['url']})" for link in dest.accommodation_links
+    ) or "  - Buscar en Airbnb, Booking.com o Hostelworld"
+
     return f"""
 **{dest.city}, {dest.country}** — Match: {dest.match_score:.0f}/100
 Costo mensual estimado: ~${dest.monthly_cost_usd} USD
@@ -50,6 +55,9 @@ Clima:
 Visa ({dest.visa.visa_type or "info"}): {visa_status}
   Requisitos:
 {requirements}
+
+Alojamiento:
+{accommodation}
 
 Videos YouTube:
 {youtube}

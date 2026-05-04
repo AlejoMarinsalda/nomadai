@@ -180,6 +180,24 @@ class TestCompilerNode:
         assert result["final_report"]
         assert "Medellín" in result["final_report"]
 
+    def test_accommodation_links_always_appended(self, complete_state, sample_destination):
+        from app.nodes.compiler_node import compiler_node
+        from app.tools.accommodation_tool import get_accommodation_links
+
+        sample_destination.accommodation_links = get_accommodation_links("Medellín", "Colombia")
+        complete_state.destinations = [sample_destination]
+
+        mock_llm = MagicMock()
+        mock_llm.invoke.return_value = AIMessage(content="Reporte sin links de alojamiento.")
+
+        with patch("app.nodes.compiler_node.ChatGoogleGenerativeAI", return_value=mock_llm):
+            result = compiler_node(complete_state)
+
+        report = result["final_report"]
+        assert "🏠 Dónde alojarte" in report
+        assert "airbnb.com" in report
+        assert "booking.com" in report
+
     def test_includes_local_info_when_present(self, complete_state, sample_destination):
         from app.nodes.compiler_node import compiler_node, _format_destination
 
@@ -212,3 +230,33 @@ class TestEnrichmentNode:
         assert dest.climate.best_months == ["Dic", "Ene"]
         assert dest.visa.visa_required is False
         assert dest.local_info == "info local"
+        assert len(dest.accommodation_links) == 3
+        platforms = [link["platform"] for link in dest.accommodation_links]
+        assert "Airbnb" in platforms
+        assert "Booking.com" in platforms
+
+
+class TestAccommodationTool:
+    def test_returns_three_platforms(self):
+        from app.tools.accommodation_tool import get_accommodation_links
+        links = get_accommodation_links("Medellín", "Colombia")
+        assert len(links) == 3
+
+    def test_urls_contain_city(self):
+        from app.tools.accommodation_tool import get_accommodation_links
+        links = get_accommodation_links("Medellín", "Colombia")
+        for link in links:
+            assert "Medell" in link["url"]
+            assert link["url"].startswith("https://")
+
+    def test_city_with_spaces_encoded(self):
+        from app.tools.accommodation_tool import get_accommodation_links
+        links = get_accommodation_links("Ciudad de México", "México")
+        for link in links:
+            assert " " not in link["url"]
+
+    def test_airbnb_has_monthly_filter(self):
+        from app.tools.accommodation_tool import get_accommodation_links
+        links = get_accommodation_links("Lisboa", "Portugal")
+        airbnb = next(l for l in links if l["platform"] == "Airbnb")
+        assert "monthly_length=1" in airbnb["url"]

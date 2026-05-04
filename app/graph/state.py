@@ -15,6 +15,13 @@ class UserProfile(BaseModel):
     preferred_climate: str | None = None
     remote_work: bool = True
 
+    @field_validator("preferred_climate", mode="before")
+    @classmethod
+    def coerce_climate(cls, v):
+        if isinstance(v, list):
+            return ", ".join(str(i) for i in v)
+        return v
+
 
 class DestinationMedia(BaseModel):
     youtube_links: list[str] = Field(default_factory=list)
@@ -58,6 +65,7 @@ class Destination(BaseModel):
     visa: VisaInfo = Field(default_factory=VisaInfo)
     climate: ClimateInfo = Field(default_factory=ClimateInfo)
     local_info: str = ""
+    accommodation_links: list[dict] = Field(default_factory=list)
 
 
 class NomadState(BaseModel):

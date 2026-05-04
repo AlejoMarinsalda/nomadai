@@ -16,6 +16,11 @@ class Settings(BaseSettings):
     checkpoints_s3_bucket: str = "nomadai-checkpoints-offload"
     rate_limit_table: str = "nomadai-rate-limits"
     rate_limit_requests: int = 30  # max requests per user per hour
+    langsmith_project: str = "nomadai"
+    # Qdrant vector database
+    qdrant_url: str = ""
+    qdrant_api_key: str = ""
+    qdrant_collection: str = "nomadai-knowledge"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 

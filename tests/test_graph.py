@@ -17,6 +17,16 @@ def complete_profile():
     )
 
 
+def test_preferred_climate_coerces_list():
+    profile = UserProfile(preferred_climate=["templado", "tropical"])
+    assert profile.preferred_climate == "templado, tropical"
+
+
+def test_preferred_climate_accepts_string():
+    profile = UserProfile(preferred_climate="tropical")
+    assert profile.preferred_climate == "tropical"
+
+
 @pytest.fixture
 def sample_destinations():
     return [

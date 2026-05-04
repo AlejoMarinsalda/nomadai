@@ -24,6 +24,19 @@ Importante:
 - Cierre motivador al final del reporte completo"""
 
 
+def _accommodation_section(destinations: list) -> str:
+    """Construye la sección de alojamiento fuera del LLM para garantizar que los links aparezcan."""
+    lines = ["\n---\n## 🏠 Dónde alojarte\n"]
+    for dest in destinations:
+        if not dest.accommodation_links:
+            continue
+        lines.append(f"### {dest.city}, {dest.country}\n")
+        for link in dest.accommodation_links:
+            lines.append(f"- [{link['label']}]({link['url']})")
+        lines.append("")
+    return "\n".join(lines)
+
+
 def _format_destination(dest: Destination) -> str:
     youtube = "\n".join(f"  - {url}" for url in dest.media.youtube_links) or "  - No disponible"
     requirements = "\n".join(f"  - {r}" for r in dest.visa.requirements) or "  - Consultar embajada"
@@ -75,4 +88,5 @@ Perfil del usuario:
 - Objetivos: {state.user_profile.goals}"""
 
     response = llm.invoke([SystemMessage(content=_SYSTEM), HumanMessage(content=prompt)])
-    return {"final_report": response.content}
+    final_report = response.content + _accommodation_section(state.destinations)
+    return {"final_report": final_report}

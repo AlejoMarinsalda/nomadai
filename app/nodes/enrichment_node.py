@@ -8,6 +8,7 @@ from app.graph.state import NomadState, Destination, DestinationMedia, ClimateIn
 from app.tools.youtube_tool import search_youtube_reviews
 from app.tools.search_tool import search_web
 from app.tools.weather_tool import get_climate_summary
+from app.tools.accommodation_tool import get_accommodation_links
 from app.services.rag_store import search_rag
 from app.config import settings
 from app.utils import extract_json
@@ -116,6 +117,7 @@ async def _enrich_one(dest: Destination, nationality: str, hobbies: list[str]) -
         "climate": climate,
         "visa": visa,
         "local_info": local_info,
+        "accommodation_links": get_accommodation_links(dest.city, dest.country),
     })
 
 

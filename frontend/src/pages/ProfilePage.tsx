@@ -22,7 +22,7 @@ function Field({ label, value }: { label: string; value: string | null | undefin
   )
 }
 
-function Tags({ label, items }: { label: string; items: string[] }) {
+function Tags({ label, items = [] }: { label: string; items?: string[] }) {
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-xs text-zinc-500 font-medium uppercase tracking-wide">{label}</span>
@@ -48,7 +48,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!userId || !credential) return
     getProfile(userId, credential)
-      .then(data => { if (data.found) setProfile(data) })
+      .then(data => { if (data.found) setProfile(data.profile) })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [userId, credential])

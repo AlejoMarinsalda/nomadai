@@ -53,6 +53,9 @@ app.add_middleware(
 
 _static = Path(__file__).parent.parent / "static"
 app.mount("/static", StaticFiles(directory=_static), name="static")
+_assets_dir = _static / "assets"
+if _assets_dir.exists():
+    app.mount("/assets", StaticFiles(directory=_assets_dir), name="assets")
 
 
 @app.get("/")

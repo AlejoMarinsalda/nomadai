@@ -79,17 +79,25 @@ def main() -> None:
     print(f"Conectando a Qdrant: {qdrant_url}")
     client = QdrantClient(url=qdrant_url, api_key=qdrant_api_key or None)
 
-    # Crear colección si no existe (1536 dims para gemini-embedding-001)
+    # gemini-embedding-001 genera vectores de 3072 dimensiones
     existing = [c.name for c in client.get_collections().collections]
+    if collection_name in existing:
+        info = client.get_collection(collection_name)
+        current_size = info.config.params.vectors.size
+        if current_size != 3072:
+            print(f"  Coleccion existente tiene {current_size} dims (esperado 3072) — recreando...")
+            client.delete_collection(collection_name)
+            existing.remove(collection_name)
+
     if collection_name not in existing:
-        print(f"  Creando colección '{collection_name}'...")
+        print(f"  Creando coleccion '{collection_name}' (3072 dims)...")
         client.create_collection(
             collection_name=collection_name,
-            vectors_config=VectorParams(size=768, distance=Distance.COSINE),
+            vectors_config=VectorParams(size=3072, distance=Distance.COSINE),
         )
-        print("  ✓ Colección creada")
+        print("  OK - Coleccion creada")
     else:
-        print(f"  Colección '{collection_name}' ya existe — haciendo upsert")
+        print(f"  Coleccion '{collection_name}' OK - haciendo upsert")
 
     print("Generando embeddings y subiendo a Qdrant...")
     QdrantVectorStore.from_documents(

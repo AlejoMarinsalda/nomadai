@@ -183,7 +183,6 @@ async def chat(request: ChatRequest, user_id: str = Depends(rate_limit)):
         initial_state: dict = {"messages": [HumanMessage(content=request.message)]}
         if saved_profile:
             initial_state["user_profile"] = saved_profile
-            initial_state["profile_complete"] = True
 
         result = await graph.ainvoke(initial_state, config=config)
 

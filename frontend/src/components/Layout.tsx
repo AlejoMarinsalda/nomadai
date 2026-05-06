@@ -50,6 +50,7 @@ interface Session {
   session_id: string
   created_at: string
   destinations: { city: string; country: string }[]
+  report_text: string
 }
 
 // ── Bottom nav items (mobile) ─────────────────────────────────────────────────
@@ -80,6 +81,7 @@ export default function Layout() {
           session_id: r.session_id,
           created_at: r.created_at,
           destinations: r.destinations,
+          report_text: r.report_text,
         })))
       })
       .catch(() => {})
@@ -141,7 +143,7 @@ export default function Layout() {
                 return (
                   <button
                     key={s.session_id}
-                    onClick={() => navigate(`/chat?session=${s.session_id}`)}
+                    onClick={() => navigate(`/chat?session=${s.session_id}`, { state: { report: { report_text: s.report_text } } })}
                     className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-left transition-colors
                       ${isActive
                         ? 'bg-zinc-800 text-zinc-200'

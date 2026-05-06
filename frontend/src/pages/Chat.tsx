@@ -42,6 +42,7 @@ export default function Chat() {
   const [input, setInput]       = useState('')
   const [loading, setLoading]   = useState(false)
   const sessionRef  = useRef<string | null>(sessionStorage.getItem(SS_SESSION))
+  const forceNewRef = useRef(false)
   const bottomRef   = useRef<HTMLDivElement>(null)
   const inputRef    = useRef<HTMLTextAreaElement>(null)
   const initialized = useRef(messages.length > 0)
@@ -105,7 +106,9 @@ export default function Chat() {
     addMsg({ id: thinkingId, role: 'thinking', label: LABELS[0] })
 
     try {
-      const { job_id, session_id } = await sendMessage(text, sessionRef.current, credential)
+      const isForceNew = forceNewRef.current
+      forceNewRef.current = false
+      const { job_id, session_id } = await sendMessage(text, sessionRef.current, credential, isForceNew)
       sessionRef.current = session_id
       sessionStorage.setItem(SS_SESSION, session_id)
       const data = await pollJob(job_id, thinkingId)
@@ -122,6 +125,16 @@ export default function Chat() {
     }
 
     setLoading(false)
+    inputRef.current?.focus()
+  }
+
+  function handleNewSearch() {
+    sessionRef.current = null
+    forceNewRef.current = true
+    sessionStorage.removeItem(SS_MESSAGES)
+    sessionStorage.removeItem(SS_SESSION)
+    setMessages([])
+    addMsg({ id: crypto.randomUUID(), role: 'assistant', content: '¡Listo! Contame qué parámetros querés cambiar para esta nueva búsqueda: presupuesto, zona horaria, preferencias de clima, hobbies...' })
     inputRef.current?.focus()
   }
 
@@ -215,7 +228,13 @@ export default function Chat() {
               </svg>
             </button>
           </div>
-          <div className="flex justify-end">
+          <div className="flex justify-between items-center">
+            <button
+              onClick={handleNewSearch}
+              className="text-xs text-zinc-600 hover:text-emerald-400 transition-colors"
+            >
+              + Nueva búsqueda
+            </button>
             <button
               onClick={handleReset}
               className="text-xs text-zinc-600 hover:text-red-400 transition-colors"

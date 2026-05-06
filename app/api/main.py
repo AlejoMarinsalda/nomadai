@@ -67,6 +67,7 @@ def root():
 class ChatRequest(BaseModel):
     message: str
     session_id: str | None = None
+    force_new: bool = False
 
 
 class ChatResponse(BaseModel):
@@ -214,6 +215,7 @@ def chat_async(request: ChatRequest, user_id: str = Depends(rate_limit)):
             "session_id": session_id,
             "user_id": user_id,
             "message": request.message,
+            "force_new": request.force_new,
         }),
     )
 

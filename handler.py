@@ -46,6 +46,7 @@ async def _process_sqs(event):
             session_id = body["session_id"]
             user_id = body["user_id"]
             message = body["message"]
+            force_new = body.get("force_new", False)
 
             config = {"configurable": {"thread_id": session_id}}
 
@@ -63,10 +64,11 @@ async def _process_sqs(event):
             if saved_profile:
                 initial_state["user_profile"] = saved_profile
                 initial_state["profile_complete"] = True
-                latest = await asyncio.to_thread(get_latest_report, user_id)
-                if latest:
-                    initial_state["final_report"] = latest["report_text"]
-                    had_report = True  # reporte inyectado desde historial → no guardar duplicado
+                if not force_new:
+                    latest = await asyncio.to_thread(get_latest_report, user_id)
+                    if latest:
+                        initial_state["final_report"] = latest["report_text"]
+                        had_report = True  # reporte inyectado desde historial → no guardar duplicado
 
             result = await graph.ainvoke(initial_state, config=config)
 

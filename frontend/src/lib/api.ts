@@ -30,11 +30,11 @@ export async function deleteProfile(userId: string, credential: string) {
   await fetch(`${API}/profile/${userId}`, { method: 'DELETE', headers: auth(credential) })
 }
 
-export async function sendMessage(message: string, sessionId: string | null, credential: string) {
+export async function sendMessage(message: string, sessionId: string | null, credential: string, forceNew = false) {
   const res = await fetch(`${API}/chat/async`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...auth(credential) },
-    body: JSON.stringify({ message, session_id: sessionId }),
+    body: JSON.stringify({ message, session_id: sessionId, force_new: forceNew }),
   })
   if (res.status === 401) throw new Error('UNAUTHORIZED')
   return res.json() as Promise<{ job_id: string; session_id: string }>

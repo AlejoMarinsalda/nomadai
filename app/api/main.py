@@ -85,6 +85,12 @@ class GoogleAuthRequest(BaseModel):
     credential: str
 
 
+@app.post("/auth/guest")
+def auth_guest():
+    guest_id = f"guest_{uuid.uuid4()}"
+    return {"user_id": guest_id, "name": "Invitado", "picture": ""}
+
+
 @app.post("/auth/google")
 def auth_google(body: GoogleAuthRequest):
     try:

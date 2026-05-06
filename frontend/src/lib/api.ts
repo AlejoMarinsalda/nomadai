@@ -14,6 +14,12 @@ export async function googleLogin(credential: string) {
   return res.json()
 }
 
+export async function guestLogin(): Promise<{ user_id: string; name: string; picture: string }> {
+  const res = await fetch(`${API}/auth/guest`, { method: 'POST' })
+  if (!res.ok) throw new Error('AUTH_FAILED')
+  return res.json()
+}
+
 export async function getProfile(userId: string, credential: string) {
   const res = await fetch(`${API}/profile/${userId}`, { headers: auth(credential) })
   if (res.status === 401) throw new Error('UNAUTHORIZED')

@@ -1,17 +1,31 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { googleLogin } from '../lib/api'
+import { googleLogin, guestLogin } from '../lib/api'
 
 const CLIENT_ID = '496610892208-7ejbi9l76b71hjdd28lghc7pruu9tr1t.apps.googleusercontent.com'
 
 export default function Login() {
   const { login, isAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const [guestLoading, setGuestLoading] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated) navigate('/chat', { replace: true })
   }, [isAuthenticated, navigate])
+
+  const handleGuestLogin = useCallback(async () => {
+    setGuestLoading(true)
+    try {
+      const data = await guestLogin()
+      login(data, data.user_id)
+      navigate('/chat', { replace: true })
+    } catch {
+      alert('Error al iniciar como invitado. Intentá de nuevo.')
+    } finally {
+      setGuestLoading(false)
+    }
+  }, [login, navigate])
 
   const handleGoogleResponse = useCallback(async (response: { credential: string }) => {
     try {
@@ -88,10 +102,22 @@ export default function Login() {
             ))}
           </div>
 
-          {/* Google Sign In */}
-          <div className="flex flex-col items-center gap-2.5">
+          {/* Auth options */}
+          <div className="flex flex-col items-center gap-3 w-full">
             <div id="google-signin-btn" />
-            <p className="text-xs text-zinc-600">Tu perfil se guarda entre sesiones</p>
+            <div className="flex items-center gap-3 w-full">
+              <div className="flex-1 h-px bg-zinc-800" />
+              <span className="text-xs text-zinc-600">o</span>
+              <div className="flex-1 h-px bg-zinc-800" />
+            </div>
+            <button
+              onClick={handleGuestLogin}
+              disabled={guestLoading}
+              className="w-full py-2.5 rounded-lg border border-zinc-700 text-sm text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors disabled:opacity-40"
+            >
+              {guestLoading ? 'Ingresando...' : 'Continuar como invitado'}
+            </button>
+            <p className="text-xs text-zinc-600">Con Google, tu perfil se guarda entre sesiones</p>
           </div>
 
         </div>

@@ -81,6 +81,10 @@ export default function Chat() {
     prevSessionParam.current = sessionParam
     if (sessionParam === prev) return  // nothing changed on first render or same session
 
+    // send() sets sessionRef BEFORE calling setSearchParams — if they already match,
+    // this URL change was triggered by send() (not a real navigation), so don't reset.
+    if (sessionParam === sessionRef.current) return
+
     const cached = loadMessages(sessionParam)
     let next: Message[] = cached
 
@@ -93,6 +97,8 @@ export default function Chat() {
     }
 
     setMessages(next)
+    setLoading(false)
+    setInput('')
     sessionRef.current = sessionParam
     // Reset welcome flag so it fires again for empty new sessions
     setWelcomeDone(next.length > 0 || !!sessionParam)

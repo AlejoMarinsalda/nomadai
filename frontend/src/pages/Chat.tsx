@@ -164,8 +164,11 @@ export default function Chat() {
     addMsg({ id: crypto.randomUUID(), role: 'user', content: text })
     addMsg({ id: thinkingId, role: 'thinking', label: LABELS[0] })
 
+    let jobSessionId: string | null = null
+
     try {
       const { job_id, session_id } = await sendMessage(text, sessionRef.current, credential)
+      jobSessionId = session_id
       sessionRef.current = session_id
       sessionStorage.setItem(SS_CURRENT_SESSION, session_id)
       // Reflect session in URL so page refresh / back-navigation restores it
@@ -174,6 +177,13 @@ export default function Chat() {
       }
       const data = await pollJob(job_id, thinkingId)
       removeMsg(thinkingId)
+
+      // User navigated to a different session while the job was running — discard
+      if (sessionRef.current !== jobSessionId) {
+        setLoading(false)
+        return
+      }
+
       const reply = (data.final_report || data.reply || '⚠️ Error procesando la solicitud.') as string
       addMsg({ id: crypto.randomUUID(), role: 'assistant', content: reply })
       // Tell Layout to refresh the sessions sidebar
@@ -182,6 +192,11 @@ export default function Chat() {
       }
     } catch (err: unknown) {
       removeMsg(thinkingId)
+      // Don't show errors for a session the user already left
+      if (jobSessionId && sessionRef.current !== jobSessionId) {
+        setLoading(false)
+        return
+      }
       if (err instanceof Error && err.message === 'UNAUTHORIZED') {
         logout()
       } else {

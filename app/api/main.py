@@ -24,6 +24,7 @@ from google.auth.transport import requests as google_requests
 from app.graph import graph
 from app.services.profile_store import get_profile, save_profile, delete_profile
 from app.services.job_store import create_pending_job, get_job
+from app.services.report_store import get_reports
 from app.services.auth import get_current_user
 from app.services.rate_limiter import rate_limit
 from app.config import settings
@@ -117,6 +118,34 @@ def get_user_profile(user_id: str, current_user: str = Depends(get_current_user)
     if not profile:
         return {"found": False}
     return {"found": True, "profile": profile.model_dump()}
+
+
+class ProfilePatch(BaseModel):
+    hobbies: list[str] | None = None
+    goals: list[str] | None = None
+    budget_usd_monthly: int | None = None
+    work_timezone: str | None = None
+    nationality: str | None = None
+    preferred_climate: str | None = None
+
+
+@app.patch("/profile/{user_id}")
+def patch_user_profile(user_id: str, body: ProfilePatch, current_user: str = Depends(get_current_user)):
+    if user_id != current_user:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    from app.graph.state import UserProfile
+    existing = get_profile(user_id) or UserProfile()
+    updates = body.model_dump(exclude_none=True)
+    updated = existing.model_copy(update=updates)
+    save_profile(user_id, updated)
+    return {"updated": True, "profile": updated.model_dump()}
+
+
+@app.get("/reports/{user_id}")
+def get_user_reports(user_id: str, current_user: str = Depends(get_current_user)):
+    if user_id != current_user:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    return {"reports": get_reports(user_id)}
 
 
 @app.delete("/profile/{user_id}")

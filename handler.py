@@ -33,6 +33,7 @@ async def _process_sqs(event):
     from app.graph import graph
     from app.services.profile_store import get_profile, save_profile
     from app.services.job_store import save_job_result
+    from app.services.report_store import save_report
 
     batch_item_failures = []
 
@@ -72,6 +73,11 @@ async def _process_sqs(event):
             prev_complete = prev_state.values.get("profile_complete") if prev_state and prev_state.values else False
             if result.get("profile_complete") and not prev_complete:
                 await asyncio.to_thread(save_profile, user_id, result["user_profile"])
+
+            if final_report and not user_id.startswith("guest_"):
+                await asyncio.to_thread(
+                    save_report, user_id, final_report, result.get("destinations", [])
+                )
 
             await asyncio.to_thread(save_job_result, job_id, {
                 "status": "done",

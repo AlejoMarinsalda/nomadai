@@ -44,3 +44,20 @@ export async function getJobStatus(jobId: string) {
   const res = await fetch(`${API}/chat/status/${jobId}`)
   return res.json()
 }
+
+export async function getReports(userId: string, credential: string) {
+  const res = await fetch(`${API}/reports/${userId}`, { headers: auth(credential) })
+  if (res.status === 401) throw new Error('UNAUTHORIZED')
+  return res.json() as Promise<{ reports: Array<{ created_at: string; report_text: string; destinations: Array<{ city: string; country: string }> }> }>
+}
+
+export async function patchProfile(userId: string, credential: string, data: Record<string, unknown>) {
+  const res = await fetch(`${API}/profile/${userId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...auth(credential) },
+    body: JSON.stringify(data),
+  })
+  if (res.status === 401) throw new Error('UNAUTHORIZED')
+  if (!res.ok) throw new Error('PATCH_FAILED')
+  return res.json()
+}

@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     # DynamoDB table names — override per environment (dev uses *-dev suffix)
     profiles_table: str = "nomadai-profiles"
     jobs_table: str = "nomadai-jobs"
+    reports_table: str = "nomadai-reports"
     checkpoints_table: str = "nomadai-checkpoints"
     checkpoints_s3_bucket: str = "nomadai-checkpoints-offload"
     rate_limit_table: str = "nomadai-rate-limits"

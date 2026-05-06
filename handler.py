@@ -33,7 +33,7 @@ async def _process_sqs(event):
     from app.graph import graph
     from app.services.profile_store import get_profile, save_profile
     from app.services.job_store import save_job_result
-    from app.services.report_store import save_report
+    from app.services.report_store import save_report, get_latest_report
 
     batch_item_failures = []
 
@@ -63,6 +63,9 @@ async def _process_sqs(event):
             if saved_profile:
                 initial_state["user_profile"] = saved_profile
                 initial_state["profile_complete"] = True
+                latest = await asyncio.to_thread(get_latest_report, user_id)
+                if latest:
+                    initial_state["final_report"] = latest["report_text"]
 
             result = await graph.ainvoke(initial_state, config=config)
 

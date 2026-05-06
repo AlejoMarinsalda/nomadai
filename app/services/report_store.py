@@ -34,6 +34,11 @@ def save_report(user_id: str, report_text: str, destinations: list) -> None:
         logger.warning("save_report failed for %s: %s", user_id, e)
 
 
+def get_latest_report(user_id: str) -> dict | None:
+    results = get_reports(user_id)
+    return results[0] if results else None
+
+
 def get_reports(user_id: str) -> list[dict]:
     try:
         resp = _db().query(

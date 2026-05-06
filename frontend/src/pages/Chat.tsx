@@ -47,10 +47,10 @@ export default function Chat() {
   const location = useLocation()
   const sessionParam = searchParams.get('session')
 
+  // Seed messages on first mount
   const [messages, setMessages] = useState<Message[]>(() => {
     const cached = loadMessages(sessionParam)
     if (cached.length > 0) return cached
-    // Navigated from History with a report — show it as opening message
     const report = (location.state as { report?: { report_text: string } } | null)?.report
     if (report && sessionParam) {
       return [{ id: 'initial', role: 'assistant' as const, content: report.report_text }]
@@ -58,20 +58,49 @@ export default function Chat() {
     return []
   })
 
-  const [input, setInput]     = useState('')
-  const [loading, setLoading] = useState(false)
-  const sessionRef   = useRef<string | null>(sessionParam)
-  const bottomRef    = useRef<HTMLDivElement>(null)
-  const inputRef     = useRef<HTMLTextAreaElement>(null)
-  // Skip welcome message if we already have messages or an existing session
-  const initialized  = useRef(messages.length > 0 || !!sessionParam)
+  const [input, setInput]       = useState('')
+  const [loading, setLoading]   = useState(false)
+  const sessionRef              = useRef<string | null>(sessionParam)
+  const prevSessionParam        = useRef(sessionParam)
+  const bottomRef               = useRef<HTMLDivElement>(null)
+  const inputRef                = useRef<HTMLTextAreaElement>(null)
+
+  // Use state (not ref) so the welcome effect can react when it changes
+  const [welcomeDone, setWelcomeDone] = useState(
+    () => messages.length > 0 || !!sessionParam
+  )
 
   const addMsg = useCallback((msg: Message) => setMessages(p => [...p, msg]), [])
   const removeMsg = useCallback((id: string) => setMessages(p => p.filter(m => m.id !== id)), [])
   const updateLabel = useCallback((id: string, label: string) =>
     setMessages(p => p.map(m => m.id === id && m.role === 'thinking' ? { ...m, label } : m)), [])
 
-  // Persist messages to session-specific key in sessionStorage
+  // ── Session change: reset component state when URL session param changes ────
+  useEffect(() => {
+    const prev = prevSessionParam.current
+    prevSessionParam.current = sessionParam
+    if (sessionParam === prev) return  // nothing changed on first render or same session
+
+    const cached = loadMessages(sessionParam)
+    let next: Message[] = cached
+
+    if (cached.length === 0 && sessionParam) {
+      // Navigated from History — show report as opening message
+      const report = (location.state as { report?: { report_text: string } } | null)?.report
+      if (report) {
+        next = [{ id: 'initial', role: 'assistant' as const, content: report.report_text }]
+      }
+    }
+
+    setMessages(next)
+    sessionRef.current = sessionParam
+    // Reset welcome flag so it fires again for empty new sessions
+    setWelcomeDone(next.length > 0 || !!sessionParam)
+    inputRef.current?.focus()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionParam])
+
+  // ── Persist messages to session-specific key ───────────────────────────────
   useEffect(() => {
     if (!sessionRef.current) return
     const toSave = messages.filter(m => m.role !== 'thinking')
@@ -80,10 +109,10 @@ export default function Chat() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
-  // Welcome message only for brand-new sessions (no session param, no messages)
+  // ── Welcome message — runs whenever welcomeDone flips to false ─────────────
   useEffect(() => {
-    if (initialized.current || !userId || !credential) return
-    initialized.current = true
+    if (welcomeDone || !userId || !credential) return
+    setWelcomeDone(true)
     const firstName = (userName || '').split(' ')[0]
 
     getProfile(userId, credential)
@@ -97,7 +126,9 @@ export default function Chat() {
         }
       })
       .catch(err => { if (err.message === 'UNAUTHORIZED') logout() })
-  }, [userId, credential, userName, addMsg, logout])
+  }, [welcomeDone, userId, credential, userName, addMsg, logout])
+
+  // ── Job polling ───────────────────────────────────────────────────────────
 
   async function pollJob(jobId: string, thinkingId: string) {
     const started = Date.now()
@@ -115,6 +146,8 @@ export default function Chat() {
     })
   }
 
+  // ── Send message ──────────────────────────────────────────────────────────
+
   async function send() {
     const text = input.trim()
     if (!text || loading || !userId || !credential) return
@@ -129,7 +162,7 @@ export default function Chat() {
       const { job_id, session_id } = await sendMessage(text, sessionRef.current, credential)
       sessionRef.current = session_id
       sessionStorage.setItem(SS_CURRENT_SESSION, session_id)
-      // Reflect session in URL so navigation restores it
+      // Reflect session in URL so page refresh / back-navigation restores it
       if (!sessionParam) {
         setSearchParams({ session: session_id }, { replace: true })
       }
@@ -137,7 +170,7 @@ export default function Chat() {
       removeMsg(thinkingId)
       const reply = (data.final_report || data.reply || '⚠️ Error procesando la solicitud.') as string
       addMsg({ id: crypto.randomUUID(), role: 'assistant', content: reply })
-      // Tell Layout to refresh the sessions list
+      // Tell Layout to refresh the sessions sidebar
       if (data.final_report) {
         window.dispatchEvent(new CustomEvent('nomadai:newreport'))
       }
@@ -154,6 +187,8 @@ export default function Chat() {
     inputRef.current?.focus()
   }
 
+  // ── Reset profile ─────────────────────────────────────────────────────────
+
   async function handleReset() {
     if (!userId || !credential) return
     if (!confirm('¿Borrar tu perfil guardado? La próxima vez vas a tener que completarlo de nuevo.')) return
@@ -165,6 +200,8 @@ export default function Chat() {
     setSearchParams({}, { replace: true })
     addMsg({ id: crypto.randomUUID(), role: 'assistant', content: 'Perfil borrado. Contame de nuevo sobre vos para encontrar tu próximo destino.' })
   }
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex flex-col h-full">

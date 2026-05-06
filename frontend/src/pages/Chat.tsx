@@ -178,13 +178,21 @@ export default function Chat() {
       const data = await pollJob(job_id, thinkingId)
       removeMsg(thinkingId)
 
-      // User navigated to a different session while the job was running — discard
+      const reply = (data.final_report || data.reply || '⚠️ Error procesando la solicitud.') as string
+
       if (sessionRef.current !== jobSessionId) {
+        // User navigated away while polling — persist reply to the original session's
+        // storage so it's there when they navigate back to it
+        const prior = loadMessages(jobSessionId)
+        sessionStorage.setItem(
+          msgsKey(jobSessionId),
+          JSON.stringify([...prior, { id: crypto.randomUUID(), role: 'assistant' as const, content: reply }]),
+        )
+        if (data.final_report) window.dispatchEvent(new CustomEvent('nomadai:newreport'))
         setLoading(false)
         return
       }
 
-      const reply = (data.final_report || data.reply || '⚠️ Error procesando la solicitud.') as string
       addMsg({ id: crypto.randomUUID(), role: 'assistant', content: reply })
       // Tell Layout to refresh the sessions sidebar
       if (data.final_report) {
@@ -192,7 +200,7 @@ export default function Chat() {
       }
     } catch (err: unknown) {
       removeMsg(thinkingId)
-      // Don't show errors for a session the user already left
+      // Silently drop errors for sessions the user already left
       if (jobSessionId && sessionRef.current !== jobSessionId) {
         setLoading(false)
         return

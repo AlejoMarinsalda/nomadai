@@ -66,6 +66,7 @@ async def _process_sqs(event):
                 latest = await asyncio.to_thread(get_latest_report, user_id)
                 if latest:
                     initial_state["final_report"] = latest["report_text"]
+                    had_report = True  # reporte inyectado desde historial → no guardar duplicado
 
             result = await graph.ainvoke(initial_state, config=config)
 

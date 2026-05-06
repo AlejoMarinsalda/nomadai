@@ -29,20 +29,33 @@ const LABELS = [
 
 // ── Chat page ─────────────────────────────────────────────────────────────────
 
+const SS_MESSAGES = 'nomadai_chat_messages'
+const SS_SESSION  = 'nomadai_chat_session'
+
+function loadMessages(): Message[] {
+  try { return JSON.parse(sessionStorage.getItem(SS_MESSAGES) || '[]') } catch { return [] }
+}
+
 export default function Chat() {
   const { userId, userName, credential, logout } = useAuth()
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>(loadMessages)
   const [input, setInput]       = useState('')
   const [loading, setLoading]   = useState(false)
-  const sessionRef  = useRef<string | null>(null)
+  const sessionRef  = useRef<string | null>(sessionStorage.getItem(SS_SESSION))
   const bottomRef   = useRef<HTMLDivElement>(null)
   const inputRef    = useRef<HTMLTextAreaElement>(null)
-  const initialized = useRef(false)
+  const initialized = useRef(messages.length > 0)
 
   const addMsg = useCallback((msg: Message) => setMessages(p => [...p, msg]), [])
   const removeMsg = useCallback((id: string) => setMessages(p => p.filter(m => m.id !== id)), [])
   const updateLabel = useCallback((id: string, label: string) =>
     setMessages(p => p.map(m => m.id === id && m.role === 'thinking' ? { ...m, label } : m)), [])
+
+  // Persist messages to sessionStorage (skip 'thinking' bubbles)
+  useEffect(() => {
+    const toSave = messages.filter(m => m.role !== 'thinking')
+    sessionStorage.setItem(SS_MESSAGES, JSON.stringify(toSave))
+  }, [messages])
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
@@ -94,6 +107,7 @@ export default function Chat() {
     try {
       const { job_id, session_id } = await sendMessage(text, sessionRef.current, credential)
       sessionRef.current = session_id
+      sessionStorage.setItem(SS_SESSION, session_id)
       const data = await pollJob(job_id, thinkingId)
       removeMsg(thinkingId)
       const reply = (data.final_report || data.reply || '⚠️ Error procesando la solicitud.') as string
@@ -116,6 +130,8 @@ export default function Chat() {
     if (!confirm('¿Borrar tu perfil guardado? La próxima vez vas a tener que completarlo de nuevo.')) return
     await deleteProfile(userId, credential).catch(() => {})
     sessionRef.current = null
+    sessionStorage.removeItem(SS_MESSAGES)
+    sessionStorage.removeItem(SS_SESSION)
     setMessages([])
     addMsg({ id: crypto.randomUUID(), role: 'assistant', content: 'Perfil borrado. Contame de nuevo sobre vos para encontrar tu próximo destino.' })
   }

@@ -30,11 +30,11 @@ export async function deleteProfile(userId: string, credential: string) {
   await fetch(`${API}/profile/${userId}`, { method: 'DELETE', headers: auth(credential) })
 }
 
-export async function sendMessage(message: string, sessionId: string | null, credential: string, forceNew = false) {
+export async function sendMessage(message: string, sessionId: string | null, credential: string) {
   const res = await fetch(`${API}/chat/async`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...auth(credential) },
-    body: JSON.stringify({ message, session_id: sessionId, force_new: forceNew }),
+    body: JSON.stringify({ message, session_id: sessionId }),
   })
   if (res.status === 401) throw new Error('UNAUTHORIZED')
   return res.json() as Promise<{ job_id: string; session_id: string }>
@@ -48,7 +48,7 @@ export async function getJobStatus(jobId: string) {
 export async function getReports(userId: string, credential: string) {
   const res = await fetch(`${API}/reports/${userId}`, { headers: auth(credential) })
   if (res.status === 401) throw new Error('UNAUTHORIZED')
-  return res.json() as Promise<{ reports: Array<{ created_at: string; report_text: string; destinations: Array<{ city: string; country: string }> }> }>
+  return res.json() as Promise<{ reports: Array<{ created_at: string; report_text: string; destinations: Array<{ city: string; country: string }>; session_id: string }> }>
 }
 
 export async function patchProfile(userId: string, credential: string, data: Record<string, unknown>) {

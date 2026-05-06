@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { marked } from 'marked'
 import { useAuth } from '../hooks/useAuth'
 import { deleteProfile, getJobStatus, getProfile, sendMessage } from '../lib/api'
@@ -27,40 +28,59 @@ const LABELS = [
   'Preparando tu reporte',
 ]
 
-// ── Chat page ─────────────────────────────────────────────────────────────────
+// ── Storage helpers ───────────────────────────────────────────────────────────
 
-const SS_MESSAGES = 'nomadai_chat_messages'
-const SS_SESSION  = 'nomadai_chat_session'
+const SS_CURRENT_SESSION = 'nomadai_chat_session'
 
-function loadMessages(): Message[] {
-  try { return JSON.parse(sessionStorage.getItem(SS_MESSAGES) || '[]') } catch { return [] }
+function msgsKey(sessionId: string) { return `nomadai_msgs_${sessionId}` }
+
+function loadMessages(sessionId: string | null): Message[] {
+  if (!sessionId) return []
+  try { return JSON.parse(sessionStorage.getItem(msgsKey(sessionId)) || '[]') } catch { return [] }
 }
+
+// ── Chat page ─────────────────────────────────────────────────────────────────
 
 export default function Chat() {
   const { userId, userName, credential, logout } = useAuth()
-  const [messages, setMessages] = useState<Message[]>(loadMessages)
-  const [input, setInput]       = useState('')
-  const [loading, setLoading]   = useState(false)
-  const sessionRef  = useRef<string | null>(sessionStorage.getItem(SS_SESSION))
-  const forceNewRef = useRef(false)
-  const bottomRef   = useRef<HTMLDivElement>(null)
-  const inputRef    = useRef<HTMLTextAreaElement>(null)
-  const initialized = useRef(messages.length > 0)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation()
+  const sessionParam = searchParams.get('session')
+
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const cached = loadMessages(sessionParam)
+    if (cached.length > 0) return cached
+    // Navigated from History with a report — show it as opening message
+    const report = (location.state as { report?: { report_text: string } } | null)?.report
+    if (report && sessionParam) {
+      return [{ id: 'initial', role: 'assistant' as const, content: report.report_text }]
+    }
+    return []
+  })
+
+  const [input, setInput]     = useState('')
+  const [loading, setLoading] = useState(false)
+  const sessionRef   = useRef<string | null>(sessionParam)
+  const bottomRef    = useRef<HTMLDivElement>(null)
+  const inputRef     = useRef<HTMLTextAreaElement>(null)
+  // Skip welcome message if we already have messages or an existing session
+  const initialized  = useRef(messages.length > 0 || !!sessionParam)
 
   const addMsg = useCallback((msg: Message) => setMessages(p => [...p, msg]), [])
   const removeMsg = useCallback((id: string) => setMessages(p => p.filter(m => m.id !== id)), [])
   const updateLabel = useCallback((id: string, label: string) =>
     setMessages(p => p.map(m => m.id === id && m.role === 'thinking' ? { ...m, label } : m)), [])
 
-  // Persist messages to sessionStorage (skip 'thinking' bubbles)
+  // Persist messages to session-specific key in sessionStorage
   useEffect(() => {
+    if (!sessionRef.current) return
     const toSave = messages.filter(m => m.role !== 'thinking')
-    sessionStorage.setItem(SS_MESSAGES, JSON.stringify(toSave))
+    sessionStorage.setItem(msgsKey(sessionRef.current), JSON.stringify(toSave))
   }, [messages])
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
-  // Welcome message on mount
+  // Welcome message only for brand-new sessions (no session param, no messages)
   useEffect(() => {
     if (initialized.current || !userId || !credential) return
     initialized.current = true
@@ -106,15 +126,21 @@ export default function Chat() {
     addMsg({ id: thinkingId, role: 'thinking', label: LABELS[0] })
 
     try {
-      const isForceNew = forceNewRef.current
-      forceNewRef.current = false
-      const { job_id, session_id } = await sendMessage(text, sessionRef.current, credential, isForceNew)
+      const { job_id, session_id } = await sendMessage(text, sessionRef.current, credential)
       sessionRef.current = session_id
-      sessionStorage.setItem(SS_SESSION, session_id)
+      sessionStorage.setItem(SS_CURRENT_SESSION, session_id)
+      // Reflect session in URL so navigation restores it
+      if (!sessionParam) {
+        setSearchParams({ session: session_id }, { replace: true })
+      }
       const data = await pollJob(job_id, thinkingId)
       removeMsg(thinkingId)
       const reply = (data.final_report || data.reply || '⚠️ Error procesando la solicitud.') as string
       addMsg({ id: crypto.randomUUID(), role: 'assistant', content: reply })
+      // Tell Layout to refresh the sessions list
+      if (data.final_report) {
+        window.dispatchEvent(new CustomEvent('nomadai:newreport'))
+      }
     } catch (err: unknown) {
       removeMsg(thinkingId)
       if (err instanceof Error && err.message === 'UNAUTHORIZED') {
@@ -128,24 +154,15 @@ export default function Chat() {
     inputRef.current?.focus()
   }
 
-  function handleNewSearch() {
-    sessionRef.current = null
-    forceNewRef.current = true
-    sessionStorage.removeItem(SS_MESSAGES)
-    sessionStorage.removeItem(SS_SESSION)
-    setMessages([])
-    addMsg({ id: crypto.randomUUID(), role: 'assistant', content: '¡Listo! Contame qué parámetros querés cambiar para esta nueva búsqueda: presupuesto, zona horaria, preferencias de clima, hobbies...' })
-    inputRef.current?.focus()
-  }
-
   async function handleReset() {
     if (!userId || !credential) return
     if (!confirm('¿Borrar tu perfil guardado? La próxima vez vas a tener que completarlo de nuevo.')) return
     await deleteProfile(userId, credential).catch(() => {})
+    if (sessionRef.current) sessionStorage.removeItem(msgsKey(sessionRef.current))
     sessionRef.current = null
-    sessionStorage.removeItem(SS_MESSAGES)
-    sessionStorage.removeItem(SS_SESSION)
+    sessionStorage.removeItem(SS_CURRENT_SESSION)
     setMessages([])
+    setSearchParams({}, { replace: true })
     addMsg({ id: crypto.randomUUID(), role: 'assistant', content: 'Perfil borrado. Contame de nuevo sobre vos para encontrar tu próximo destino.' })
   }
 
@@ -198,7 +215,7 @@ export default function Chat() {
         </div>
       </div>
 
-      {/* Input + reset */}
+      {/* Input area */}
       <div className="border-t border-zinc-800/60 bg-zinc-950/80 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto px-4 py-3 flex flex-col gap-2">
           <div className="flex gap-3 items-end">
@@ -228,13 +245,7 @@ export default function Chat() {
               </svg>
             </button>
           </div>
-          <div className="flex justify-between items-center">
-            <button
-              onClick={handleNewSearch}
-              className="text-xs text-zinc-600 hover:text-emerald-400 transition-colors"
-            >
-              + Nueva búsqueda
-            </button>
+          <div className="flex justify-end">
             <button
               onClick={handleReset}
               className="text-xs text-zinc-600 hover:text-red-400 transition-colors"

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { marked } from 'marked'
 import { useAuth } from '../hooks/useAuth'
 import { getReports } from '../lib/api'
@@ -7,10 +8,12 @@ interface Report {
   created_at: string
   report_text: string
   destinations: { city: string; country: string }[]
+  session_id: string
 }
 
 export default function History() {
   const { userId, credential } = useAuth()
+  const navigate = useNavigate()
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -28,6 +31,11 @@ export default function History() {
       day: '2-digit', month: 'short', year: 'numeric',
       hour: '2-digit', minute: '2-digit',
     })
+  }
+
+  function openInChat(report: Report) {
+    if (!report.session_id) return
+    navigate(`/chat?session=${report.session_id}`, { state: { report } })
   }
 
   if (loading) return (
@@ -87,10 +95,22 @@ export default function History() {
               </button>
 
               {isOpen && (
-                <div
-                  className="border-t border-zinc-800 px-5 py-4 text-sm prose-chat"
-                  dangerouslySetInnerHTML={{ __html: marked.parse(report.report_text) as string }}
-                />
+                <div className="border-t border-zinc-800">
+                  <div
+                    className="px-5 py-4 text-sm prose-chat"
+                    dangerouslySetInnerHTML={{ __html: marked.parse(report.report_text) as string }}
+                  />
+                  {report.session_id && (
+                    <div className="px-5 pb-4">
+                      <button
+                        onClick={() => openInChat(report)}
+                        className="text-xs text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-400/50 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        Abrir en chat →
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )

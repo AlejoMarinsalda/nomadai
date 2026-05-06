@@ -16,7 +16,7 @@ def _db():
     return _client
 
 
-def save_report(user_id: str, report_text: str, destinations: list) -> None:
+def save_report(user_id: str, report_text: str, destinations: list, session_id: str = "") -> None:
     try:
         now = datetime.now(timezone.utc)
         cities = [{"city": d.city, "country": d.country} for d in destinations]
@@ -27,6 +27,7 @@ def save_report(user_id: str, report_text: str, destinations: list) -> None:
                 "created_at":   {"S": now.isoformat()},
                 "report_text":  {"S": report_text},
                 "destinations": {"S": json.dumps(cities)},
+                "session_id":   {"S": session_id},
                 "ttl":          {"N": str(int(time.time()) + 86400 * 90)},
             },
         )
@@ -54,6 +55,7 @@ def get_reports(user_id: str) -> list[dict]:
                 "created_at":   item["created_at"]["S"],
                 "report_text":  item["report_text"]["S"],
                 "destinations": json.loads(item["destinations"]["S"]),
+                "session_id":   item.get("session_id", {}).get("S", ""),
             }
             for item in items
         ]

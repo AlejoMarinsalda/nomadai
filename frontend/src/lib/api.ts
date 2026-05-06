@@ -51,6 +51,15 @@ export async function getReports(userId: string, credential: string) {
   return res.json() as Promise<{ reports: Array<{ created_at: string; report_text: string; destinations: Array<{ city: string; country: string }>; session_id: string }> }>
 }
 
+export async function deleteReport(userId: string, credential: string, createdAt: string) {
+  const res = await fetch(`${API}/reports/${userId}/${encodeURIComponent(createdAt)}`, {
+    method: 'DELETE',
+    headers: auth(credential),
+  })
+  if (res.status === 401) throw new Error('UNAUTHORIZED')
+  if (!res.ok) throw new Error('DELETE_FAILED')
+}
+
 export async function patchProfile(userId: string, credential: string, data: Record<string, unknown>) {
   const res = await fetch(`${API}/profile/${userId}`, {
     method: 'PATCH',

@@ -35,6 +35,19 @@ def save_report(user_id: str, report_text: str, destinations: list, session_id: 
         logger.warning("save_report failed for %s: %s", user_id, e)
 
 
+def delete_report(user_id: str, created_at: str) -> None:
+    try:
+        _db().delete_item(
+            TableName=settings.reports_table,
+            Key={
+                "user_id":    {"S": user_id},
+                "created_at": {"S": created_at},
+            },
+        )
+    except Exception as e:
+        logger.warning("delete_report failed for %s: %s", user_id, e)
+
+
 def get_latest_report(user_id: str) -> dict | None:
     results = get_reports(user_id)
     return results[0] if results else None

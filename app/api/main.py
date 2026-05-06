@@ -24,7 +24,7 @@ from google.auth.transport import requests as google_requests
 from app.graph import graph
 from app.services.profile_store import get_profile, save_profile, delete_profile
 from app.services.job_store import create_pending_job, get_job
-from app.services.report_store import get_reports
+from app.services.report_store import get_reports, delete_report
 from app.services.auth import get_current_user
 from app.services.rate_limiter import rate_limit
 from app.config import settings
@@ -146,6 +146,14 @@ def get_user_reports(user_id: str, current_user: str = Depends(get_current_user)
     if user_id != current_user:
         raise HTTPException(status_code=403, detail="No autorizado")
     return {"reports": get_reports(user_id)}
+
+
+@app.delete("/reports/{user_id}/{created_at:path}")
+def delete_user_report(user_id: str, created_at: str, current_user: str = Depends(get_current_user)):
+    if user_id != current_user:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    delete_report(user_id, created_at)
+    return {"deleted": True}
 
 
 @app.delete("/profile/{user_id}")

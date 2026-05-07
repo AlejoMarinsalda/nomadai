@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { marked } from '../lib/marked'
 import { useAuth } from '../hooks/useAuth'
-import { deleteProfile, getJobStatus, getProfile, sendMessage } from '../lib/api'
+import { deleteProfile, getJobStatus, getProfile, sendMessage, type ResultData } from '../lib/api'
 
 // Wrap every H3 section in a <details><summary> block for collapsible UX.
 // Split on <h3>, <h2> AND <hr> so that separators, city headings, and the
@@ -63,9 +63,14 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>(() => {
     const cached = loadMessages(sessionParam)
     if (cached.length > 0) return cached
-    const report = (location.state as { report?: { report_text: string } } | null)?.report
-    if (report && sessionParam) {
-      return [{ id: 'initial', role: 'assistant' as const, content: report.report_text }]
+    const s = location.state as { report?: { report_text: string }; result?: ResultData } | null
+    if (s?.report && sessionParam) {
+      return [{ id: 'initial', role: 'assistant' as const, content: s.report.report_text }]
+    }
+    if (s?.result && sessionParam) {
+      const cities = s.result.destinations.map(d => `**${d.city}**`).join(', ')
+      return [{ id: 'initial', role: 'assistant' as const,
+        content: `Tengo listo tu análisis de ${cities}. ¿Qué querés saber? Podés preguntarme sobre costos, clima, visas, qué hacer allá, o comparar destinos.` }]
     }
     return []
   })
@@ -97,9 +102,13 @@ export default function Chat() {
     let next: Message[] = cached
 
     if (cached.length === 0 && sessionParam) {
-      const report = (location.state as { report?: { report_text: string } } | null)?.report
-      if (report) {
-        next = [{ id: 'initial', role: 'assistant' as const, content: report.report_text }]
+      const s = location.state as { report?: { report_text: string }; result?: ResultData } | null
+      if (s?.report) {
+        next = [{ id: 'initial', role: 'assistant' as const, content: s.report.report_text }]
+      } else if (s?.result) {
+        const cities = s.result.destinations.map(d => `**${d.city}**`).join(', ')
+        next = [{ id: 'initial', role: 'assistant' as const,
+          content: `Tengo listo tu análisis de ${cities}. ¿Qué querés saber? Podés preguntarme sobre costos, clima, visas, qué hacer allá, o comparar destinos.` }]
       }
     }
 

@@ -34,7 +34,7 @@ function wrapH3Sections(html: string): string {
   return html.replace(
     /<h3>([\s\S]*?)<\/h3>([\s\S]*?)(?=<h3>|<h2>|<hr\s*\/?>|$)/g,
     (_m, title: string, body: string) =>
-      `<details class="section-block" open>` +
+      `<details class="section-block">` +
       `<summary class="section-title">${title}</summary>` +
       `<div class="section-body">${body}</div>` +
       `</details>`,

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
-import { patchProfile, sendMessage } from '../lib/api'
+import { getJobStatus, patchProfile, sendMessage } from '../lib/api'
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -97,6 +97,7 @@ export default function Onboarding() {
 
   const [step, setStepp]              = useState(1)
   const [saving, setSaving]           = useState(false)
+  const [pollingLabel, setPollingLabel] = useState('')
 
   // Form state
   const [timezone, setTimezone]       = useState(TIMEZONES[5])   // UTC-3 default
@@ -160,10 +161,43 @@ export default function Onboarding() {
       })
 
       const triggerMsg = t('onboarding.trigger_message')
-      const { session_id } = await sendMessage(triggerMsg, null, credential)
-      navigate(`/chat?session=${session_id}`, { replace: true })
+      const { job_id, session_id } = await sendMessage(triggerMsg, null, credential)
+
+      // Poll the job here — navigate to Results when done
+      const POLL_LABELS = [
+        t('chat.thinking_analyzing'),
+        t('chat.thinking_searching'),
+        t('chat.thinking_enriching'),
+        t('chat.thinking_preparing'),
+      ]
+      let idx = 0
+      setPollingLabel(POLL_LABELS[0])
+
+      const started = Date.now()
+      await new Promise<void>((resolve, reject) => {
+        const timer = setInterval(async () => {
+          idx = (idx + 1) % POLL_LABELS.length
+          setPollingLabel(POLL_LABELS[idx])
+          if (Date.now() - started > 360_000) { clearInterval(timer); reject(new Error('Timeout')); return }
+          try {
+            const data = await getJobStatus(job_id)
+            if (data.status === 'done' || data.status === 'error') {
+              clearInterval(timer)
+              if (data.result_data) {
+                window.dispatchEvent(new CustomEvent('nomadai:newreport'))
+                navigate(`/results/${session_id}`, { replace: true, state: { result: data.result_data } })
+              } else {
+                // Fallback: no result_data, go to chat
+                navigate(`/chat?session=${session_id}`, { replace: true })
+              }
+              resolve()
+            }
+          } catch { /* ignore transient */ }
+        }, 3000)
+      })
     } catch {
       setSaving(false)
+      setPollingLabel('')
     }
   }
 
@@ -176,7 +210,7 @@ export default function Onboarding() {
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="h-dvh flex flex-col overflow-hidden" style={{ background: BG }}>
+    <div className="h-dvh flex flex-col overflow-hidden relative" style={{ background: BG }}>
 
       {/* Header */}
       <header className="flex-shrink-0 flex items-center justify-between px-6 h-14">
@@ -419,7 +453,7 @@ export default function Onboarding() {
       <div className="flex-shrink-0 px-6 py-4 flex items-center justify-between border-t" style={{ background: BG, borderColor: BORDER }}>
         <button
           onClick={back}
-          disabled={step === 1}
+          disabled={step === 1 || saving}
           className="text-sm font-medium text-stone-400 hover:text-stone-700 transition-colors disabled:opacity-0"
         >
           ← {t('onboarding.back')}
@@ -428,7 +462,8 @@ export default function Onboarding() {
         {step < TOTAL_STEPS ? (
           <button
             onClick={next}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all active:scale-95"
+            disabled={saving}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all active:scale-95 disabled:opacity-40"
             style={{ background: DARK }}
           >
             {t('onboarding.next')} →
@@ -444,6 +479,25 @@ export default function Onboarding() {
           </button>
         )}
       </div>
+
+      {/* Polling overlay */}
+      {saving && pollingLabel && (
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-6 z-50"
+          style={{ background: BG }}
+        >
+          <div className="w-12 h-12 border-2 border-stone-300 border-t-orange-700 rounded-full animate-spin" />
+          <div className="text-center">
+            <p
+              className="text-3xl font-bold text-zinc-900 mb-2"
+              style={{ fontFamily: 'Cormorant Garamond, serif' }}
+            >
+              {t('onboarding.searching_title')}
+            </p>
+            <p className="text-sm text-stone-500">{pollingLabel}...</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

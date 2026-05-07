@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { marked } from 'marked'
 import { useAuth } from '../hooks/useAuth'
 import { deleteReport, getReports } from '../lib/api'
 
@@ -16,7 +15,6 @@ export default function History() {
   const navigate = useNavigate()
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
-  const [expanded, setExpanded] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
@@ -34,19 +32,14 @@ export default function History() {
     })
   }
 
-  function openInChat(report: Report) {
-    if (!report.session_id) return
-    navigate(`/chat?session=${report.session_id}`, { state: { report } })
-  }
-
-  async function handleDelete(report: Report) {
+  async function handleDelete(e: React.MouseEvent, report: Report) {
+    e.stopPropagation()
     if (!userId || !credential) return
     if (!confirm('¿Eliminar este reporte del historial?')) return
     setDeleting(report.created_at)
     try {
       await deleteReport(userId, credential, report.created_at)
       setReports(prev => prev.filter(r => r.created_at !== report.created_at))
-      if (expanded === report.created_at) setExpanded(null)
       window.dispatchEvent(new CustomEvent('nomadai:newreport'))
     } catch {
       // silent
@@ -82,72 +75,58 @@ export default function History() {
 
         {reports.map(report => {
           const key = report.created_at
-          const isOpen = expanded === key
+          const isDeleting = deleting === key
 
           return (
-            <div key={key} className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-              <div className="flex items-center">
-                <button
-                  onClick={() => setExpanded(isOpen ? null : key)}
-                  className="flex-1 flex items-center gap-3 px-4 py-3.5 text-left hover:bg-zinc-800/50 transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center flex-shrink-0 text-base">
-                    🗺️
+            <div
+              key={key}
+              onClick={() => report.session_id && navigate(`/history/${report.session_id}`, { state: { report } })}
+              className="group bg-zinc-900 border border-zinc-800 rounded-xl flex items-center cursor-pointer hover:border-zinc-700 hover:bg-zinc-800/50 transition-colors"
+            >
+              {/* Main content */}
+              <div className="flex-1 flex items-center gap-3 px-4 py-3.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center flex-shrink-0 text-base">
+                  🗺️
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap gap-1.5 mb-1">
+                    {report.destinations.map(d => (
+                      <span key={d.city} className="text-xs bg-zinc-800 border border-zinc-700 text-zinc-300 px-2 py-0.5 rounded-full">
+                        {d.city}
+                      </span>
+                    ))}
+                    {report.destinations.length === 0 && (
+                      <span className="text-xs text-zinc-500">Sin destinos</span>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap gap-1.5 mb-1">
-                      {report.destinations.map(d => (
-                        <span key={d.city} className="text-xs bg-zinc-800 border border-zinc-700 text-zinc-300 px-2 py-0.5 rounded-full">
-                          {d.city}
-                        </span>
-                      ))}
-                      {report.destinations.length === 0 && (
-                        <span className="text-xs text-zinc-500">Sin destinos</span>
-                      )}
-                    </div>
-                    <p className="text-xs text-zinc-500">{formatDate(report.created_at)}</p>
-                  </div>
-                  <span className={`text-zinc-500 text-xs transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
-                    ▼
-                  </span>
-                </button>
-                <button
-                  onClick={() => handleDelete(report)}
-                  disabled={deleting === key}
-                  className="flex-shrink-0 px-3 py-3.5 text-zinc-600 hover:text-red-400 transition-colors disabled:opacity-40"
-                  title="Eliminar reporte"
-                >
-                  {deleting === key
-                    ? <span className="text-xs">...</span>
-                    : <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24"
-                           fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                        <path d="M10 11v6M14 11v6"/>
-                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-                      </svg>
-                  }
-                </button>
+                  <p className="text-xs text-zinc-500">{formatDate(report.created_at)}</p>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400 transition-colors flex-shrink-0"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
               </div>
 
-              {isOpen && (
-                <div className="border-t border-zinc-800">
-                  <div
-                    className="px-5 py-4 text-sm prose-chat"
-                    dangerouslySetInnerHTML={{ __html: marked.parse(report.report_text) as string }}
-                  />
-                  {report.session_id && (
-                    <div className="px-5 pb-4">
-                      <button
-                        onClick={() => openInChat(report)}
-                        className="text-xs text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-400/50 px-3 py-1.5 rounded-lg transition-colors"
-                      >
-                        Abrir en chat →
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Delete button */}
+              <button
+                onClick={e => handleDelete(e, report)}
+                disabled={isDeleting}
+                className="flex-shrink-0 px-3 py-3.5 text-zinc-600 hover:text-red-400 transition-colors disabled:opacity-40"
+                title="Eliminar reporte"
+              >
+                {isDeleting
+                  ? <span className="text-xs">...</span>
+                  : <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6M14 11v6"/>
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                }
+              </button>
             </div>
           )
         })}

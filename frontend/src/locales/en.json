@@ -47,6 +47,23 @@
     "continue_chat": "Continue chat →",
     "no_destinations": "No destinations in this report."
   },
+  "results": {
+    "loading": "Preparing your results...",
+    "not_found": "No results found.",
+    "back_to_chat": "Back to chat",
+    "match_tag": "Your match #1 · from {{n}} cities analyzed",
+    "go_to": "Go to",
+    "why_you": "Why you, why now",
+    "ask_questions": "Ask questions",
+    "save": "Save",
+    "stat_cost": "Cost/mo",
+    "stat_temp": "Avg temp",
+    "stat_security": "Security",
+    "stat_community": "Community",
+    "alternatives_1": "Or explore these alternatives",
+    "alternatives_em": "close",
+    "alternatives_2": "to your profile"
+  },
   "onboarding": {
     "tag": "Your next destination",
     "headline_1": "Tell me what your",

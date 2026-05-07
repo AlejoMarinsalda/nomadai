@@ -184,6 +184,14 @@ export default function Chat() {
       const data = await pollJob(job_id, thinkingId, labels)
       removeMsg(thinkingId)
 
+      // v2: structured result → navigate to Results page
+      if (data.result_data) {
+        if (data.final_report) window.dispatchEvent(new CustomEvent('nomadai:newreport'))
+        navigate(`/results/${jobSessionId}`, { state: { result: data.result_data } })
+        setLoading(false)
+        return
+      }
+
       const reply = (data.final_report || data.reply || t('chat.error_processing')) as string
 
       if (sessionRef.current !== jobSessionId) {

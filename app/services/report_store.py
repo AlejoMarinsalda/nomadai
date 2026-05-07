@@ -16,21 +16,27 @@ def _db():
     return _client
 
 
-def save_report(user_id: str, report_text: str, destinations: list, session_id: str = "") -> None:
+def save_report(
+    user_id: str,
+    report_text: str,
+    destinations: list,
+    session_id: str = "",
+    result_data: dict | None = None,
+) -> None:
     try:
         now = datetime.now(timezone.utc)
         cities = [{"city": d.city, "country": d.country} for d in destinations]
-        _db().put_item(
-            TableName=settings.reports_table,
-            Item={
-                "user_id":      {"S": user_id},
-                "created_at":   {"S": now.isoformat()},
-                "report_text":  {"S": report_text},
-                "destinations": {"S": json.dumps(cities)},
-                "session_id":   {"S": session_id},
-                "ttl":          {"N": str(int(time.time()) + 86400 * 90)},
-            },
-        )
+        item = {
+            "user_id":      {"S": user_id},
+            "created_at":   {"S": now.isoformat()},
+            "report_text":  {"S": report_text},
+            "destinations": {"S": json.dumps(cities)},
+            "session_id":   {"S": session_id},
+            "ttl":          {"N": str(int(time.time()) + 86400 * 90)},
+        }
+        if result_data:
+            item["result_json"] = {"S": json.dumps(result_data)}
+        _db().put_item(TableName=settings.reports_table, Item=item)
     except Exception as e:
         logger.warning("save_report failed for %s: %s", user_id, e)
 
@@ -59,19 +65,26 @@ def get_reports(user_id: str) -> list[dict]:
             TableName=settings.reports_table,
             KeyConditionExpression="user_id = :uid",
             ExpressionAttributeValues={":uid": {"S": user_id}},
-            ScanIndexForward=False,  # más reciente primero
+            ScanIndexForward=False,
             Limit=20,
         )
         items = resp.get("Items", [])
-        return [
-            {
+        results = []
+        for item in items:
+            entry = {
                 "created_at":   item["created_at"]["S"],
                 "report_text":  item["report_text"]["S"],
                 "destinations": json.loads(item["destinations"]["S"]),
                 "session_id":   item.get("session_id", {}).get("S", ""),
+                "result_json":  None,
             }
-            for item in items
-        ]
+            if "result_json" in item:
+                try:
+                    entry["result_json"] = json.loads(item["result_json"]["S"])
+                except Exception:
+                    pass
+            results.append(entry)
+        return results
     except Exception as e:
         logger.warning("get_reports failed for %s: %s", user_id, e)
         return []

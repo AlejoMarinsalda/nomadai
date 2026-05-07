@@ -75,9 +75,12 @@ async def _process_sqs(event):
             if result.get("profile_complete") and not prev_complete:
                 await asyncio.to_thread(save_profile, user_id, result["user_profile"])
 
+            result_data = result.get("result_data")
+
             if final_report and not user_id.startswith("guest_"):
                 await asyncio.to_thread(
-                    save_report, user_id, final_report, result.get("destinations", []), session_id
+                    save_report, user_id, final_report,
+                    result.get("destinations", []), session_id, result_data
                 )
 
             await asyncio.to_thread(save_job_result, job_id, {
@@ -86,6 +89,7 @@ async def _process_sqs(event):
                 "user_id": user_id,
                 "reply": reply,
                 "final_report": final_report,
+                "result_data": result_data,
                 "profile_complete": result.get("profile_complete", False),
             })
 

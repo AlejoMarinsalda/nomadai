@@ -47,6 +47,23 @@
     "continue_chat": "Continuar chat →",
     "no_destinations": "No hay destinos en este reporte."
   },
+  "results": {
+    "loading": "Preparando tus resultados...",
+    "not_found": "No se encontraron resultados.",
+    "back_to_chat": "Volver al chat",
+    "match_tag": "Tu match #1 · de {{n}} ciudades analizadas",
+    "go_to": "Vete a",
+    "why_you": "Por qué tú, por qué ahora",
+    "ask_questions": "Hacer preguntas",
+    "save": "Guardar",
+    "stat_cost": "Costo/mes",
+    "stat_temp": "Temp. actual",
+    "stat_security": "Seguridad",
+    "stat_community": "Comunidad",
+    "alternatives_1": "O explora estas alternativas",
+    "alternatives_em": "cerca",
+    "alternatives_2": "de tu perfil"
+  },
   "onboarding": {
     "tag": "Tu próximo destino",
     "headline_1": "Contame cómo es tu",

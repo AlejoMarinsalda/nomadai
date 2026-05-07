@@ -1,93 +1,122 @@
+import json
+import re
+import logging
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from app.graph.state import NomadState, Destination
 from app.config import settings
 
+logger = logging.getLogger(__name__)
 
-_SYSTEM = """Sos un asistente experto en nómadas digitales. Generás reportes visuales, detallados y agradables.
+# ── LLM prompt ────────────────────────────────────────────────────────────────
 
-Usá EXACTAMENTE esta estructura markdown para cada destino:
+_SYSTEM = """You are a travel analyst for digital nomads.
+Generate a compact JSON analysis for the given destinations.
+Return ONLY valid JSON — no markdown fences, no explanation, nothing else.
 
-## 🌍 {Ciudad}, {País}
-**✨ Afinidad: {score}/100** · **💰 ~${costo} USD/mes**
+For each destination (same order as input) include:
+{
+  "tagline": "city vibe in 3-5 words (local feel, specific)",
+  "ai_summary": "1-2 sentence personalized summary for this exact user profile",
+  "why_you_why_now": ["4 punchy bullets, max 10 words each, specific to this user"],
+  "internet_mbps": 100,
+  "avg_temp_celsius": 22,
+  "security": "Excelente | Buena | Moderada",
+  "community": "Muy alta | Alta | Media"
+}
 
-### ✅ ¿Por qué encaja con tu perfil?
-- ✓ {razón 1}
-- ✓ {razón 2}
-
-### 🏄 Hobbies y estilo de vida
-Para CADA hobby del usuario mencioná lugares, clubes, eventos o comunidades concretas de esa ciudad.
-Usá 📍 para lugares, 🏋️/🚴/🎨 etc. según el hobby, y **nombre en negrita** para cada lugar.
-
-### 🤝 Networking y comunidad
-Coworkings, meetups, grupos de Slack/WhatsApp. Usá 💻 para coworkings, 👥 para meetups.
-
-### ☀️ Clima y mejor época
-🗓️ **Mejor época**: meses
-🌡️ Temperatura y descripción breve.
-⚠️ **Evitar**: meses si aplica.
-
-### 🛂 Visa y requisitos
-📋 Estado y tipo de visa.
-Lista de requisitos con ✅ o ❗ según dificultad.
-
-### 🎬 Videos de YouTube
-Un link markdown por línea: [Título descriptivo del video](URL)
-NO uses listas con guión para los videos, cada link va en su propia línea.
-
----
-
-REGLAS IMPORTANTES:
-- Usá ## para el nombre de cada ciudad (con emoji de bandera del país si la conocés)
-- Usá ### para cada sección
-- Emojis variados y relevantes en todo el contenido
-- Links de YouTube SIEMPRE en formato markdown: [texto](URL)
-- Nunca escribas "undefined"
-- Cerrá el reporte completo con un párrafo motivador con emojis 🚀✈️🌟"""
+Return format: {"destinations": [...]}
+"""
 
 
-def _accommodation_section(destinations: list) -> str:
-    lines = ["\n---\n## 🏠 Dónde alojarte\n"]
-    for dest in destinations:
-        if not dest.accommodation_links:
-            continue
-        lines.append(f"### 📍 {dest.city}, {dest.country}\n")
-        for link in dest.accommodation_links:
-            lines.append(f"- [{link['label']}]({link['url']})")
-        lines.append("")
-    return "\n".join(lines)
-
-
-def _format_destination(dest: Destination) -> str:
-    youtube = "\n".join(f"  - {url}" for url in dest.media.youtube_links) or "  - No disponible"
-    requirements = "\n".join(f"  - {r}" for r in dest.visa.requirements) or "  - Consultar embajada"
-    best_months = ", ".join(dest.climate.best_months) or "No disponible"
-    avoid_months = ", ".join(dest.climate.avoid_months) or "No disponible"
-
-    visa_status = "No requerida" if dest.visa.visa_required is False else (
-        f"{dest.visa.visa_type} ({dest.visa.max_stay_days} días)" if dest.visa.visa_required else "Consultar"
+def _format_dest_for_prompt(dest: Destination) -> str:
+    return (
+        f"{dest.city}, {dest.country} — Match: {dest.match_score:.0f}/100\n"
+        f"Cost: ~${dest.monthly_cost_usd}/mo\n"
+        f"Match reasons: {', '.join(dest.match_reasons)}\n"
+        f"Climate best months: {', '.join(dest.climate.best_months)}\n"
+        f"Visa: {dest.visa.visa_type or 'check embassy'} "
+        f"({dest.visa.max_stay_days or '?'} days)\n"
+        f"Local info: {dest.local_info or 'N/A'}\n"
     )
 
-    local_info_section = f"\nInformación local verificada:\n{dest.local_info}" if dest.local_info else ""
 
-    return f"""
-{dest.city}, {dest.country} — Match: {dest.match_score:.0f}/100
-Costo mensual estimado: ~${dest.monthly_cost_usd} USD
+def _visa_summary(dest: Destination) -> str:
+    if dest.visa.visa_required is False:
+        return "No visa required"
+    vtype = dest.visa.visa_type or "Visa"
+    days = f" {dest.visa.max_stay_days}d" if dest.visa.max_stay_days else ""
+    return f"{vtype}{days}"
 
-Por qué encaja con tu perfil:
-{chr(10).join(f"  ✓ {r}" for r in dest.match_reasons)}
-{local_info_section}
-Clima:
-  Mejor época: {best_months}
-  Evitar: {avoid_months}
 
-Visa ({dest.visa.visa_type or "info"}): {visa_status}
-  Requisitos:
-{requirements}
+def _build_result_data(state: NomadState, llm_items: list[dict]) -> dict:
+    results = []
+    for i, dest in enumerate(state.destinations):
+        llm = llm_items[i] if i < len(llm_items) else {}
+        results.append({
+            "rank":             i + 1,
+            "city":             dest.city,
+            "country":          dest.country,
+            "match_score":      round(dest.match_score),
+            "monthly_cost_usd": dest.monthly_cost_usd,
+            "match_reasons":    dest.match_reasons,
+            "tagline":          llm.get("tagline", ""),
+            "ai_summary":       llm.get("ai_summary", ""),
+            "why_you_why_now":  llm.get("why_you_why_now", []),
+            "internet_mbps":    llm.get("internet_mbps"),
+            "avg_temp_celsius": llm.get("avg_temp_celsius"),
+            "security":         llm.get("security", ""),
+            "community":        llm.get("community", ""),
+            "visa_summary":     _visa_summary(dest),
+            "visa": {
+                "type":          dest.visa.visa_type,
+                "max_stay_days": dest.visa.max_stay_days,
+                "requirements":  dest.visa.requirements,
+            },
+            "climate": {
+                "best_months":  dest.climate.best_months,
+                "avoid_months": dest.climate.avoid_months,
+            },
+            "youtube_links":       dest.media.youtube_links,
+            "accommodation_links": dest.accommodation_links,
+        })
+    return {"destinations": results}
 
-Videos YouTube:
-{youtube}
-"""
+
+def _result_data_to_markdown(result_data: dict) -> str:
+    """Auto-generate markdown from structured data (for chat backward compat)."""
+    lines = []
+    for d in result_data.get("destinations", []):
+        lines += [
+            f"## 🌍 {d['city']}, {d['country']}",
+            f"**✨ Match: {d['match_score']}/100** · **💰 ~${d['monthly_cost_usd']} USD/mes**",
+            "",
+            f"*{d.get('ai_summary', '')}*",
+            "",
+            "### ✅ ¿Por qué encaja con tu perfil?",
+        ]
+        for r in d.get("match_reasons", []):
+            lines.append(f"- ✓ {r}")
+        lines += ["", "### 🎯 Por qué tú, por qué ahora"]
+        for b in d.get("why_you_why_now", []):
+            lines.append(f"- {b}")
+        if d.get("youtube_links"):
+            lines += ["", "### 🎬 Videos de YouTube"]
+            for url in d["youtube_links"]:
+                lines.append(f"[Ver video]({url})")
+        lines += ["", "---", ""]
+
+    has_acc = any(d.get("accommodation_links") for d in result_data.get("destinations", []))
+    if has_acc:
+        lines += ["## 🏠 Dónde alojarte", ""]
+        for d in result_data.get("destinations", []):
+            if d.get("accommodation_links"):
+                lines.append(f"### 📍 {d['city']}, {d['country']}")
+                for link in d["accommodation_links"]:
+                    lines.append(f"- [{link['label']}]({link['url']})")
+                lines.append("")
+
+    return "\n".join(lines)
 
 
 def compiler_node(state: NomadState) -> dict:
@@ -96,18 +125,27 @@ def compiler_node(state: NomadState) -> dict:
         google_api_key=settings.google_api_key,
     )
 
-    destinations_text = "\n---\n".join(_format_destination(d) for d in state.destinations)
+    destinations_text = "\n\n".join(_format_dest_for_prompt(d) for d in state.destinations)
+    prompt = (
+        f"User profile:\n"
+        f"- Budget: ${state.user_profile.budget_usd_monthly}/mo\n"
+        f"- Timezone: {state.user_profile.work_timezone}\n"
+        f"- Hobbies: {', '.join(state.user_profile.hobbies)}\n"
+        f"- Goals: {', '.join(state.user_profile.goals)}\n"
+        f"- Nationality: {state.user_profile.nationality}\n"
+        f"- Preferred climate: {state.user_profile.preferred_climate}\n\n"
+        f"Destinations ({len(state.destinations)} total):\n{destinations_text}"
+    )
 
-    prompt = f"""Generá el reporte final para el usuario nómada digital con estos destinos recomendados:
+    try:
+        response = llm.invoke([SystemMessage(content=_SYSTEM), HumanMessage(content=prompt)])
+        content = re.sub(r"```(?:json)?\s*|\s*```", "", response.content).strip()
+        llm_items = json.loads(content).get("destinations", [])
+    except Exception as e:
+        logger.warning("compiler_node JSON parse failed: %s", e)
+        llm_items = []
 
-{destinations_text}
+    result_data = _build_result_data(state, llm_items)
+    final_report = _result_data_to_markdown(result_data)
 
-Perfil del usuario:
-- Presupuesto: ${state.user_profile.budget_usd_monthly}/mes
-- Zona horaria: {state.user_profile.work_timezone}
-- Hobbies: {state.user_profile.hobbies}
-- Objetivos: {state.user_profile.goals}"""
-
-    response = llm.invoke([SystemMessage(content=_SYSTEM), HumanMessage(content=prompt)])
-    final_report = response.content + _accommodation_section(state.destinations)
-    return {"final_report": final_report}
+    return {"final_report": final_report, "result_data": result_data}

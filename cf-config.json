@@ -1,0 +1,40 @@
+{
+  "Origins": {
+    "Quantity": 1,
+    "Items": [
+      {
+        "Id": "nomadai-lambda",
+        "DomainName": "3zhz3rksbvalkpzulwoelhlvtu0vlask.lambda-url.us-east-1.on.aws",
+        "CustomOriginConfig": {
+          "HTTPPort": 80,
+          "HTTPSPort": 443,
+          "OriginProtocolPolicy": "https-only",
+          "OriginSslProtocols": { "Quantity": 1, "Items": ["TLSv1.2"] }
+        }
+      }
+    ]
+  },
+  "DefaultCacheBehavior": {
+    "TargetOriginId": "nomadai-lambda",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "AllowedMethods": {
+      "Quantity": 7,
+      "Items": ["GET","HEAD","OPTIONS","PUT","POST","PATCH","DELETE"],
+      "CachedMethods": { "Quantity": 2, "Items": ["GET","HEAD"] }
+    },
+    "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+    "OriginRequestPolicyId": "b689b0a8-53d0-40ab-baf2-68738e2966ac",
+    "Compress": true
+  },
+  "Aliases": { "Quantity": 2, "Items": ["nomadai.fit", "www.nomadai.fit"] },
+  "ViewerCertificate": {
+    "ACMCertificateArn": "arn:aws:acm:us-east-1:237216011543:certificate/5b5dca45-88e0-4ac0-8a54-b3e30967b2c0",
+    "SSLSupportMethod": "sni-only",
+    "MinimumProtocolVersion": "TLSv1.2_2021"
+  },
+  "Comment": "nomadai.fit",
+  "Enabled": true,
+  "HttpVersion": "http2",
+  "PriceClass": "PriceClass_100",
+  "CallerReference": "nomadai-fit-2026"
+}

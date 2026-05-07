@@ -74,4 +74,5 @@ class NomadState(BaseModel):
     profile_complete: bool = False
     destinations: list[Destination] = Field(default_factory=list)
     final_report: str | None = None
+    result_data: dict | None = None   # structured JSON for Results page (v2)
     error: str | None = None

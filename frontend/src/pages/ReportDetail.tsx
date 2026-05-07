@@ -169,6 +169,14 @@ export default function ReportDetail() {
         </button>
         <span className="text-zinc-700">·</span>
         <span className="text-xs text-zinc-500">{formatDate(report.created_at)}</span>
+        <div className="ml-auto">
+          <button
+            onClick={() => navigate(`/chat?session=${report.session_id}`, { state: { report } })}
+            className="text-xs text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-400/50 px-3 py-1 rounded-lg transition-colors"
+          >
+            Continuar chat →
+          </button>
+        </div>
       </div>
 
       {countries.length === 0 ? (

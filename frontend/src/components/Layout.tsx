@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { NavLink, Outlet, useNavigate, useSearchParams } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { getReports } from '../lib/api'
 
@@ -66,8 +66,13 @@ const BOTTOM_NAV = [
 export default function Layout() {
   const { userId, userName, userPicture, credential, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
-  const activeSession = searchParams.get('session')
+  // Active session: either ?session= on /chat, or /:sessionId on /history/:sessionId
+  const activeSession =
+    searchParams.get('session') ||
+    location.pathname.match(/\/history\/([^/]+)/)?.[1] ||
+    null
   const [sessions, setSessions] = useState<Session[]>([])
 
   const isGuest = userId?.startsWith('guest_') ?? false
@@ -143,7 +148,7 @@ export default function Layout() {
                 return (
                   <button
                     key={s.session_id}
-                    onClick={() => navigate(`/chat?session=${s.session_id}`, { state: { report: { report_text: s.report_text } } })}
+                    onClick={() => navigate(`/history/${s.session_id}`, { state: { report: s } })}
                     className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-left transition-colors
                       ${isActive
                         ? 'bg-zinc-800 text-zinc-200'

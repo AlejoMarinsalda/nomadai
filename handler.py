@@ -62,8 +62,7 @@ async def _process_sqs(event):
             initial_state = {"messages": [HumanMessage(content=message)]}
             if saved_profile:
                 initial_state["user_profile"] = saved_profile
-                # profile_complete is NOT injected — profile_node greets returning users
-                # and waits for their explicit confirmation before running the pipeline
+                initial_state["profile_complete"] = True  # skip profile_node LLM, go straight to destination
 
             result = await graph.ainvoke(initial_state, config=config)
 

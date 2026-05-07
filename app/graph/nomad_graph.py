@@ -11,10 +11,10 @@ from app.nodes.followup_node import followup_node
 
 
 def _entry_point(state: NomadState) -> str:
-    # final_report es un string plano, serializa/deserializa correctamente en MemorySaver
-    # destinations (lista de Pydantic anidados) puede vaciarse en deserialización
     if state.final_report:
         return "followup"
+    if state.profile_complete:
+        return "destination"   # profile already done (from onboarding) → run pipeline directly
     return "profile"
 
 
@@ -34,7 +34,7 @@ def build_graph() -> StateGraph:
 
     builder.set_conditional_entry_point(
         _entry_point,
-        {"profile": "profile", "followup": "followup"},
+        {"profile": "profile", "followup": "followup", "destination": "destination"},
     )
 
     builder.add_conditional_edges("profile", _after_profile, {"destination": "destination", END: END})

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import { googleLogin, guestLogin } from '../lib/api'
 
@@ -8,6 +9,7 @@ const CLIENT_ID = '496610892208-7ejbi9l76b71hjdd28lghc7pruu9tr1t.apps.googleuser
 export default function Login() {
   const { login, isAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [guestLoading, setGuestLoading] = useState(false)
 
   useEffect(() => {
@@ -21,11 +23,11 @@ export default function Login() {
       login(data, data.user_id)
       navigate('/chat', { replace: true })
     } catch {
-      alert('Error al iniciar como invitado. Intentá de nuevo.')
+      alert(t('login.error_guest'))
     } finally {
       setGuestLoading(false)
     }
-  }, [login, navigate])
+  }, [login, navigate, t])
 
   const handleGoogleResponse = useCallback(async (response: { credential: string }) => {
     try {
@@ -33,9 +35,9 @@ export default function Login() {
       login(data, response.credential)
       navigate('/chat', { replace: true })
     } catch {
-      alert('Error al iniciar sesión. Intentá de nuevo.')
+      alert(t('login.error_google'))
     }
-  }, [login, navigate])
+  }, [login, navigate, t])
 
   useEffect(() => {
     function tryInit() {
@@ -66,7 +68,6 @@ export default function Login() {
 
       {/* Content */}
       <div className="flex-1 flex items-center justify-center p-6 relative overflow-hidden">
-        {/* Glow */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 40%, rgba(16,185,129,0.07) 0%, rgba(99,102,241,0.04) 50%, transparent 100%)' }}
@@ -84,20 +85,20 @@ export default function Login() {
             </span>
             <h1 className="text-4xl font-extrabold tracking-tight gradient-text">NomadAI</h1>
             <p className="mt-2.5 text-sm text-zinc-500 leading-relaxed">
-              Tu asistente para encontrar el próximo destino como nómada digital
+              {t('login.subtitle')}
             </p>
           </div>
 
           {/* Feature list */}
           <div className="w-full flex flex-col gap-2">
             {[
-              { icon: '🎯', text: 'Recomendaciones personalizadas según tu perfil, hobbies y zona horaria' },
-              { icon: '🛂', text: 'Información actualizada de visas para nómadas digitales' },
-              { icon: '🏠', text: 'Links directos de alojamiento en Airbnb, Booking y Hostelworld' },
-            ].map(({ icon, text }) => (
-              <div key={icon} className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition-colors">
+              { icon: '🎯', key: 'login.feature1' },
+              { icon: '🛂', key: 'login.feature2' },
+              { icon: '🏠', key: 'login.feature3' },
+            ].map(({ icon, key }) => (
+              <div key={key} className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition-colors">
                 <span className="text-base flex-shrink-0">{icon}</span>
-                <span className="text-xs text-zinc-400 leading-relaxed">{text}</span>
+                <span className="text-xs text-zinc-400 leading-relaxed">{t(key)}</span>
               </div>
             ))}
           </div>
@@ -107,7 +108,7 @@ export default function Login() {
             <div id="google-signin-btn" />
             <div className="flex items-center gap-3 w-full">
               <div className="flex-1 h-px bg-zinc-800" />
-              <span className="text-xs text-zinc-600">o</span>
+              <span className="text-xs text-zinc-600">{t('login.or')}</span>
               <div className="flex-1 h-px bg-zinc-800" />
             </div>
             <button
@@ -115,9 +116,9 @@ export default function Login() {
               disabled={guestLoading}
               className="w-full py-2.5 rounded-lg border border-zinc-700 text-sm text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors disabled:opacity-40"
             >
-              {guestLoading ? 'Ingresando...' : 'Continuar como invitado'}
+              {guestLoading ? t('login.guest_loading') : t('login.guest_button')}
             </button>
-            <p className="text-xs text-zinc-600">Con Google, tu perfil se guarda entre sesiones</p>
+            <p className="text-xs text-zinc-600">{t('login.google_note')}</p>
           </div>
 
         </div>

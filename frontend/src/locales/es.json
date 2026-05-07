@@ -1,0 +1,70 @@
+{
+  "login": {
+    "subtitle": "Tu asistente para encontrar el próximo destino como nómada digital",
+    "feature1": "Recomendaciones personalizadas según tu perfil, hobbies y zona horaria",
+    "feature2": "Información actualizada de visas para nómadas digitales",
+    "feature3": "Links directos de alojamiento en Airbnb, Booking y Hostelworld",
+    "or": "o",
+    "guest_button": "Continuar como invitado",
+    "guest_loading": "Ingresando...",
+    "google_note": "Con Google, tu perfil se guarda entre sesiones",
+    "error_guest": "Error al iniciar como invitado. Intentá de nuevo.",
+    "error_google": "Error al iniciar sesión. Intentá de nuevo."
+  },
+  "layout": {
+    "new_search": "Nueva búsqueda",
+    "history": "Historial",
+    "profile": "Perfil",
+    "chat": "Chat",
+    "logout": "Salir"
+  },
+  "chat": {
+    "empty": "Iniciá la conversación para encontrar tu próximo destino",
+    "placeholder": "Contame sobre vos... hobbies, presupuesto, zona horaria...",
+    "reset_btn": "↺ Reset perfil",
+    "reset_confirm": "¿Borrar tu perfil guardado? La próxima vez vas a tener que completarlo de nuevo.",
+    "reset_done": "Perfil borrado. Contame de nuevo sobre vos para encontrar tu próximo destino.",
+    "welcome_back": "¡Bienvenido de vuelta, **{{name}}**! 🎉 Ya tengo tu perfil guardado. ¿Querés explorar nuevos destinos o tenés alguna pregunta?",
+    "welcome_new": "¡Hola, **{{name}}**! 👋 Soy **NomadAI**. Te ayudo a encontrar tu próximo destino como nómada digital.\n\nContame sobre vos: ¿qué hobbies tenés, cuál es tu presupuesto mensual, desde qué zona horaria trabajás y cuál es tu nacionalidad?",
+    "error_api": "⚠️ Error conectando con la API.",
+    "error_processing": "⚠️ Error procesando la solicitud.",
+    "thinking_analyzing": "Analizando tu perfil",
+    "thinking_searching": "Buscando destinos",
+    "thinking_enriching": "Enriqueciendo resultados",
+    "thinking_preparing": "Preparando tu reporte"
+  },
+  "history": {
+    "title": "Tus reportes de destinos",
+    "empty_title": "Sin reportes todavía",
+    "empty_desc": "Cuando NomadAI genere tu primera recomendación de destinos, va a aparecer acá guardada automáticamente.",
+    "no_destinations": "Sin destinos",
+    "delete_confirm": "¿Eliminar este reporte del historial?"
+  },
+  "report": {
+    "not_found": "No se encontró el reporte.",
+    "back_link": "← Volver al historial",
+    "back_btn": "Historial",
+    "continue_chat": "Continuar chat →",
+    "no_destinations": "No hay destinos en este reporte."
+  },
+  "profile": {
+    "nomad_label": "Nómada digital",
+    "title": "Tu perfil de nómada",
+    "edit": "Editar",
+    "save": "Guardar cambios",
+    "saving": "Guardando...",
+    "cancel": "Cancelar",
+    "not_specified": "No especificado",
+    "comma_hint": "Separados por coma",
+    "empty_desc": "Todavía no tenés un perfil guardado. Iniciá una conversación en el chat y NomadAI va a ir armando tu perfil automáticamente.",
+    "error_save": "Error al guardar. Intentá de nuevo.",
+    "budget_display": "${{amount}} USD / mes",
+    "field_hobbies": "Hobbies",
+    "field_goals": "Objetivos",
+    "field_budget": "Presupuesto mensual (USD)",
+    "field_budget_label": "Presupuesto",
+    "field_timezone": "Zona horaria",
+    "field_nationality": "Nacionalidad",
+    "field_climate": "Clima preferido"
+  }
+}

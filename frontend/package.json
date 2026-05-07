@@ -9,9 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "i18next": "^26.0.10",
+    "i18next-browser-languagedetector": "^8.2.1",
     "marked": "^12.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-i18next": "^17.0.7",
     "react-router-dom": "^6.23.1"
   },
   "devDependencies": {

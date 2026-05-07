@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { marked } from '../lib/marked'
 import { useAuth } from '../hooks/useAuth'
 import { getReports } from '../lib/api'
@@ -90,7 +91,7 @@ function parseReport(markdown: string): Country[] {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('es-AR', {
+  return new Date(iso).toLocaleDateString(undefined, {
     day: '2-digit', month: 'short', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   })
@@ -103,6 +104,7 @@ export default function ReportDetail() {
   const location = useLocation()
   const { sessionId } = useParams<{ sessionId: string }>()
   const { userId, credential } = useAuth()
+  const { t } = useTranslation()
 
   const stateReport = (location.state as { report?: Report } | null)?.report
 
@@ -140,12 +142,12 @@ export default function ReportDetail() {
   if (!report) return (
     <div className="h-full flex flex-col items-center justify-center gap-4 p-8 text-center">
       <span className="text-4xl">📋</span>
-      <p className="text-sm text-zinc-400">No se encontró el reporte.</p>
+      <p className="text-sm text-zinc-400">{t('report.not_found')}</p>
       <button
         onClick={() => navigate('/history')}
         className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
       >
-        ← Volver al historial
+        {t('report.back_link')}
       </button>
     </div>
   )
@@ -165,7 +167,7 @@ export default function ReportDetail() {
                fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
-          Historial
+          {t('report.back_btn')}
         </button>
         <span className="text-zinc-700">·</span>
         <span className="text-xs text-zinc-500">{formatDate(report.created_at)}</span>
@@ -174,7 +176,7 @@ export default function ReportDetail() {
             onClick={() => navigate(`/chat?session=${report.session_id}`, { state: { report } })}
             className="text-xs text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-400/50 px-3 py-1 rounded-lg transition-colors"
           >
-            Continuar chat →
+            {t('report.continue_chat')}
           </button>
         </div>
       </div>

@@ -1,0 +1,70 @@
+{
+  "login": {
+    "subtitle": "Your assistant to find your next destination as a digital nomad",
+    "feature1": "Personalized recommendations based on your profile, hobbies, and timezone",
+    "feature2": "Up-to-date visa information for digital nomads",
+    "feature3": "Direct accommodation links on Airbnb, Booking, and Hostelworld",
+    "or": "or",
+    "guest_button": "Continue as guest",
+    "guest_loading": "Signing in...",
+    "google_note": "With Google, your profile is saved between sessions",
+    "error_guest": "Error signing in as guest. Please try again.",
+    "error_google": "Error signing in. Please try again."
+  },
+  "layout": {
+    "new_search": "New search",
+    "history": "History",
+    "profile": "Profile",
+    "chat": "Chat",
+    "logout": "Sign out"
+  },
+  "chat": {
+    "empty": "Start the conversation to find your next destination",
+    "placeholder": "Tell me about yourself... hobbies, budget, timezone...",
+    "reset_btn": "↺ Reset profile",
+    "reset_confirm": "Delete your saved profile? Next time you'll need to fill it out again.",
+    "reset_done": "Profile deleted. Tell me about yourself again to find your next destination.",
+    "welcome_back": "Welcome back, **{{name}}**! 🎉 I already have your profile saved. Want to explore new destinations or do you have any questions?",
+    "welcome_new": "Hi, **{{name}}**! 👋 I'm **NomadAI**. I help you find your next destination as a digital nomad.\n\nTell me about yourself: what hobbies do you have, what's your monthly budget, what timezone do you work from, and what's your nationality?",
+    "error_api": "⚠️ Error connecting to the API.",
+    "error_processing": "⚠️ Error processing the request.",
+    "thinking_analyzing": "Analyzing your profile",
+    "thinking_searching": "Searching destinations",
+    "thinking_enriching": "Enriching results",
+    "thinking_preparing": "Preparing your report"
+  },
+  "history": {
+    "title": "Your destination reports",
+    "empty_title": "No reports yet",
+    "empty_desc": "When NomadAI generates your first destination recommendation, it will appear here automatically.",
+    "no_destinations": "No destinations",
+    "delete_confirm": "Delete this report from history?"
+  },
+  "report": {
+    "not_found": "Report not found.",
+    "back_link": "← Back to history",
+    "back_btn": "History",
+    "continue_chat": "Continue chat →",
+    "no_destinations": "No destinations in this report."
+  },
+  "profile": {
+    "nomad_label": "Digital nomad",
+    "title": "Your nomad profile",
+    "edit": "Edit",
+    "save": "Save changes",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "not_specified": "Not specified",
+    "comma_hint": "Comma-separated",
+    "empty_desc": "You don't have a saved profile yet. Start a conversation in the chat and NomadAI will build your profile automatically.",
+    "error_save": "Error saving. Please try again.",
+    "budget_display": "${{amount}} USD / month",
+    "field_hobbies": "Hobbies",
+    "field_goals": "Goals",
+    "field_budget": "Monthly budget (USD)",
+    "field_budget_label": "Budget",
+    "field_timezone": "Timezone",
+    "field_nationality": "Nationality",
+    "field_climate": "Preferred climate"
+  }
+}

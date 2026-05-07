@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import { deleteReport, getReports } from '../lib/api'
 
@@ -13,6 +14,7 @@ interface Report {
 export default function History() {
   const { userId, credential } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
@@ -26,7 +28,7 @@ export default function History() {
   }, [userId, credential])
 
   function formatDate(iso: string) {
-    return new Date(iso).toLocaleDateString('es-AR', {
+    return new Date(iso).toLocaleDateString(undefined, {
       day: '2-digit', month: 'short', year: 'numeric',
       hour: '2-digit', minute: '2-digit',
     })
@@ -35,7 +37,7 @@ export default function History() {
   async function handleDelete(e: React.MouseEvent, report: Report) {
     e.stopPropagation()
     if (!userId || !credential) return
-    if (!confirm('¿Eliminar este reporte del historial?')) return
+    if (!confirm(t('history.delete_confirm'))) return
     setDeleting(report.created_at)
     try {
       await deleteReport(userId, credential, report.created_at)
@@ -60,10 +62,8 @@ export default function History() {
     <div className="h-full flex flex-col items-center justify-center p-8 text-center">
       <div className="max-w-sm flex flex-col items-center gap-4">
         <span className="text-4xl">📋</span>
-        <h2 className="text-lg font-bold text-zinc-100">Sin reportes todavía</h2>
-        <p className="text-sm text-zinc-500 leading-relaxed">
-          Cuando NomadAI genere tu primera recomendación de destinos, va a aparecer acá guardada automáticamente.
-        </p>
+        <h2 className="text-lg font-bold text-zinc-100">{t('history.empty_title')}</h2>
+        <p className="text-sm text-zinc-500 leading-relaxed">{t('history.empty_desc')}</p>
       </div>
     </div>
   )
@@ -71,7 +71,7 @@ export default function History() {
   return (
     <div className="h-full overflow-y-auto custom-scrollbar">
       <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-zinc-300 mb-1">Tus reportes de destinos</h2>
+        <h2 className="text-sm font-semibold text-zinc-300 mb-1">{t('history.title')}</h2>
 
         {reports.map(report => {
           const key = report.created_at
@@ -96,7 +96,7 @@ export default function History() {
                       </span>
                     ))}
                     {report.destinations.length === 0 && (
-                      <span className="text-xs text-zinc-500">Sin destinos</span>
+                      <span className="text-xs text-zinc-500">{t('history.no_destinations')}</span>
                     )}
                   </div>
                   <p className="text-xs text-zinc-500">{formatDate(report.created_at)}</p>

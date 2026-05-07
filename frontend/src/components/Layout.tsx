@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import { getReports } from '../lib/api'
 
@@ -55,16 +56,17 @@ interface Session {
 
 // ── Bottom nav items (mobile) ─────────────────────────────────────────────────
 
-const BOTTOM_NAV = [
-  { to: '/chat',    Icon: ChatIcon,    label: 'Chat' },
-  { to: '/history', Icon: HistoryIcon, label: 'Historial' },
-  { to: '/profile', Icon: UserIcon,    label: 'Perfil' },
+const BOTTOM_NAV_KEYS = [
+  { to: '/chat',    Icon: ChatIcon,    labelKey: 'layout.chat' },
+  { to: '/history', Icon: HistoryIcon, labelKey: 'layout.history' },
+  { to: '/profile', Icon: UserIcon,    labelKey: 'layout.profile' },
 ]
 
 // ── Layout ───────────────────────────────────────────────────────────────────
 
 export default function Layout() {
   const { userId, userName, userPicture, credential, logout } = useAuth()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams] = useSearchParams()
@@ -135,7 +137,7 @@ export default function Layout() {
                    fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
-              Nueva búsqueda
+              {t('layout.new_search')}
             </button>
           </div>
 
@@ -176,7 +178,7 @@ export default function Layout() {
               {({ isActive }) => (
                 <>
                   <HistoryIcon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : ''}`} />
-                  Historial
+                  {t('layout.history')}
                 </>
               )}
             </NavLink>
@@ -192,7 +194,7 @@ export default function Layout() {
               {({ isActive }) => (
                 <>
                   <UserIcon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : ''}`} />
-                  Perfil
+                  {t('layout.profile')}
                 </>
               )}
             </NavLink>
@@ -210,7 +212,7 @@ export default function Layout() {
             className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition-colors w-full"
           >
             <LogoutIcon className="w-4 h-4" />
-            Salir
+            {t('layout.logout')}
           </button>
         </div>
       </aside>
@@ -230,7 +232,7 @@ export default function Layout() {
               onClick={handleLogout}
               className="text-xs text-zinc-500 border border-zinc-800 rounded-md px-2 py-1 hover:text-zinc-300 hover:border-zinc-600 transition-colors"
             >
-              Salir
+              {t('layout.logout')}
             </button>
           </div>
         </header>
@@ -243,7 +245,7 @@ export default function Layout() {
         {/* Bottom nav (mobile) */}
         <nav className="md:hidden flex-shrink-0 border-t border-zinc-800/60 bg-zinc-950/90 backdrop-blur-sm">
           <div className="flex">
-            {BOTTOM_NAV.map(({ to, Icon, label }) => (
+            {BOTTOM_NAV_KEYS.map(({ to, Icon, labelKey }) => (
               <NavLink
                 key={to}
                 to={to}
@@ -255,7 +257,7 @@ export default function Layout() {
                 {({ isActive }) => (
                   <>
                     <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-400' : ''}`} />
-                    {label}
+                    {t(labelKey)}
                   </>
                 )}
               </NavLink>

@@ -66,6 +66,8 @@
     "budget_label": "Presupuesto mensual (USD, todo incluido)",
     "climate_label": "Clima preferido",
     "hobbies_label": "¿Cuáles son tus hobbies?",
+    "hobby_placeholder": "Agregá uno que no esté en la lista...",
+    "hobby_add": "Agregar",
     "goals_label": "¿Qué buscás en tu próximo destino?",
     "confirm_label": "Todo listo — revisá tu perfil",
     "confirm_timezone": "Zona horaria",

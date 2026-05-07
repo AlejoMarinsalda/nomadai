@@ -66,6 +66,8 @@
     "budget_label": "Monthly budget (USD, all-in)",
     "climate_label": "Preferred climate",
     "hobbies_label": "What are your hobbies?",
+    "hobby_placeholder": "Add one that's not in the list...",
+    "hobby_add": "Add",
     "goals_label": "What are you looking for in your next destination?",
     "confirm_label": "All set — review your profile",
     "confirm_timezone": "Timezone",

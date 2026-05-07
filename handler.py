@@ -14,6 +14,14 @@ logger = logging.getLogger(__name__)
 _http_handler = Mangum(app, lifespan="off")
 
 
+def _flush_langsmith():
+    try:
+        from langsmith import Client
+        Client().flush()
+    except Exception:
+        pass
+
+
 def handler(event, context):
     # Lambda puede recibir dos tipos de eventos distintos:
     # 1. HTTP request via Function URL → lo maneja Mangum/FastAPI
@@ -101,4 +109,5 @@ async def _process_sqs(event):
             # Reportar como fallo para que SQS reintente y eventualmente mande a la DLQ
             batch_item_failures.append({"itemIdentifier": message_id})
 
+    _flush_langsmith()
     return {"batchItemFailures": batch_item_failures}

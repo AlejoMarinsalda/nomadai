@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { marked } from '../lib/marked'
+import { useAuth } from '../hooks/useAuth'
+import { getReports } from '../lib/api'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -26,7 +28,6 @@ interface Report {
 // ── Markdown parser ───────────────────────────────────────────────────────────
 
 function cityName(heading: string): string {
-  // Strip leading emoji / punctuation, take text before first comma
   const clean = heading.replace(/^[^A-Za-zÀ-ÿ]+/, '').trim()
   return clean.split(',')[0].trim() || heading
 }
@@ -54,11 +55,11 @@ function parseReport(markdown: string): Country[] {
   }
 
   for (const line of lines) {
-    if (line.startsWith('## ')) {
+    if (/^##\s/.test(line) && !/^###/.test(line)) {
       if (currentSection) flushSection()
       else flushIntro()
 
-      const heading = line.slice(3).trim()
+      const heading = line.replace(/^##\s+/, '').trim()
       if (/alojarte/i.test(heading)) {
         current = null
         currentSection = null
@@ -69,10 +70,11 @@ function parseReport(markdown: string): Country[] {
       current = { heading, city: cityName(heading), intro: '', sections: [] }
       countries.push(current)
       buf = []
-    } else if (line.startsWith('### ') && current) {
+    } else if (/^###\s/.test(line) && current) {
       if (currentSection) flushSection()
       else flushIntro()
-      currentSection = { title: line.slice(4).trim(), content: '' }
+      const title = line.replace(/^###\s+/, '').trim()
+      currentSection = { title, content: '' }
       buf = []
     } else if (current !== null) {
       buf.push(line)
@@ -99,13 +101,40 @@ function formatDate(iso: string) {
 export default function ReportDetail() {
   const navigate = useNavigate()
   const location = useLocation()
-  const report = (location.state as { report?: Report } | null)?.report
+  const { sessionId } = useParams<{ sessionId: string }>()
+  const { userId, credential } = useAuth()
 
+  const stateReport = (location.state as { report?: Report } | null)?.report
+
+  const [report, setReport] = useState<Report | null>(stateReport ?? null)
+  const [fetching, setFetching] = useState(!stateReport)
   const [selected, setSelected] = useState(0)
+
+  // Fetch from API if state wasn't passed (direct URL access / page refresh)
+  useEffect(() => {
+    if (stateReport) { setFetching(false); return }
+    if (!userId || !credential || !sessionId) { setFetching(false); return }
+    getReports(userId, credential)
+      .then(data => {
+        const found = data.reports.find(r => r.session_id === sessionId) ?? null
+        setReport(found)
+      })
+      .catch(() => {})
+      .finally(() => setFetching(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId])
 
   const countries = useMemo(
     () => (report ? parseReport(report.report_text) : []),
     [report],
+  )
+
+  if (fetching) return (
+    <div className="h-full flex flex-col gap-3 p-4 max-w-2xl mx-auto w-full">
+      {[1, 2, 3].map(i => (
+        <div key={i} className="h-16 bg-zinc-900 border border-zinc-800 rounded-xl animate-pulse" />
+      ))}
+    </div>
   )
 
   if (!report) return (
@@ -142,55 +171,63 @@ export default function ReportDetail() {
         <span className="text-xs text-zinc-500">{formatDate(report.created_at)}</span>
       </div>
 
-      {/* Country tabs — horizontal scrollable bar */}
-      <div className="flex-shrink-0 border-b border-zinc-800/60 overflow-x-auto">
-        <div className="flex gap-1 px-3 py-2.5 min-w-max">
-          {countries.map((c, i) => (
-            <button
-              key={i}
-              onClick={() => setSelected(i)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap border
-                ${selected === i
-                  ? 'bg-zinc-800 text-zinc-100 border-zinc-700'
-                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 border-transparent'
-                }`}
-            >
-              {c.city}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Sections */}
-      {country ? (
+      {countries.length === 0 ? (
+        /* Fallback: show raw markdown if parser found nothing */
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="max-w-2xl mx-auto px-4 py-5 flex flex-col gap-2.5">
-
-            {/* Score / cost line */}
-            {country.intro && (
-              <div
-                className="prose-chat text-sm px-1 pb-1"
-                dangerouslySetInnerHTML={{ __html: marked.parse(country.intro) as string }}
-              />
-            )}
-
-            {/* Collapsible sections */}
-            {country.sections.map((sec, j) => (
-              <details key={j} className="section-block">
-                <summary className="section-title">{sec.title}</summary>
-                <div
-                  className="section-body prose-chat text-sm"
-                  dangerouslySetInnerHTML={{ __html: marked.parse(sec.content) as string }}
-                />
-              </details>
-            ))}
-
-          </div>
+          <div
+            className="max-w-2xl mx-auto px-4 py-5 prose-chat text-sm"
+            dangerouslySetInnerHTML={{ __html: marked.parse(report.report_text) as string }}
+          />
         </div>
       ) : (
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-zinc-600">No hay destinos en este reporte.</p>
-        </div>
+        <>
+          {/* Country tabs — horizontal scrollable bar */}
+          <div className="flex-shrink-0 border-b border-zinc-800/60 overflow-x-auto">
+            <div className="flex gap-1 px-3 py-2.5 min-w-max">
+              {countries.map((c, i) => (
+                <button
+                  key={i}
+                  onClick={() => setSelected(i)}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap border
+                    ${selected === i
+                      ? 'bg-zinc-800 text-zinc-100 border-zinc-700'
+                      : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 border-transparent'
+                    }`}
+                >
+                  {c.city}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Sections */}
+          {country && (
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              <div className="max-w-2xl mx-auto px-4 py-5 flex flex-col gap-2.5">
+
+                {/* Score / cost intro */}
+                {country.intro && (
+                  <div
+                    className="prose-chat text-sm px-1 pb-1"
+                    dangerouslySetInnerHTML={{ __html: marked.parse(country.intro) as string }}
+                  />
+                )}
+
+                {/* Collapsible sections */}
+                {country.sections.map((sec, j) => (
+                  <details key={j} className="section-block">
+                    <summary className="section-title">{sec.title}</summary>
+                    <div
+                      className="section-body prose-chat text-sm"
+                      dangerouslySetInnerHTML={{ __html: marked.parse(sec.content) as string }}
+                    />
+                  </details>
+                ))}
+
+              </div>
+            </div>
+          )}
+        </>
       )}
 
     </div>

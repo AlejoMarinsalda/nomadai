@@ -199,10 +199,10 @@ class TestCompilerNode:
         assert "booking.com" in report
 
     def test_includes_local_info_when_present(self, complete_state, sample_destination):
-        from app.nodes.compiler_node import compiler_node, _format_destination
+        from app.nodes.compiler_node import _format_dest_for_prompt
 
         sample_destination.local_info = "HOBBIES: Futbol 5 El Estadio\nNETWORKING: Selina Medellín"
-        formatted = _format_destination(sample_destination)
+        formatted = _format_dest_for_prompt(sample_destination)
 
         assert "Futbol 5 El Estadio" in formatted
         assert "Selina Medellín" in formatted

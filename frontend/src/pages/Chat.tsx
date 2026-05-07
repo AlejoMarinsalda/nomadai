@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useLocation, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { marked } from '../lib/marked'
 import { useAuth } from '../hooks/useAuth'
@@ -47,6 +47,7 @@ function loadMessages(sessionId: string | null): Message[] {
 export default function Chat() {
   const { userId, userName, credential, logout } = useAuth()
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const location = useLocation()
   const sessionParam = searchParams.get('session')
@@ -132,12 +133,12 @@ export default function Chat() {
           addMsg({ id: crypto.randomUUID(), role: 'assistant',
             content: t('chat.welcome_back', { name: firstName }) })
         } else {
-          addMsg({ id: crypto.randomUUID(), role: 'assistant',
-            content: t('chat.welcome_new', { name: firstName }) })
+          // Sin perfil → onboarding visual
+          navigate('/onboarding', { replace: true })
         }
       })
       .catch(err => { if (err.message === 'UNAUTHORIZED') logout() })
-  }, [welcomeDone, userId, credential, userName, addMsg, logout, t])
+  }, [welcomeDone, userId, credential, userName, addMsg, logout, t, navigate])
 
   // ── Job polling ───────────────────────────────────────────────────────────
 

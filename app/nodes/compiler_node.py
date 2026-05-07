@@ -4,33 +4,54 @@ from app.graph.state import NomadState, Destination
 from app.config import settings
 
 
-_SYSTEM = """Sos un asistente experto en nómadas digitales. Generás reportes claros, amigables y útiles.
-Cuando recibas datos de destinos recomendados, armalos en un reporte en español con esta estructura por destino:
+_SYSTEM = """Sos un asistente experto en nómadas digitales. Generás reportes visuales, detallados y agradables.
 
-1. Nombre del destino + score de afinidad + costo mensual
-2. Por qué encaja con el perfil (usá los match_reasons que te doy, no los inventes)
-3. Sección "🏃 Hobbies y estilo de vida": para CADA hobby del usuario, mencioná lugares concretos,
-   ligas, clubes, eventos o comunidades específicas de esa ciudad. Sé detallado.
-4. Sección "🤝 Networking y comunidad": comunidades de nómadas digitales activas, coworkings populares,
-   meetups, grupos de Slack/WhatsApp/Facebook conocidos en esa ciudad. Mencioná nombres reales.
-5. Mejor época para visitar + clima
-6. Info de visa
-7. Videos de YouTube (formateá cada URL como un link markdown: [Mirá este video](URL))
+Usá EXACTAMENTE esta estructura markdown para cada destino:
 
-Importante:
-- Los links de YouTube SIEMPRE en formato markdown: [texto descriptivo](https://youtube.com/...)
-- Nunca uses la palabra "undefined"
-- Usá emojis y markdown para que sea visualmente agradable
-- Cierre motivador al final del reporte completo"""
+## 🌍 {Ciudad}, {País}
+**✨ Afinidad: {score}/100** · **💰 ~${costo} USD/mes**
+
+### ✅ ¿Por qué encaja con tu perfil?
+- ✓ {razón 1}
+- ✓ {razón 2}
+
+### 🏄 Hobbies y estilo de vida
+Para CADA hobby del usuario mencioná lugares, clubes, eventos o comunidades concretas de esa ciudad.
+Usá 📍 para lugares, 🏋️/🚴/🎨 etc. según el hobby, y **nombre en negrita** para cada lugar.
+
+### 🤝 Networking y comunidad
+Coworkings, meetups, grupos de Slack/WhatsApp. Usá 💻 para coworkings, 👥 para meetups.
+
+### ☀️ Clima y mejor época
+🗓️ **Mejor época**: meses
+🌡️ Temperatura y descripción breve.
+⚠️ **Evitar**: meses si aplica.
+
+### 🛂 Visa y requisitos
+📋 Estado y tipo de visa.
+Lista de requisitos con ✅ o ❗ según dificultad.
+
+### 🎬 Videos de YouTube
+Un link markdown por línea: [Título descriptivo del video](URL)
+NO uses listas con guión para los videos, cada link va en su propia línea.
+
+---
+
+REGLAS IMPORTANTES:
+- Usá ## para el nombre de cada ciudad (con emoji de bandera del país si la conocés)
+- Usá ### para cada sección
+- Emojis variados y relevantes en todo el contenido
+- Links de YouTube SIEMPRE en formato markdown: [texto](URL)
+- Nunca escribas "undefined"
+- Cerrá el reporte completo con un párrafo motivador con emojis 🚀✈️🌟"""
 
 
 def _accommodation_section(destinations: list) -> str:
-    """Construye la sección de alojamiento fuera del LLM para garantizar que los links aparezcan."""
     lines = ["\n---\n## 🏠 Dónde alojarte\n"]
     for dest in destinations:
         if not dest.accommodation_links:
             continue
-        lines.append(f"### {dest.city}, {dest.country}\n")
+        lines.append(f"### 📍 {dest.city}, {dest.country}\n")
         for link in dest.accommodation_links:
             lines.append(f"- [{link['label']}]({link['url']})")
         lines.append("")
@@ -50,7 +71,7 @@ def _format_destination(dest: Destination) -> str:
     local_info_section = f"\nInformación local verificada:\n{dest.local_info}" if dest.local_info else ""
 
     return f"""
-**{dest.city}, {dest.country}** — Match: {dest.match_score:.0f}/100
+{dest.city}, {dest.country} — Match: {dest.match_score:.0f}/100
 Costo mensual estimado: ~${dest.monthly_cost_usd} USD
 
 Por qué encaja con tu perfil:

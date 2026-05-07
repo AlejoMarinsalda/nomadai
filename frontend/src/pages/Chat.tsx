@@ -29,16 +29,22 @@ marked.use({
   },
 })
 
-// Wrap every H3 section in a <details><summary> block for collapsible UX
+// Wrap every H3 section in a <details><summary> block for collapsible UX.
+// Split on <h3> boundaries so each chunk owns exactly one section's content.
 function wrapH3Sections(html: string): string {
-  return html.replace(
-    /<h3>([\s\S]*?)<\/h3>([\s\S]*?)(?=<h3>|<h2>|<hr\s*\/?>|$)/g,
-    (_m, title: string, body: string) =>
-      `<details class="section-block">` +
-      `<summary class="section-title">${title}</summary>` +
-      `<div class="section-body">${body}</div>` +
-      `</details>`,
-  )
+  return html
+    .split(/(?=<h3>)/i)
+    .map(part => {
+      const m = part.match(/^<h3>([\s\S]*?)<\/h3>([\s\S]*)$/i)
+      if (!m) return part
+      return (
+        `<details class="section-block">` +
+        `<summary class="section-title">${m[1]}</summary>` +
+        `<div class="section-body">${m[2]}</div>` +
+        `</details>`
+      )
+    })
+    .join('')
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────

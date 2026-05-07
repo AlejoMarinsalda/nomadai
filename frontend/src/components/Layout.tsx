@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
-import { getReports } from '../lib/api'
+import { deleteReport, getReports } from '../lib/api'
 
 // ── Icons ────────────────────────────────────────────────────────────────────
 
@@ -76,6 +76,7 @@ export default function Layout() {
     location.pathname.match(/\/history\/([^/]+)/)?.[1] ||
     null
   const [sessions, setSessions] = useState<Session[]>([])
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   const isGuest = userId?.startsWith('guest_') ?? false
 
@@ -100,6 +101,22 @@ export default function Layout() {
     return () => window.removeEventListener('nomadai:newreport', fetchSessions)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, credential])
+
+  async function handleDeleteSession(e: React.MouseEvent, s: Session) {
+    e.stopPropagation()
+    if (!userId || !credential) return
+    setDeleting(s.session_id)
+    try {
+      await deleteReport(userId, credential, s.created_at)
+      setSessions(prev => prev.filter(r => r.session_id !== s.session_id))
+      // Si el usuario está viendo la sesión eliminada, lo manda al historial
+      if (activeSession === s.session_id) navigate('/history', { replace: true })
+    } catch {
+      // silent
+    } finally {
+      setDeleting(null)
+    }
+  }
 
   function handleLogout() {
     logout()
@@ -145,20 +162,41 @@ export default function Layout() {
           {sessions.length > 0 && (
             <div className="flex-1 overflow-y-auto custom-scrollbar px-2 flex flex-col gap-0.5">
               {sessions.map(s => {
-                const label = s.destinations.map(d => d.city).join(', ') || 'Búsqueda'
+                const label = s.destinations.map(d => d.city).join(', ') || t('layout.new_search')
                 const isActive = activeSession === s.session_id
+                const isDeleting = deleting === s.session_id
                 return (
-                  <button
+                  <div
                     key={s.session_id}
-                    onClick={() => navigate(`/history/${s.session_id}`, { state: { report: s } })}
-                    className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-left transition-colors
+                    className={`group w-full flex items-center rounded-lg text-xs transition-colors
                       ${isActive
                         ? 'bg-zinc-800 text-zinc-200'
                         : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900'}`}
                   >
-                    <span className="flex-shrink-0">🗺️</span>
-                    <span className="truncate">{label}</span>
-                  </button>
+                    <button
+                      onClick={() => navigate(`/history/${s.session_id}`, { state: { report: s } })}
+                      className="flex-1 flex items-center gap-2 px-3 py-2 text-left min-w-0"
+                    >
+                      <span className="flex-shrink-0">🗺️</span>
+                      <span className="truncate">{label}</span>
+                    </button>
+                    <button
+                      onClick={e => handleDeleteSession(e, s)}
+                      disabled={isDeleting}
+                      className="flex-shrink-0 pr-2 pl-1 py-2 opacity-0 group-hover:opacity-100 text-zinc-600 hover:text-red-400 transition-all disabled:opacity-40"
+                    >
+                      {isDeleting
+                        ? <span className="text-[10px]">…</span>
+                        : <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24"
+                               fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                            <path d="M10 11v6M14 11v6"/>
+                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                          </svg>
+                      }
+                    </button>
+                  </div>
                 )
               })}
             </div>

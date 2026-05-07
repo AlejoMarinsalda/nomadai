@@ -82,7 +82,9 @@ async def _process_sqs(event):
             if result.get("profile_complete") and not prev_complete:
                 await asyncio.to_thread(save_profile, user_id, result["user_profile"])
 
-            result_data = result.get("result_data")
+            # result_data solo se incluye en el primer pipeline run (had_report=False)
+            # En followup messages no queremos navegar de vuelta a Results
+            result_data = None if had_report else result.get("result_data")
 
             if final_report and not user_id.startswith("guest_"):
                 await asyncio.to_thread(

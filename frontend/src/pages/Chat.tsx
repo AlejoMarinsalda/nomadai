@@ -167,12 +167,27 @@ export default function Chat() {
     })
   }
 
+  // ── Auto-intro when arriving from Results ────────────────────────────────
+
+  const introSent = useRef(false)
+  useEffect(() => {
+    if (introSent.current || !sessionParam || !userId || !credential) return
+    const s = location.state as { result?: { destinations: { city: string }[] } } | null
+    if (!s?.result?.destinations?.length) return
+    introSent.current = true
+    const cities = s.result.destinations.map(d => d.city).join(', ')
+    const introMsg = t('chat.intro_from_results', { cities })
+    // slight delay so the component is fully mounted
+    setTimeout(() => send(introMsg), 300)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, credential, sessionParam])
+
   // ── Send message ──────────────────────────────────────────────────────────
 
-  async function send() {
-    const text = input.trim()
+  async function send(overrideText?: string) {
+    const text = (overrideText ?? input).trim()
     if (!text || loading || !userId || !credential) return
-    setInput('')
+    if (!overrideText) setInput('')
     setLoading(true)
 
     const labels = LABELS
@@ -317,7 +332,7 @@ export default function Chat() {
               className="flex-1 bg-zinc-900 border border-zinc-700 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 resize-none outline-none max-h-40 leading-relaxed transition-all"
             />
             <button
-              onClick={send}
+              onClick={() => send()}
               disabled={loading || !input.trim()}
               className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-white transition-all disabled:opacity-25 disabled:cursor-not-allowed hover:opacity-85 active:scale-95"
               style={{ background: 'linear-gradient(135deg, #10b981, #6366f1)' }}

@@ -30,13 +30,14 @@ marked.use({
 })
 
 // Wrap every H3 section in a <details><summary> block for collapsible UX.
-// Split on <h3> boundaries so each chunk owns exactly one section's content.
+// Split on <h3>, <h2> AND <hr> so that separators, city headings, and the
+// closing paragraph never get swallowed into the last section's body.
 function wrapH3Sections(html: string): string {
   return html
-    .split(/(?=<h3>)/i)
+    .split(/(?=<h[23]>|<hr\s*\/?>)/i)
     .map(part => {
       const m = part.match(/^<h3>([\s\S]*?)<\/h3>([\s\S]*)$/i)
-      if (!m) return part
+      if (!m) return part   // h2, hr, plain paragraphs → unchanged
       return (
         `<details class="section-block">` +
         `<summary class="section-title">${m[1]}</summary>` +

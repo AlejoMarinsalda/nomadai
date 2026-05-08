@@ -120,7 +120,10 @@
     "confirm_budget": "Presupuesto",
     "confirm_climate": "Clima",
     "confirm_hobbies": "Hobbies",
-    "confirm_goals": "Objetivos"
+    "confirm_goals": "Objetivos",
+    "pipeline_error": "Hubo un problema al buscar tus destinos. Intentá de nuevo.",
+    "error_title": "Algo salió mal",
+    "retry": "Intentar de nuevo"
   },
   "profile": {
     "nomad_label": "Nómada digital",

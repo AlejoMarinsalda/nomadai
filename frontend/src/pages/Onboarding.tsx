@@ -98,6 +98,7 @@ export default function Onboarding() {
   const [step, setStepp]              = useState(1)
   const [saving, setSaving]           = useState(false)
   const [pollingLabel, setPollingLabel] = useState('')
+  const [pipelineError, setPipelineError] = useState('')
 
   // Form state
   const [timezone, setTimezone]       = useState(TIMEZONES[5])   // UTC-3 default
@@ -187,8 +188,9 @@ export default function Onboarding() {
                 window.dispatchEvent(new CustomEvent('nomadai:newreport'))
                 navigate(`/results/${session_id}`, { replace: true, state: { result: data.result_data } })
               } else {
-                // Fallback: no result_data, go to chat
-                navigate(`/chat?session=${session_id}`, { replace: true })
+                setSaving(false)
+                setPollingLabel('')
+                setPipelineError(t('onboarding.pipeline_error'))
               }
               resolve()
             }
@@ -495,6 +497,32 @@ export default function Onboarding() {
               {t('onboarding.searching_title')}
             </p>
             <p className="text-sm text-stone-500">{pollingLabel}...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error overlay */}
+      {pipelineError && (
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-6 z-50 px-8"
+          style={{ background: BG }}
+        >
+          <div className="text-center max-w-sm">
+            <p className="text-4xl mb-4">⚠️</p>
+            <p
+              className="text-2xl font-bold text-zinc-900 mb-3"
+              style={{ fontFamily: 'Cormorant Garamond, serif' }}
+            >
+              {t('onboarding.error_title')}
+            </p>
+            <p className="text-sm text-stone-500 mb-6">{pipelineError}</p>
+            <button
+              onClick={() => { setPipelineError(''); setSaving(false) }}
+              className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white"
+              style={{ background: ACCENT }}
+            >
+              {t('onboarding.retry')}
+            </button>
           </div>
         </div>
       )}

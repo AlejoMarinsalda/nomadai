@@ -124,12 +124,32 @@ def _enrich_local_info(dest: Destination, hobbies: list[str]) -> str:
 
 
 async def _enrich_one(dest: Destination, nationality: str, hobbies: list[str], language: str) -> Destination:
-    media, climate, visa, local_info = await asyncio.gather(
+    # LangGraph checkpoint deserialization may return dicts instead of Pydantic objects
+    if isinstance(dest, dict):
+        dest = Destination(**dest)
+
+    results = await asyncio.gather(
         asyncio.to_thread(_enrich_media, dest),
         asyncio.to_thread(_enrich_climate, dest, language),
         asyncio.to_thread(_enrich_visa, dest, nationality, language),
         asyncio.to_thread(_enrich_local_info, dest, hobbies),
+        return_exceptions=True,
     )
+
+    media      = results[0] if isinstance(results[0], DestinationMedia) else DestinationMedia()
+    climate    = results[1] if isinstance(results[1], ClimateInfo)      else ClimateInfo()
+    visa       = results[2] if isinstance(results[2], VisaInfo)         else VisaInfo()
+    local_info = results[3] if isinstance(results[3], str)              else ""
+
+    if isinstance(results[0], Exception):
+        logger.warning("_enrich_media falló para %s: %s", dest.city, results[0])
+    if isinstance(results[1], Exception):
+        logger.warning("_enrich_climate falló para %s: %s", dest.city, results[1])
+    if isinstance(results[2], Exception):
+        logger.warning("_enrich_visa falló para %s: %s", dest.city, results[2])
+    if isinstance(results[3], Exception):
+        logger.warning("_enrich_local_info falló para %s: %s", dest.city, results[3])
+
     return dest.model_copy(update={
         "media": media,
         "climate": climate,
@@ -144,7 +164,17 @@ async def enrichment_node(state: NomadState) -> dict:
     hobbies     = state.user_profile.hobbies or []
     language    = state.language
 
-    enriched = await asyncio.gather(*[
+    results = await asyncio.gather(*[
         _enrich_one(dest, nationality, hobbies, language) for dest in state.destinations
-    ])
-    return {"destinations": list(enriched)}
+    ], return_exceptions=True)
+
+    enriched = []
+    for i, r in enumerate(results):
+        if isinstance(r, Exception):
+            logger.warning("_enrich_one falló para destino %d: %s", i, r)
+            raw = state.destinations[i]
+            enriched.append(raw if isinstance(raw, Destination) else Destination(**raw))
+        else:
+            enriched.append(r)
+
+    return {"destinations": enriched}

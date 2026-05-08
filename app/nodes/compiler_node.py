@@ -180,8 +180,7 @@ def compiler_node(state: NomadState) -> dict:
     )
 
     destinations_text = "\n\n".join(
-        _format_dest_for_prompt(d) if not isinstance(d, dict)
-        else f"=== CITY: {d.get('city')}, {d.get('country')} ===\nCost: ~${d.get('monthly_cost_usd')}/mo\n"
+        _format_dest_for_prompt(d if not isinstance(d, dict) else Destination(**d))
         for d in state.destinations
     )
 

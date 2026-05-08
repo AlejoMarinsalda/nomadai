@@ -14,8 +14,21 @@ const CARD   = '#FFFFFF'
 const MUTED  = '#9E9186'
 
 // ── Month labels ───────────────────────────────────────────────────────────────
-const ALL_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+const ALL_MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 const ALL_MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+
+// Map any Spanish month abbreviation to English (for display when lang=en)
+const ES_TO_EN: Record<string, string> = {
+  ene:'Jan', feb:'Feb', mar:'Mar', abr:'Apr', may:'May', jun:'Jun',
+  jul:'Jul', ago:'Aug', sep:'Sep', oct:'Oct', nov:'Nov', dic:'Dec',
+}
+
+function localizeMonths(months: string[], lang: string): string[] {
+  if (lang.startsWith('en')) {
+    return months.map(m => ES_TO_EN[m.toLowerCase()] ?? m)
+  }
+  return months
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -206,8 +219,11 @@ export default function DestinationDetail() {
             {/* Month bars */}
             <div className="flex gap-1 items-end mb-2" style={{ height: 48 }}>
               {months.map((m, i) => {
-                const isBest  = dest.climate.best_months.some(bm => bm.toLowerCase().startsWith(m.toLowerCase().slice(0, 3)))
-                const isAvoid = dest.climate.avoid_months.some(am => am.toLowerCase().startsWith(m.toLowerCase().slice(0, 3)))
+                // Normalize stored months (may be ES or EN) to match display language
+                const stored_best  = localizeMonths(dest.climate.best_months, i18n.language)
+                const stored_avoid = localizeMonths(dest.climate.avoid_months, i18n.language)
+                const isBest  = stored_best.some(bm => bm.toLowerCase().startsWith(m.toLowerCase().slice(0, 3)))
+                const isAvoid = stored_avoid.some(am => am.toLowerCase().startsWith(m.toLowerCase().slice(0, 3)))
                 const height  = isBest ? 48 : isAvoid ? 16 : 32
                 return (
                   <div key={m} className="flex flex-col items-center gap-1 flex-1">
@@ -226,7 +242,7 @@ export default function DestinationDetail() {
             </div>
             {dest.climate.best_months.length > 0 && (
               <p className="text-xs mt-3" style={{ color: DARK }}>
-                {t('destination.best_months')}: <strong>{dest.climate.best_months.join(', ')}</strong>
+                {t('destination.best_months')}: <strong>{localizeMonths(dest.climate.best_months, i18n.language).join(', ')}</strong>
               </p>
             )}
           </Card>

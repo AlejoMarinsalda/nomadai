@@ -136,7 +136,13 @@ def destination_node(state: NomadState) -> dict:
 Recomendá exactamente 3 destinos. Si no hay 3 que cumplan todos los filtros, retorná
 los mejores disponibles con match_score reducido y la razón del incumplimiento en match_reasons."""
 
-    response = llm.invoke([SystemMessage(content=_SYSTEM), HumanMessage(content=prompt)])
+    lang_note = (
+        "Write match_reasons in ENGLISH."
+        if state.language.startswith("en")
+        else "Escribí match_reasons en ESPAÑOL."
+    )
+    system = _SYSTEM + f"\n\n{lang_note}"
+    response = llm.invoke([SystemMessage(content=system), HumanMessage(content=prompt)])
 
     data = extract_json(response.content)
     if isinstance(data, list) and data:

@@ -60,9 +60,11 @@ export default function Login() {
     <div className="h-dvh flex flex-col overflow-hidden bg-zinc-950">
       {/* Header */}
       <header className="flex-shrink-0 h-14 flex items-center px-6 border-b border-zinc-800/60">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">🌍</span>
-          <span className="font-bold text-sm gradient-text">NomadAI</span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">✈️</span>
+          <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.15rem', fontWeight: 700, color: '#1C1917' }}>
+            nomad<em style={{ color: '#C84B1A' }}>ai</em>
+          </span>
         </div>
       </header>
 
@@ -83,7 +85,9 @@ export default function Login() {
             >
               🌍
             </span>
-            <h1 className="text-4xl font-extrabold tracking-tight gradient-text">NomadAI</h1>
+            <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '3rem', fontWeight: 700, color: '#1C1917', letterSpacing: '-0.02em' }}>
+              nomad<em style={{ color: '#C84B1A' }}>ai</em>
+            </h1>
             <p className="mt-2.5 text-sm text-zinc-500 leading-relaxed">
               {t('login.subtitle')}
             </p>

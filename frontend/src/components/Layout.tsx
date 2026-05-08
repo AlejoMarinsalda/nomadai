@@ -1,32 +1,39 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import { deleteReport, getReports } from '../lib/api'
 
-// ── Icons ────────────────────────────────────────────────────────────────────
+// ── Design tokens ─────────────────────────────────────────────────────────────
+const BG     = '#F2EDE4'
+const ACCENT = '#C84B1A'
+const DARK   = '#1C1917'
+const BORDER = '#E7E0D7'
+const MUTED  = '#9E9186'
 
-function ChatIcon({ className }: { className?: string }) {
+// ── Icons ─────────────────────────────────────────────────────────────────────
+
+function ChatIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+    <svg className={className} style={style} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
          fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
     </svg>
   )
 }
 
-function HistoryIcon({ className }: { className?: string }) {
+function HistoryIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+    <svg className={className} style={style} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
          fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
     </svg>
   )
 }
 
-function UserIcon({ className }: { className?: string }) {
+function UserIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+    <svg className={className} style={style} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
          fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
       <circle cx="12" cy="7" r="4"/>
@@ -34,9 +41,9 @@ function UserIcon({ className }: { className?: string }) {
   )
 }
 
-function LogoutIcon({ className }: { className?: string }) {
+function LogoutIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+    <svg className={className} style={style} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
          fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
       <polyline points="16 17 21 12 16 7"/>
@@ -45,7 +52,18 @@ function LogoutIcon({ className }: { className?: string }) {
   )
 }
 
-// ── Types ────────────────────────────────────────────────────────────────────
+function Logo() {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-base">✈️</span>
+      <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.15rem', fontWeight: 700, color: DARK }}>
+        nomad<em style={{ color: ACCENT }}>ai</em>
+      </span>
+    </div>
+  )
+}
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 interface Session {
   session_id: string
@@ -54,15 +72,13 @@ interface Session {
   report_text: string
 }
 
-// ── Bottom nav items (mobile) ─────────────────────────────────────────────────
-
 const BOTTOM_NAV_KEYS = [
   { to: '/chat',    Icon: ChatIcon,    labelKey: 'layout.chat' },
   { to: '/history', Icon: HistoryIcon, labelKey: 'layout.history' },
   { to: '/profile', Icon: UserIcon,    labelKey: 'layout.profile' },
 ]
 
-// ── Layout ───────────────────────────────────────────────────────────────────
+// ── Layout ────────────────────────────────────────────────────────────────────
 
 export default function Layout() {
   const { userId, userName, userPicture, credential, logout } = useAuth()
@@ -70,11 +86,12 @@ export default function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams] = useSearchParams()
-  // Active session: either ?session= on /chat, or /:sessionId on /history/:sessionId
+
   const activeSession =
     searchParams.get('session') ||
-    location.pathname.match(/\/history\/([^/]+)/)?.[1] ||
+    location.pathname.match(/\/(?:history|results)\/([^/?]+)/)?.[1] ||
     null
+
   const [sessions, setSessions] = useState<Session[]>([])
   const [deleting, setDeleting] = useState<string | null>(null)
 
@@ -109,7 +126,6 @@ export default function Layout() {
     try {
       await deleteReport(userId, credential, s.created_at)
       setSessions(prev => prev.filter(r => r.session_id !== s.session_id))
-      // Si el usuario está viendo la sesión eliminada, lo manda al historial
       if (activeSession === s.session_id) navigate('/history', { replace: true })
     } catch {
       // silent
@@ -124,31 +140,36 @@ export default function Layout() {
   }
 
   const avatar = userPicture
-    ? <img src={userPicture} alt="avatar" className="w-7 h-7 rounded-full border border-zinc-700 object-cover" />
-    : <div className="w-7 h-7 rounded-full bg-zinc-800 flex items-center justify-center text-xs text-zinc-400 font-medium">
+    ? <img src={userPicture} alt="avatar" className="w-7 h-7 rounded-full object-cover" style={{ border: `1.5px solid ${BORDER}` }} />
+    : <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold"
+           style={{ background: BORDER, color: DARK }}>
         {(userName || '?')[0].toUpperCase()}
       </div>
 
   return (
-    <div className="h-dvh flex overflow-hidden bg-zinc-950">
+    <div className="h-dvh flex overflow-hidden" style={{ background: BG }}>
 
       {/* ── Sidebar (desktop md+) ─────────────────────────────────────────── */}
-      <aside className="hidden md:flex flex-col w-52 border-r border-zinc-800/60 flex-shrink-0">
-
+      <aside
+        className="hidden md:flex flex-col w-52 flex-shrink-0"
+        style={{ borderRight: `1px solid ${BORDER}`, background: BG }}
+      >
         {/* Logo */}
-        <div className="h-14 flex items-center gap-2 px-4 border-b border-zinc-800/60 flex-shrink-0">
-          <span className="text-lg">🌍</span>
-          <span className="font-bold text-sm gradient-text">NomadAI</span>
+        <div className="h-14 flex items-center px-5 flex-shrink-0" style={{ borderBottom: `1px solid ${BORDER}` }}>
+          <Logo />
         </div>
 
-        {/* Searches section */}
-        <div className="flex-1 flex flex-col overflow-hidden py-2">
+        {/* Nav */}
+        <div className="flex-1 flex flex-col overflow-hidden py-3">
 
           {/* Nueva búsqueda */}
-          <div className="px-2 mb-1">
+          <div className="px-3 mb-2">
             <button
-              onClick={() => navigate('/chat')}
-              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-emerald-400 hover:bg-zinc-900 transition-colors"
+              onClick={() => navigate('/onboarding')}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-colors"
+              style={{ color: ACCENT }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#EDE6DA')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24"
                    fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -160,39 +181,43 @@ export default function Layout() {
 
           {/* Session list */}
           {sessions.length > 0 && (
-            <div className="flex-1 overflow-y-auto custom-scrollbar px-2 flex flex-col gap-0.5">
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-3 flex flex-col gap-0.5">
               {sessions.map(s => {
                 const label = s.destinations.map(d => d.city).join(', ') || t('layout.new_search')
                 const isActive = activeSession === s.session_id
-                const isDeleting = deleting === s.session_id
+                const isDel = deleting === s.session_id
                 return (
                   <div
                     key={s.session_id}
-                    className={`group w-full flex items-center rounded-lg text-xs transition-colors
-                      ${isActive
-                        ? 'bg-zinc-800 text-zinc-200'
-                        : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900'}`}
+                    className="group w-full flex items-center rounded-lg text-xs transition-all"
+                    style={{
+                      background:  isActive ? DARK : 'transparent',
+                      color:       isActive ? '#FFFFFF' : MUTED,
+                    }}
+                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#EDE6DA'; e.currentTarget.style.color = DARK }}
+                    onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = MUTED } }}
                   >
                     <button
-                      onClick={() => navigate(`/history/${s.session_id}`, { state: { report: s } })}
+                      onClick={() => navigate(`/results/${s.session_id}`, { state: { report: s } })}
                       className="flex-1 flex items-center gap-2 px-3 py-2 text-left min-w-0"
                     >
-                      <span className="flex-shrink-0">🗺️</span>
+                      <span className="flex-shrink-0 text-xs">✈️</span>
                       <span className="truncate">{label}</span>
                     </button>
                     <button
                       onClick={e => handleDeleteSession(e, s)}
-                      disabled={isDeleting}
-                      className="flex-shrink-0 pr-2 pl-1 py-2 opacity-0 group-hover:opacity-100 text-zinc-600 hover:text-red-400 transition-all disabled:opacity-40"
+                      disabled={isDel}
+                      className="flex-shrink-0 pr-2 pl-1 py-2 opacity-0 group-hover:opacity-100 transition-all disabled:opacity-40"
+                      style={{ color: MUTED }}
+                      onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                      onMouseLeave={e => e.currentTarget.style.color = MUTED}
                     >
-                      {isDeleting
+                      {isDel
                         ? <span className="text-[10px]">…</span>
                         : <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24"
                                fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="3 6 5 6 21 6"/>
                             <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                            <path d="M10 11v6M14 11v6"/>
-                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
                           </svg>
                       }
                     </button>
@@ -202,52 +227,43 @@ export default function Layout() {
             </div>
           )}
 
-          {/* Divider + secondary nav */}
-          <div className={`px-2 flex flex-col gap-0.5 ${sessions.length > 0 ? 'border-t border-zinc-800/60 pt-2 mt-2' : 'mt-auto'}`}>
-            <NavLink
-              to="/history"
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                 ${isActive
-                   ? 'bg-zinc-800 text-zinc-50'
-                   : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900'}`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <HistoryIcon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : ''}`} />
-                  {t('layout.history')}
-                </>
-              )}
-            </NavLink>
-            <NavLink
-              to="/profile"
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                 ${isActive
-                   ? 'bg-zinc-800 text-zinc-50'
-                   : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900'}`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <UserIcon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : ''}`} />
-                  {t('layout.profile')}
-                </>
-              )}
-            </NavLink>
+          {/* Secondary nav */}
+          <div className={`px-3 flex flex-col gap-0.5 ${sessions.length > 0 ? 'pt-2 mt-2' : 'mt-auto'}`}
+               style={sessions.length > 0 ? { borderTop: `1px solid ${BORDER}` } : {}}>
+            {[
+              { to: '/history', Icon: HistoryIcon, key: 'layout.history' },
+              { to: '/profile', Icon: UserIcon,    key: 'layout.profile' },
+            ].map(({ to, Icon, key }) => (
+              <NavLink key={to} to={to}>
+                {({ isActive }) => (
+                  <div
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
+                    style={{
+                      background: isActive ? DARK : 'transparent',
+                      color:      isActive ? '#FFFFFF' : MUTED,
+                    }}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {t(key)}
+                  </div>
+                )}
+              </NavLink>
+            ))}
           </div>
         </div>
 
         {/* User */}
-        <div className="px-2 pb-3 pt-2 border-t border-zinc-800/60 flex flex-col gap-0.5 flex-shrink-0">
+        <div className="px-3 pb-3 pt-2 flex flex-col gap-0.5 flex-shrink-0" style={{ borderTop: `1px solid ${BORDER}` }}>
           <div className="flex items-center gap-2.5 px-3 py-2">
             {avatar}
-            <span className="text-xs text-zinc-400 truncate">{userName}</span>
+            <span className="text-xs truncate" style={{ color: DARK, fontWeight: 500 }}>{userName}</span>
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition-colors w-full"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs w-full transition-colors"
+            style={{ color: MUTED }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#EDE6DA'; e.currentTarget.style.color = DARK }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = MUTED }}
           >
             <LogoutIcon className="w-4 h-4" />
             {t('layout.logout')}
@@ -259,16 +275,17 @@ export default function Layout() {
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
 
         {/* Mobile header */}
-        <header className="md:hidden flex-shrink-0 h-12 flex items-center justify-between px-4 border-b border-zinc-800/60 bg-zinc-950/90 backdrop-blur-sm">
-          <div className="flex items-center gap-2">
-            <span>🌍</span>
-            <span className="font-bold text-sm gradient-text">NomadAI</span>
-          </div>
+        <header
+          className="md:hidden flex-shrink-0 h-12 flex items-center justify-between px-4"
+          style={{ borderBottom: `1px solid ${BORDER}`, background: BG }}
+        >
+          <Logo />
           <div className="flex items-center gap-2">
             {avatar}
             <button
               onClick={handleLogout}
-              className="text-xs text-zinc-500 border border-zinc-800 rounded-md px-2 py-1 hover:text-zinc-300 hover:border-zinc-600 transition-colors"
+              className="text-xs px-2 py-1 rounded-md transition-colors"
+              style={{ color: MUTED, border: `1px solid ${BORDER}` }}
             >
               {t('layout.logout')}
             </button>
@@ -281,21 +298,18 @@ export default function Layout() {
         </main>
 
         {/* Bottom nav (mobile) */}
-        <nav className="md:hidden flex-shrink-0 border-t border-zinc-800/60 bg-zinc-950/90 backdrop-blur-sm">
+        <nav className="md:hidden flex-shrink-0" style={{ borderTop: `1px solid ${BORDER}`, background: BG }}>
           <div className="flex">
             {BOTTOM_NAV_KEYS.map(({ to, Icon, labelKey }) => (
               <NavLink
                 key={to}
                 to={to}
-                className={({ isActive }) =>
-                  `flex-1 flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors
-                   ${isActive ? 'text-emerald-400' : 'text-zinc-500'}`
-                }
+                className="flex-1 flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors"
               >
                 {({ isActive }) => (
                   <>
-                    <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-400' : ''}`} />
-                    {t(labelKey)}
+                    <Icon className="w-5 h-5" style={{ color: isActive ? ACCENT : MUTED }} />
+                    <span style={{ color: isActive ? ACCENT : MUTED }}>{t(labelKey)}</span>
                   </>
                 )}
               </NavLink>

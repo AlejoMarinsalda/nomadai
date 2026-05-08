@@ -259,23 +259,26 @@ export default function Chat() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" style={{ background: '#F2EDE4' }}>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col gap-3">
 
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20 text-center gap-3 opacity-40">
-              <span className="text-4xl">💬</span>
-              <p className="text-sm text-zinc-500">{t('chat.empty')}</p>
+            <div className="flex flex-col items-center justify-center py-20 text-center gap-3" style={{ opacity: 0.4 }}>
+              <span className="text-4xl">✈️</span>
+              <p className="text-sm" style={{ color: '#9E9186' }}>{t('chat.empty')}</p>
             </div>
           )}
 
           {messages.map(msg => {
             if (msg.role === 'user') return (
               <div key={msg.id} className="flex justify-end bubble-in">
-                <div className="max-w-[72%] bg-blue-700 text-white px-4 py-2.5 rounded-2xl rounded-br-[4px] text-sm leading-relaxed">
+                <div
+                  className="max-w-[72%] px-4 py-2.5 rounded-2xl rounded-br-[4px] text-sm leading-relaxed text-white"
+                  style={{ background: '#1C1917' }}
+                >
                   {msg.content}
                 </div>
               </div>
@@ -283,11 +286,14 @@ export default function Chat() {
 
             if (msg.role === 'thinking') return (
               <div key={msg.id} className="flex justify-start bubble-in">
-                <div className="bg-zinc-900 border border-zinc-800 px-4 py-3 rounded-2xl rounded-bl-[4px] flex items-center gap-2.5">
+                <div
+                  className="px-4 py-3 rounded-2xl rounded-bl-[4px] flex items-center gap-2.5"
+                  style={{ background: '#FFFFFF', border: '1px solid #E7E0D7' }}
+                >
                   <div className="flex gap-1">
                     <span className="dot" /><span className="dot" /><span className="dot" />
                   </div>
-                  <span className="text-xs text-zinc-500">{msg.label}</span>
+                  <span className="text-xs" style={{ color: '#9E9186' }}>{msg.label}</span>
                 </div>
               </div>
             )
@@ -295,7 +301,8 @@ export default function Chat() {
             return (
               <div key={msg.id} className="flex justify-start bubble-in w-full">
                 <div
-                  className="w-full bg-zinc-900 border border-zinc-800 px-5 py-4 rounded-2xl rounded-bl-[4px] text-sm prose-chat"
+                  className="w-full px-5 py-4 rounded-2xl rounded-bl-[4px] text-sm prose-chat"
+                  style={{ background: '#FFFFFF', border: '1px solid #E7E0D7' }}
                   dangerouslySetInnerHTML={{ __html: wrapH3Sections(marked.parse(msg.content) as string) }}
                 />
               </div>
@@ -307,7 +314,7 @@ export default function Chat() {
       </div>
 
       {/* Input area */}
-      <div className="border-t border-zinc-800/60 bg-zinc-950/80 backdrop-blur-sm">
+      <div style={{ borderTop: '1px solid #E7E0D7', background: '#F2EDE4' }}>
         <div className="max-w-3xl mx-auto px-4 py-3 flex flex-col gap-2">
           <div className="flex gap-3 items-end">
             <textarea
@@ -321,13 +328,18 @@ export default function Chat() {
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
               rows={1}
               placeholder={t('chat.placeholder')}
-              className="flex-1 bg-zinc-900 border border-zinc-700 focus:border-emerald-500/50 focus:ring-2 focus:ring-emerald-500/10 rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 resize-none outline-none max-h-40 leading-relaxed transition-all"
+              className="flex-1 rounded-xl px-4 py-3 text-sm resize-none outline-none max-h-40 leading-relaxed transition-all"
+              style={{
+                background: '#FFFFFF',
+                border: '1px solid #E7E0D7',
+                color: '#1C1917',
+              }}
             />
             <button
               onClick={() => send()}
               disabled={loading || !input.trim()}
               className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-white transition-all disabled:opacity-25 disabled:cursor-not-allowed hover:opacity-85 active:scale-95"
-              style={{ background: 'linear-gradient(135deg, #10b981, #6366f1)' }}
+              style={{ background: '#1C1917' }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
                    fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -340,14 +352,20 @@ export default function Chat() {
             {sessionParam && (
               <button
                 onClick={() => navigate(`/results/${sessionParam}`)}
-                className="text-xs text-zinc-600 hover:text-zinc-300 transition-colors flex items-center gap-1"
+                className="text-xs transition-colors flex items-center gap-1"
+                style={{ color: '#9E9186' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#1C1917'}
+                onMouseLeave={e => e.currentTarget.style.color = '#9E9186'}
               >
                 ← {t('chat.back_to_results')}
               </button>
             )}
             <button
               onClick={handleReset}
-              className="text-xs text-zinc-600 hover:text-red-400 transition-colors ml-auto"
+              className="text-xs transition-colors ml-auto"
+              style={{ color: '#9E9186' }}
+              onMouseEnter={e => e.currentTarget.style.color = '#C84B1A'}
+              onMouseLeave={e => e.currentTarget.style.color = '#9E9186'}
             >
               {t('chat.reset_btn')}
             </button>

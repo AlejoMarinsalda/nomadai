@@ -4,14 +4,14 @@
 
 body {
   font-family: 'Inter', -apple-system, sans-serif;
-  background: #09090b;
-  color: #f4f4f5;
+  background: #F2EDE4;
+  color: #1C1917;
 }
 
 /* ── Utilities ────────────────────────────────────────────────────────────── */
 
 .gradient-text {
-  background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #C84B1A 0%, #1C1917 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -19,7 +19,7 @@ body {
 
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 2px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #C8BFB2; border-radius: 2px; }
 
 /* ── Bubble animation ─────────────────────────────────────────────────────── */
 
@@ -40,7 +40,7 @@ body {
 .dot {
   display: inline-block;
   width: 5px; height: 5px;
-  background: #52525b;
+  background: #9E9186;
   border-radius: 50%;
   animation: dotBounce 1.4s infinite ease-in-out;
 }
@@ -49,54 +49,49 @@ body {
 
 /* ── Markdown prose (chat bubbles) ───────────────────────────────────────── */
 
-/* H1 — report title */
 .prose-chat h1 {
   font-size: 1.15rem;
   font-weight: 700;
-  color: #fafafa;
+  color: #1C1917;
   margin: 1rem 0 0.5rem;
   text-align: center;
+  font-family: 'Cormorant Garamond', serif;
 }
 
-/* H2 — city / country name: BIG and prominent */
 .prose-chat h2 {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 800;
-  letter-spacing: -0.025em;
+  font-family: 'Cormorant Garamond', serif;
+  letter-spacing: -0.02em;
   line-height: 1.25;
-  background: linear-gradient(135deg, #10b981 0%, #6366f1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 2rem 0 0.35rem;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid #27272a;
+  color: #C84B1A;
+  margin: 1.75rem 0 0.3rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid #E7E0D7;
 }
 .prose-chat h2:first-child { margin-top: 0; }
 
-.prose-chat p  { margin: 0.35rem 0; color: #d4d4d8; line-height: 1.7; }
+.prose-chat p  { margin: 0.35rem 0; color: #3C3530; line-height: 1.7; }
 .prose-chat ul, .prose-chat ol { padding-left: 1.25rem; margin: 0.35rem 0; }
-.prose-chat li { margin: 0.25rem 0; color: #d4d4d8; line-height: 1.6; }
-.prose-chat a  { color: #60a5fa; text-decoration: underline; text-underline-offset: 2px; }
-.prose-chat a:hover { color: #93c5fd; }
-.prose-chat strong { color: #fafafa; font-weight: 600; }
-.prose-chat hr { border: none; border-top: 1px solid #3f3f46; margin: 1.25rem 0; }
-.prose-chat code { background: #09090b; color: #10b981; padding: 1px 5px; border-radius: 3px; font-size: 0.82em; }
-.prose-chat blockquote { border-left: 2px solid #10b981; padding-left: 12px; color: #a1a1aa; margin: 0.5rem 0; }
+.prose-chat li { margin: 0.25rem 0; color: #3C3530; line-height: 1.6; }
+.prose-chat a  { color: #C84B1A; text-decoration: underline; text-underline-offset: 2px; }
+.prose-chat a:hover { color: #A03816; }
+.prose-chat strong { color: #1C1917; font-weight: 600; }
+.prose-chat hr { border: none; border-top: 1px solid #E7E0D7; margin: 1.25rem 0; }
+.prose-chat code { background: #EDE6DA; color: #C84B1A; padding: 1px 5px; border-radius: 3px; font-size: 0.82em; }
+.prose-chat blockquote { border-left: 2px solid #C84B1A; padding-left: 12px; color: #9E9186; margin: 0.5rem 0; }
 
-/* ── Collapsible sections (H3 wrapped in <details>) ──────────────────────── */
+/* ── Collapsible sections ─────────────────────────────────────────────────── */
 
 .prose-chat details.section-block {
-  border: 1px solid #27272a;
+  border: 1px solid #E7E0D7;
   border-radius: 10px;
   margin: 0.5rem 0;
   overflow: hidden;
-  background: #18181b;
+  background: #FAF7F2;
   transition: border-color 0.2s;
 }
-.prose-chat details.section-block:hover {
-  border-color: #3f3f46;
-}
+.prose-chat details.section-block:hover { border-color: #C8BFB2; }
 
 .prose-chat details.section-block > summary.section-title {
   display: flex;
@@ -106,7 +101,7 @@ body {
   padding: 0.65rem 1rem;
   font-size: 0.88rem;
   font-weight: 600;
-  color: #e4e4e7;
+  color: #1C1917;
   list-style: none;
   user-select: none;
   gap: 0.5rem;
@@ -116,34 +111,29 @@ body {
   content: '›';
   font-size: 1.2rem;
   line-height: 1;
-  color: #52525b;
+  color: #9E9186;
   flex-shrink: 0;
   transition: transform 0.2s ease;
   transform: rotate(90deg);
 }
-.prose-chat details.section-block[open] > summary.section-title::after {
-  transform: rotate(270deg);
-}
-.prose-chat details.section-block > summary.section-title:hover {
-  background: #27272a;
-  color: #fafafa;
-}
+.prose-chat details.section-block[open] > summary.section-title::after { transform: rotate(270deg); }
+.prose-chat details.section-block > summary.section-title:hover { background: #EDE6DA; }
 
 .prose-chat .section-body {
   padding: 0.6rem 1rem 0.8rem;
-  border-top: 1px solid #27272a;
+  border-top: 1px solid #E7E0D7;
 }
 .prose-chat .section-body > *:first-child { margin-top: 0; }
 .prose-chat .section-body > *:last-child  { margin-bottom: 0; }
 
-/* ── YouTube thumbnail cards ─────────────────────────────────────────────── */
+/* ── YouTube cards ───────────────────────────────────────────────────────── */
 
 .prose-chat a.yt-card {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: #09090b;
-  border: 1px solid #27272a;
+  background: #FAF7F2;
+  border: 1px solid #E7E0D7;
   border-radius: 10px;
   padding: 0.5rem;
   margin: 0.5rem 0;
@@ -151,53 +141,21 @@ body {
   transition: border-color 0.2s, background 0.2s;
   color: inherit;
 }
-.prose-chat a.yt-card:hover {
-  border-color: #ef4444;
-  background: #18181b;
-}
+.prose-chat a.yt-card:hover { border-color: #C84B1A; background: #EDE6DA; }
 
 .prose-chat .yt-thumb-wrap {
   position: relative;
-  width: 130px;
-  min-width: 130px;
-  height: 73px;
-  border-radius: 6px;
-  overflow: hidden;
-  background: #27272a;
-  flex-shrink: 0;
+  width: 130px; min-width: 130px; height: 73px;
+  border-radius: 6px; overflow: hidden;
+  background: #E7E0D7; flex-shrink: 0;
 }
-.prose-chat .yt-thumb-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
+.prose-chat .yt-thumb-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .prose-chat .yt-play {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.45);
-  color: white;
-  font-size: 1.3rem;
-  transition: background 0.2s;
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.35); color: white; font-size: 1.3rem; transition: background 0.2s;
 }
-.prose-chat a.yt-card:hover .yt-play {
-  background: rgba(239, 68, 68, 0.75);
-}
-.prose-chat .yt-title {
-  font-size: 0.8rem;
-  color: #a1a1aa;
-  line-height: 1.45;
-  flex: 1;
-  min-width: 0;
-}
-.prose-chat a.yt-card:hover .yt-title { color: #e4e4e7; }
-
-/* List items that contain a YouTube card — remove bullet */
-.prose-chat li:has(> a.yt-card) {
-  list-style: none;
-  margin-left: -1.25rem;
-  padding-left: 0;
-}
+.prose-chat a.yt-card:hover .yt-play { background: rgba(200,75,26,0.75); }
+.prose-chat .yt-title { font-size: 0.8rem; color: #9E9186; line-height: 1.45; flex: 1; min-width: 0; }
+.prose-chat a.yt-card:hover .yt-title { color: #1C1917; }
+.prose-chat li:has(> a.yt-card) { list-style: none; margin-left: -1.25rem; padding-left: 0; }

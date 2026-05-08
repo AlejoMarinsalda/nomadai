@@ -215,7 +215,10 @@ export default function Results() {
             {/* CTAs */}
             <div className="flex gap-3">
               <button
-                onClick={() => navigate(`/chat?session=${sessionId}`, { state: { result: resultData } })}
+                onClick={() => {
+                  const cities = resultData?.destinations?.map(d => d.city).join(',') ?? ''
+                  navigate(`/chat?session=${sessionId}&cities=${encodeURIComponent(cities)}`, { state: { result: resultData } })
+                }}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all active:scale-95"
                 style={{ background: DARK }}
               >

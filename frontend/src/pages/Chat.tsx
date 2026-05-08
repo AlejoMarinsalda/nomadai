@@ -169,18 +169,16 @@ export default function Chat() {
 
   // ── Auto-intro when arriving from Results ────────────────────────────────
 
+  const citiesParam = searchParams.get('cities')
   const introSent = useRef(false)
   useEffect(() => {
-    if (introSent.current || !sessionParam || !userId || !credential) return
-    const s = location.state as { result?: { destinations: { city: string }[] } } | null
-    if (!s?.result?.destinations?.length) return
+    if (introSent.current || !citiesParam || !userId || !credential || loading) return
     introSent.current = true
-    const cities = s.result.destinations.map(d => d.city).join(', ')
+    const cities = decodeURIComponent(citiesParam).split(',').join(', ')
     const introMsg = t('chat.intro_from_results', { cities })
-    // slight delay so the component is fully mounted
-    setTimeout(() => send(introMsg), 300)
+    setTimeout(() => send(introMsg), 200)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, credential, sessionParam])
+  }, [userId, credential, citiesParam])
 
   // ── Send message ──────────────────────────────────────────────────────────
 

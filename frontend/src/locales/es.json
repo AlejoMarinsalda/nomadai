@@ -21,6 +21,7 @@
   "chat": {
     "empty": "Iniciá la conversación para encontrar tu próximo destino",
     "placeholder": "Contame sobre vos... hobbies, presupuesto, zona horaria...",
+    "back_to_results": "Ver resultados",
     "reset_btn": "↺ Reset perfil",
     "reset_confirm": "¿Borrar tu perfil guardado? La próxima vez vas a tener que completarlo de nuevo.",
     "reset_done": "Perfil borrado. Contame de nuevo sobre vos para encontrar tu próximo destino.",

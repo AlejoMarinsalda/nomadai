@@ -21,6 +21,7 @@
   "chat": {
     "empty": "Start the conversation to find your next destination",
     "placeholder": "Tell me about yourself... hobbies, budget, timezone...",
+    "back_to_results": "View results",
     "reset_btn": "↺ Reset profile",
     "reset_confirm": "Delete your saved profile? Next time you'll need to fill it out again.",
     "reset_done": "Profile deleted. Tell me about yourself again to find your next destination.",

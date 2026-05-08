@@ -336,10 +336,18 @@ export default function Chat() {
               </svg>
             </button>
           </div>
-          <div className="flex justify-end">
+          <div className="flex justify-between">
+            {sessionParam && (
+              <button
+                onClick={() => navigate(`/results/${sessionParam}`)}
+                className="text-xs text-zinc-600 hover:text-zinc-300 transition-colors flex items-center gap-1"
+              >
+                ← {t('chat.back_to_results')}
+              </button>
+            )}
             <button
               onClick={handleReset}
-              className="text-xs text-zinc-600 hover:text-red-400 transition-colors"
+              className="text-xs text-zinc-600 hover:text-red-400 transition-colors ml-auto"
             >
               {t('chat.reset_btn')}
             </button>

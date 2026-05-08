@@ -26,6 +26,20 @@ def save_report(
     try:
         now = datetime.now(timezone.utc)
         cities = [{"city": d.city, "country": d.country} for d in destinations]
+        # Use result_data cities when available (avoids Pydantic/dict deserialization issues)
+        if result_data:
+            cities = [
+                {"city": d.get("city", ""), "country": d.get("country", "")}
+                for d in result_data.get("destinations", [])
+            ]
+        else:
+            cities = []
+            for d in destinations:
+                if isinstance(d, dict):
+                    cities.append({"city": d.get("city", ""), "country": d.get("country", "")})
+                else:
+                    cities.append({"city": d.city, "country": d.country})
+
         item = {
             "user_id":      {"S": user_id},
             "created_at":   {"S": now.isoformat()},

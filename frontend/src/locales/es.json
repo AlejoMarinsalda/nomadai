@@ -66,6 +66,9 @@
     "community": "Comunidad",
     "why_you": "Por qué este destino",
     "visa": "Visa y requisitos",
+    "flights": "Buscar vuelos",
+    "flights_to": "Vuelos a {{city}}",
+    "flights_compare": "Comparar precios",
     "videos": "Videos de YouTube",
     "watch_video": "Ver video",
     "accommodation": "Dónde alojarte"

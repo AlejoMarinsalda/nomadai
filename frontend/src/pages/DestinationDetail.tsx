@@ -308,6 +308,51 @@ export default function DestinationDetail() {
           </Card>
         </div>
 
+        {/* ── Flights ── */}
+        <div>
+          <SectionTitle icon="✈️" label={t('destination.flights')} />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {[
+              {
+                label: 'Google Flights',
+                sub: t('destination.flights_compare'),
+                url: `https://www.google.com/travel/flights?q=flights+to+${encodeURIComponent(dest.city)}+${encodeURIComponent(dest.country)}`,
+                emoji: '🌐',
+              },
+              {
+                label: 'Skyscanner',
+                sub: t('destination.flights_compare'),
+                url: `https://www.skyscanner.com/flights-to/${dest.city.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z-]/g, '')}/`,
+                emoji: '🔍',
+              },
+              {
+                label: 'Kayak',
+                sub: t('destination.flights_compare'),
+                url: `https://www.kayak.com/flights-to/${dest.city.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z-]/g, '')}/`,
+                emoji: '📊',
+              },
+            ].map(link => (
+              <a
+                key={link.label}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all"
+                style={{ background: CARD, border: `1px solid ${BORDER}` }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.background = '#EDE6DA' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.background = CARD }}
+              >
+                <span className="text-2xl flex-shrink-0">{link.emoji}</span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold" style={{ color: DARK }}>{link.label}</p>
+                  <p className="text-xs" style={{ color: MUTED }}>{t('destination.flights_to', { city: dest.city })}</p>
+                </div>
+                <span className="ml-auto text-xs flex-shrink-0" style={{ color: ACCENT }}>→</span>
+              </a>
+            ))}
+          </div>
+        </div>
+
         {/* ── YouTube videos ── */}
         {dest.youtube_links?.length > 0 && (
           <div>

@@ -28,7 +28,7 @@
     "welcome_new": "¡Hola, **{{name}}**! 👋 Soy **NomadAI**. Te ayudo a encontrar tu próximo destino como nómada digital.\n\nContame sobre vos: ¿qué hobbies tenés, cuál es tu presupuesto mensual, desde qué zona horaria trabajás y cuál es tu nacionalidad?",
     "error_api": "⚠️ Error conectando con la API.",
     "error_processing": "⚠️ Error procesando la solicitud.",
-    "intro_from_results": "Presentame brevemente mis destinos recomendados: {{cities}}",
+    "intro_from_results": "Tengo listo tu análisis de **{{cities}}**. ¿Qué querés saber? Podés preguntarme sobre costos, clima, visas, qué hacer allá, o comparar destinos.",
     "thinking_analyzing": "Analizando tu perfil",
     "thinking_searching": "Buscando destinos",
     "thinking_enriching": "Enriqueciendo resultados",

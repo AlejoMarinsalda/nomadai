@@ -4,16 +4,22 @@ from app.graph.state import NomadState
 from app.config import settings
 
 
-_SYSTEM = """Sos un asistente experto en viajes para nómadas digitales.
-Ya recomendaste destinos al usuario y generaste un reporte completo.
-El usuario te hace una pregunta de seguimiento sobre esos destinos.
+def _system(language: str) -> str:
+    lang = (
+        "Always respond in English, regardless of any other language in the context."
+        if language.startswith("en")
+        else "Respondé siempre en español, de forma conversacional y útil."
+    )
+    return f"""You are a travel expert assistant for digital nomads.
+You already recommended destinations to the user and generated a full report.
+The user is asking a follow-up question about those destinations.
 
-IMPORTANTE:
-- Tenés el reporte completo y la lista de destinos recomendados en el contexto.
-- Respondé SOLO sobre los destinos que ya recomendaste.
-- NO pidas al usuario que te diga destinos — vos ya los elegiste.
-- NO pidas más información del perfil — ya lo tenés completo.
-- Respondé en español de forma conversacional y útil."""
+IMPORTANT:
+- You have the full report and recommended destinations list in context.
+- Answer ONLY about the destinations you already recommended.
+- Do NOT ask the user for destinations — you already chose them.
+- Do NOT ask for more profile info — you already have it.
+- {lang}"""
 
 
 def followup_node(state: NomadState) -> dict:
@@ -52,7 +58,7 @@ Reporte completo que generaste:
     )
 
     response = llm.invoke([
-        SystemMessage(content=_SYSTEM),
+        SystemMessage(content=_system(state.language)),
         HumanMessage(content=context),
         last_user_msg,
     ])

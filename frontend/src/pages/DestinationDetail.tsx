@@ -315,21 +315,18 @@ export default function DestinationDetail() {
             {[
               {
                 label: 'Google Flights',
-                sub: t('destination.flights_compare'),
                 url: `https://www.google.com/travel/flights?q=flights+to+${encodeURIComponent(dest.city)}+${encodeURIComponent(dest.country)}`,
                 emoji: '🌐',
               },
               {
-                label: 'Skyscanner',
-                sub: t('destination.flights_compare'),
-                url: `https://www.skyscanner.com/flights-to/${dest.city.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z-]/g, '')}/`,
-                emoji: '🔍',
+                label: 'Kiwi.com',
+                url: `https://www.kiwi.com/en/search/results/anywhere/${dest.city.toLowerCase().replace(/\s+/g, '-')}`,
+                emoji: '🥝',
               },
               {
                 label: 'Kayak',
-                sub: t('destination.flights_compare'),
-                url: `https://www.kayak.com/flights-to/${dest.city.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z-]/g, '')}/`,
-                emoji: '📊',
+                url: `https://www.kayak.com/explore?destination=${encodeURIComponent(dest.city)}`,
+                emoji: '🛶',
               },
             ].map(link => (
               <a

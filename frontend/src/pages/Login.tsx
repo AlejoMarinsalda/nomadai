@@ -6,6 +6,12 @@ import { googleLogin, guestLogin } from '../lib/api'
 
 const CLIENT_ID = '496610892208-7ejbi9l76b71hjdd28lghc7pruu9tr1t.apps.googleusercontent.com'
 
+const BG     = '#F2EDE4'
+const ACCENT = '#C84B1A'
+const DARK   = '#1C1917'
+const BORDER = '#E7E0D7'
+const MUTED  = '#9E9186'
+
 export default function Login() {
   const { login, isAuthenticated } = useAuth()
   const navigate = useNavigate()
@@ -47,7 +53,7 @@ export default function Login() {
         google.accounts.id.initialize({ client_id: CLIENT_ID, callback: handleGoogleResponse })
         google.accounts.id.renderButton(
           document.getElementById('google-signin-btn'),
-          { theme: 'filled_black', size: 'large', shape: 'rectangular' }
+          { theme: 'outline', size: 'large', shape: 'rectangular' }
         )
       } else {
         setTimeout(tryInit, 100)
@@ -57,38 +63,29 @@ export default function Login() {
   }, [handleGoogleResponse])
 
   return (
-    <div className="h-dvh flex flex-col overflow-hidden bg-zinc-950">
+    <div className="h-dvh flex flex-col overflow-hidden" style={{ background: BG }}>
+
       {/* Header */}
-      <header className="flex-shrink-0 h-14 flex items-center px-6 border-b border-zinc-800/60">
+      <header className="flex-shrink-0 h-14 flex items-center px-6" style={{ borderBottom: `1px solid ${BORDER}` }}>
         <div className="flex items-center gap-1.5">
           <span className="text-base">✈️</span>
-          <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.15rem', fontWeight: 700, color: '#1C1917' }}>
-            nomad<em style={{ color: '#C84B1A' }}>ai</em>
+          <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.15rem', fontWeight: 700, color: DARK }}>
+            nomad<em style={{ color: ACCENT }}>ai</em>
           </span>
         </div>
       </header>
 
       {/* Content */}
-      <div className="flex-1 flex items-center justify-center p-6 relative overflow-hidden">
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 40%, rgba(16,185,129,0.07) 0%, rgba(99,102,241,0.04) 50%, transparent 100%)' }}
-        />
-
-        <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-8">
+      <div className="flex-1 flex items-center justify-center p-6 overflow-hidden">
+        <div className="w-full max-w-sm flex flex-col items-center gap-8">
 
           {/* Hero */}
           <div className="text-center">
-            <span
-              className="text-5xl block mb-4"
-              style={{ filter: 'drop-shadow(0 0 20px rgba(16,185,129,0.28))' }}
-            >
-              🌍
-            </span>
-            <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '3rem', fontWeight: 700, color: '#1C1917', letterSpacing: '-0.02em' }}>
-              nomad<em style={{ color: '#C84B1A' }}>ai</em>
+            <span className="text-5xl block mb-4">✈️</span>
+            <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '3.5rem', fontWeight: 700, color: DARK, letterSpacing: '-0.02em', lineHeight: 1 }}>
+              nomad<em style={{ color: ACCENT }}>ai</em>
             </h1>
-            <p className="mt-2.5 text-sm text-zinc-500 leading-relaxed">
+            <p className="mt-3 text-sm leading-relaxed" style={{ color: MUTED }}>
               {t('login.subtitle')}
             </p>
           </div>
@@ -100,29 +97,39 @@ export default function Login() {
               { icon: '🛂', key: 'login.feature2' },
               { icon: '🏠', key: 'login.feature3' },
             ].map(({ icon, key }) => (
-              <div key={key} className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 hover:border-zinc-700 transition-colors">
+              <div
+                key={key}
+                className="flex items-center gap-3 rounded-xl px-4 py-3 transition-colors"
+                style={{ background: '#FFFFFF', border: `1px solid ${BORDER}` }}
+              >
                 <span className="text-base flex-shrink-0">{icon}</span>
-                <span className="text-xs text-zinc-400 leading-relaxed">{t(key)}</span>
+                <span className="text-xs leading-relaxed" style={{ color: '#3C3530' }}>{t(key)}</span>
               </div>
             ))}
           </div>
 
           {/* Auth options */}
           <div className="flex flex-col items-center gap-3 w-full">
-            <div id="google-signin-btn" />
+            <div id="google-signin-btn" className="w-full" />
+
             <div className="flex items-center gap-3 w-full">
-              <div className="flex-1 h-px bg-zinc-800" />
-              <span className="text-xs text-zinc-600">{t('login.or')}</span>
-              <div className="flex-1 h-px bg-zinc-800" />
+              <div className="flex-1 h-px" style={{ background: BORDER }} />
+              <span className="text-xs" style={{ color: MUTED }}>{t('login.or')}</span>
+              <div className="flex-1 h-px" style={{ background: BORDER }} />
             </div>
+
             <button
               onClick={handleGuestLogin}
               disabled={guestLoading}
-              className="w-full py-2.5 rounded-lg border border-zinc-700 text-sm text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 transition-colors disabled:opacity-40"
+              className="w-full py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-40"
+              style={{ border: `1px solid ${BORDER}`, color: MUTED, background: 'transparent' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#EDE6DA'; e.currentTarget.style.color = DARK }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = MUTED }}
             >
               {guestLoading ? t('login.guest_loading') : t('login.guest_button')}
             </button>
-            <p className="text-xs text-zinc-600">{t('login.google_note')}</p>
+
+            <p className="text-xs" style={{ color: MUTED }}>{t('login.google_note')}</p>
           </div>
 
         </div>

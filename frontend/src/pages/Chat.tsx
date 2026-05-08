@@ -158,18 +158,21 @@ export default function Chat() {
     })
   }
 
-  // ── Auto-intro when arriving from Results ────────────────────────────────
+  // ── Seed intro message when arriving from Results ────────────────────────
 
   const citiesParam = searchParams.get('cities')
-  const introSent = useRef(false)
+  const introSeeded = useRef(false)
   useEffect(() => {
-    if (introSent.current || !citiesParam || !userId || !credential || loading) return
-    introSent.current = true
+    if (introSeeded.current || !citiesParam || messages.length > 0) return
+    introSeeded.current = true
     const cities = decodeURIComponent(citiesParam).split(',').join(', ')
-    const introMsg = t('chat.intro_from_results', { cities })
-    setTimeout(() => send(introMsg, true), 200)  // hideUserMsg = true
+    addMsg({
+      id: 'results-intro',
+      role: 'assistant',
+      content: t('chat.intro_from_results', { cities }),
+    })
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, credential, citiesParam])
+  }, [citiesParam, messages.length])
 
   // ── Send message ──────────────────────────────────────────────────────────
 

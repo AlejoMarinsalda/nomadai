@@ -49,6 +49,27 @@
     "continue_chat": "Continue chat →",
     "no_destinations": "No destinations in this report."
   },
+  "destination": {
+    "back": "Back to results",
+    "not_found": "Destination not found.",
+    "match_tag": "Match {{score}}/100",
+    "monthly_cost": "Estimated monthly cost",
+    "cost_housing": "Housing",
+    "cost_food": "Food & cafés",
+    "cost_coworking": "Co-working",
+    "cost_transport": "Transport",
+    "cost_leisure": "Leisure",
+    "climate": "Climate · 12 months",
+    "best_months": "Best time",
+    "internet": "Internet",
+    "security": "Security",
+    "community": "Community",
+    "why_you": "Why this destination",
+    "visa": "Visa & requirements",
+    "videos": "YouTube videos",
+    "watch_video": "Watch video",
+    "accommodation": "Where to stay"
+  },
   "results": {
     "loading": "Preparing your results...",
     "not_found": "No results found.",
@@ -62,6 +83,7 @@
     "stat_temp": "Avg temp",
     "stat_security": "Security",
     "stat_community": "Community",
+    "view_guide": "View full guide",
     "alternatives_1": "Or explore these alternatives",
     "alternatives_em": "close",
     "alternatives_2": "to your profile"

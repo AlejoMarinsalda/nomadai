@@ -215,14 +215,21 @@ export default function Results() {
             {/* CTAs */}
             <div className="flex gap-3">
               <button
+                onClick={() => navigate(`/results/${sessionId}/${primary.rank}`, { state: { result: resultData } })}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all active:scale-95"
+                style={{ background: DARK }}
+              >
+                {t('results.view_guide')} →
+              </button>
+              <button
                 onClick={() => {
                   const cities = resultData?.destinations?.map(d => d.city).join(',') ?? ''
                   navigate(`/chat?session=${sessionId}&cities=${encodeURIComponent(cities)}`, { state: { result: resultData } })
                 }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all active:scale-95"
-                style={{ background: DARK }}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium border transition-all active:scale-95"
+                style={{ borderColor: BORDER, color: DARK, background: 'transparent' }}
               >
-                {t('results.ask_questions')} →
+                {t('results.ask_questions')}
               </button>
               <button
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium border transition-all"
@@ -282,7 +289,7 @@ export default function Results() {
                 <AlternativeCard
                   key={i}
                   dest={dest}
-                  onClick={() => setSelected(i + 1)}
+                  onClick={() => navigate(`/results/${sessionId}/${dest.rank}`, { state: { result: resultData } })}
                 />
               ))}
             </div>

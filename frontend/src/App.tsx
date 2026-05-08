@@ -8,6 +8,7 @@ import ReportDetail from './pages/ReportDetail'
 import ProfilePage from './pages/ProfilePage'
 import Onboarding from './pages/Onboarding'
 import Results from './pages/Results'
+import DestinationDetail from './pages/DestinationDetail'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth()
@@ -22,7 +23,8 @@ const router = createHashRouter([
     children: [
       { index: true, element: <Navigate to="/chat" replace /> },
       { path: 'onboarding',             element: <Onboarding /> },
-      { path: 'results/:sessionId',     element: <Results /> },
+      { path: 'results/:sessionId',           element: <Results /> },
+      { path: 'results/:sessionId/:rank',     element: <DestinationDetail /> },
       { path: 'chat',                   element: <Chat /> },
       { path: 'history',                element: <History /> },
       { path: 'history/:sessionId',     element: <ReportDetail /> },

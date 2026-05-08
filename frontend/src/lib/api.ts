@@ -74,11 +74,11 @@ export async function patchProfile(userId: string, credential: string, data: Rec
 
 // ── Chat ──────────────────────────────────────────────────────────────────────
 
-export async function sendMessage(message: string, sessionId: string | null, credential: string) {
+export async function sendMessage(message: string, sessionId: string | null, credential: string, language = 'es') {
   const res = await fetch(`${API}/chat/async`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...auth(credential) },
-    body: JSON.stringify({ message, session_id: sessionId }),
+    body: JSON.stringify({ message, session_id: sessionId, language }),
   })
   if (res.status === 401) throw new Error('UNAUTHORIZED')
   return res.json() as Promise<{ job_id: string; session_id: string }>

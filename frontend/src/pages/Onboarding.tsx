@@ -93,7 +93,7 @@ function StepLabel({ n, label }: { n: string; label: string }) {
 export default function Onboarding() {
   const navigate = useNavigate()
   const { userId, credential } = useAuth()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const [step, setStepp]              = useState(1)
   const [saving, setSaving]           = useState(false)
@@ -161,7 +161,7 @@ export default function Onboarding() {
       })
 
       const triggerMsg = t('onboarding.trigger_message')
-      const { job_id, session_id } = await sendMessage(triggerMsg, null, credential)
+      const { job_id, session_id } = await sendMessage(triggerMsg, null, credential, i18n.language)
 
       // Poll the job here — navigate to Results when done
       const POLL_LABELS = [

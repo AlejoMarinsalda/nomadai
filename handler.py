@@ -54,6 +54,7 @@ async def _process_sqs(event):
             session_id = body["session_id"]
             user_id = body["user_id"]
             message = body["message"]
+            language = body.get("language", "es")
 
             config = {"configurable": {"thread_id": session_id}}
 
@@ -67,7 +68,7 @@ async def _process_sqs(event):
             is_new_thread = not (prev_state and prev_state.values)
             saved_profile = await asyncio.to_thread(get_profile, user_id) if is_new_thread else None
 
-            initial_state = {"messages": [HumanMessage(content=message)]}
+            initial_state = {"messages": [HumanMessage(content=message)], "language": language}
             if saved_profile:
                 initial_state["user_profile"] = saved_profile
                 initial_state["profile_complete"] = True  # skip profile_node LLM, go straight to destination

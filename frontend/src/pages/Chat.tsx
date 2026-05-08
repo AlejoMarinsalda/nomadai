@@ -176,13 +176,13 @@ export default function Chat() {
     introSent.current = true
     const cities = decodeURIComponent(citiesParam).split(',').join(', ')
     const introMsg = t('chat.intro_from_results', { cities })
-    setTimeout(() => send(introMsg), 200)
+    setTimeout(() => send(introMsg, true), 200)  // hideUserMsg = true
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, credential, citiesParam])
 
   // ── Send message ──────────────────────────────────────────────────────────
 
-  async function send(overrideText?: string) {
+  async function send(overrideText?: string, hideUserMsg = false) {
     const text = (overrideText ?? input).trim()
     if (!text || loading || !userId || !credential) return
     if (!overrideText) setInput('')
@@ -190,7 +190,7 @@ export default function Chat() {
 
     const labels = LABELS
     const thinkingId = crypto.randomUUID()
-    addMsg({ id: crypto.randomUUID(), role: 'user', content: text })
+    if (!hideUserMsg) addMsg({ id: crypto.randomUUID(), role: 'user', content: text })
     addMsg({ id: thinkingId, role: 'thinking', label: labels[0] })
 
     let jobSessionId: string | null = null

@@ -10,9 +10,16 @@ logger = logging.getLogger(__name__)
 
 # ── LLM prompt ────────────────────────────────────────────────────────────────
 
-_SYSTEM = """You are a travel analyst for digital nomads.
+def _system_prompt(language: str) -> str:
+    lang_note = (
+        "Generate ALL text (tagline, ai_summary, why_you_why_now) in ENGLISH."
+        if language.startswith("en")
+        else "Generá TODOS los textos (tagline, ai_summary, why_you_why_now) en ESPAÑOL."
+    )
+    return f"""You are a travel analyst for digital nomads.
 Generate a compact JSON analysis for each destination listed in the input.
 Return ONLY valid JSON — no markdown fences, no explanation, nothing else.
+{lang_note}
 
 CRITICAL: Each entry in your response MUST include the exact "city" field as given in the input.
 All content (tagline, bullets, summary) must be factually accurate for THAT specific city.
@@ -35,7 +42,7 @@ For each destination produce:
   "community": "Muy alta | Alta | Media"
 }
 
-Return format: {"destinations": [...]}
+Return format: {{"destinations": [...]}}
 """
 
 
@@ -155,7 +162,7 @@ def compiler_node(state: NomadState) -> dict:
     )
 
     try:
-        response = llm.invoke([SystemMessage(content=_SYSTEM), HumanMessage(content=prompt)])
+        response = llm.invoke([SystemMessage(content=_system_prompt(state.language)), HumanMessage(content=prompt)])
         content = re.sub(r"```(?:json)?\s*|\s*```", "", response.content).strip()
         llm_items = json.loads(content).get("destinations", [])
     except Exception as e:

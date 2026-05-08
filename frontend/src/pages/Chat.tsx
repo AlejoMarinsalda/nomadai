@@ -67,11 +67,6 @@ export default function Chat() {
     if (s?.report && sessionParam) {
       return [{ id: 'initial', role: 'assistant' as const, content: s.report.report_text }]
     }
-    if (s?.result && sessionParam) {
-      const cities = s.result.destinations.map(d => `**${d.city}**`).join(', ')
-      return [{ id: 'initial', role: 'assistant' as const,
-        content: `Tengo listo tu análisis de ${cities}. ¿Qué querés saber? Podés preguntarme sobre costos, clima, visas, qué hacer allá, o comparar destinos.` }]
-    }
     return []
   })
 
@@ -105,10 +100,6 @@ export default function Chat() {
       const s = location.state as { report?: { report_text: string }; result?: ResultData } | null
       if (s?.report) {
         next = [{ id: 'initial', role: 'assistant' as const, content: s.report.report_text }]
-      } else if (s?.result) {
-        const cities = s.result.destinations.map(d => `**${d.city}**`).join(', ')
-        next = [{ id: 'initial', role: 'assistant' as const,
-          content: `Tengo listo tu análisis de ${cities}. ¿Qué querés saber? Podés preguntarme sobre costos, clima, visas, qué hacer allá, o comparar destinos.` }]
       }
     }
 

@@ -15,20 +15,42 @@ from app.utils import extract_json
 
 logger = logging.getLogger(__name__)
 
-_CLIMATE_PROMPT = """¿Cuáles son los mejores meses para visitar {city}, {country} como nómada digital?
-{context}
-Respondé SOLO con JSON:
-{{"best_months": ["Ene", "Feb"], "avoid_months": ["Jul", "Ago"], "rainy_season": "descripción breve o null"}}
-Usá abreviaciones en español: Ene, Feb, Mar, Abr, May, Jun, Jul, Ago, Sep, Oct, Nov, Dic."""
 
-_VISA_SYSTEM = """Sos un experto en visas para nómadas digitales. Respondé ÚNICAMENTE con JSON:
-{
-  "visa_required": true,
-  "visa_type": "nombre del tipo de visa",
-  "max_stay_days": 90,
-  "requirements": ["req 1", "req 2"],
-  "source_url": "https://..."
-}"""
+def _climate_prompt(city: str, country: str, context: str, language: str) -> str:
+    if language.startswith("en"):
+        return (
+            f"What are the best months to visit {city}, {country} as a digital nomad?\n"
+            f"{context}\n"
+            'Reply ONLY with JSON:\n'
+            '{"best_months": ["Jan", "Feb"], "avoid_months": ["Jul", "Aug"], "rainy_season": "brief description or null"}\n'
+            "Use English month abbreviations: Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec."
+        )
+    return (
+        f"¿Cuáles son los mejores meses para visitar {city}, {country} como nómada digital?\n"
+        f"{context}\n"
+        'Respondé SOLO con JSON:\n'
+        '{{"best_months": ["Ene", "Feb"], "avoid_months": ["Jul", "Ago"], "rainy_season": "descripción breve o null"}}\n'
+        "Usá abreviaciones en español: Ene, Feb, Mar, Abr, May, Jun, Jul, Ago, Sep, Oct, Nov, Dic."
+    )
+
+
+def _visa_system(language: str) -> str:
+    lang_note = (
+        "Write ALL requirements in ENGLISH."
+        if language.startswith("en")
+        else "Escribí todos los requisitos en ESPAÑOL."
+    )
+    return (
+        "You are a visa expert for digital nomads. Reply ONLY with JSON:\n"
+        "{\n"
+        '  "visa_required": true,\n'
+        '  "visa_type": "visa type name",\n'
+        '  "max_stay_days": 90,\n'
+        '  "requirements": ["req 1", "req 2"],\n'
+        '  "source_url": "https://..."\n'
+        "}\n"
+        + lang_note
+    )
 
 
 def _enrich_media(dest: Destination) -> DestinationMedia:
@@ -38,12 +60,10 @@ def _enrich_media(dest: Destination) -> DestinationMedia:
     return DestinationMedia(youtube_links=youtube_links, influencers=results[:3] if results else [])
 
 
-def _enrich_climate(dest: Destination) -> ClimateInfo:
-    # RAG primero: si hay docs en la base de conocimiento, evita llamada a weather API
+def _enrich_climate(dest: Destination, language: str) -> ClimateInfo:
     rag_results = search_rag(f"clima mejores meses {dest.city} {dest.country} nómada digital", k=2)
 
     if not rag_results:
-        # Sin RAG: intentar weather API directamente
         climate = get_climate_summary(dest.city, dest.country)
         if climate.best_months:
             return climate
@@ -52,7 +72,7 @@ def _enrich_climate(dest: Destination) -> ClimateInfo:
 
     try:
         llm = ChatGoogleGenerativeAI(model=settings.google_model_id, google_api_key=settings.google_api_key)
-        prompt = _CLIMATE_PROMPT.format(city=dest.city, country=dest.country, context=context_text)
+        prompt = _climate_prompt(dest.city, dest.country, context_text, language)
         response = llm.invoke([HumanMessage(content=prompt)])
         data = extract_json(response.content)
         if isinstance(data, dict):
@@ -68,20 +88,19 @@ def _enrich_climate(dest: Destination) -> ClimateInfo:
     return get_climate_summary(dest.city, dest.country)
 
 
-def _enrich_visa(dest: Destination, nationality: str) -> VisaInfo:
-    # RAG primero: si hay docs de visa para esta nacionalidad/destino, evita llamada a Tavily
+def _enrich_visa(dest: Destination, nationality: str, language: str) -> VisaInfo:
     rag_results = search_rag(f"visa {nationality} ciudadanos {dest.country} nómada digital", k=3)
 
     if rag_results:
         context = "\n".join(rag_results)
     else:
         results = search_web(f"visa requirements {nationality} citizens {dest.country} digital nomad 2024")
-        context = "\n".join(results[:3]) if results else "Sin resultados."
+        context = "\n".join(results[:3]) if results else "No results."
 
     try:
         llm = ChatGoogleGenerativeAI(model=settings.google_model_id, google_api_key=settings.google_api_key)
-        prompt = f"Nacionalidad: {nationality}\nDestino: {dest.city}, {dest.country}\n\n{context}\n\nRespondé el JSON."
-        response = llm.invoke([SystemMessage(content=_VISA_SYSTEM), HumanMessage(content=prompt)])
+        prompt = f"Nationality: {nationality}\nDestination: {dest.city}, {dest.country}\n\n{context}\n\nReturn the JSON."
+        response = llm.invoke([SystemMessage(content=_visa_system(language)), HumanMessage(content=prompt)])
         data = extract_json(response.content)
         if isinstance(data, dict):
             return VisaInfo(**data)
@@ -91,7 +110,6 @@ def _enrich_visa(dest: Destination, nationality: str) -> VisaInfo:
 
 
 def _enrich_local_info(dest: Destination, hobbies: list[str]) -> str:
-    """Consulta el RAG para info de hobbies y networking específica del destino."""
     hobby_str = " ".join(hobbies) if hobbies else "nomada digital"
     hobbies_results = search_rag(f"{hobby_str} {dest.city} {dest.country} lugares actividades", k=2)
     networking_results = search_rag(f"networking coworking comunidad nómada digital {dest.city} {dest.country}", k=2)
@@ -105,11 +123,11 @@ def _enrich_local_info(dest: Destination, hobbies: list[str]) -> str:
     return "\n\n".join(parts)
 
 
-async def _enrich_one(dest: Destination, nationality: str, hobbies: list[str]) -> Destination:
+async def _enrich_one(dest: Destination, nationality: str, hobbies: list[str], language: str) -> Destination:
     media, climate, visa, local_info = await asyncio.gather(
         asyncio.to_thread(_enrich_media, dest),
-        asyncio.to_thread(_enrich_climate, dest),
-        asyncio.to_thread(_enrich_visa, dest, nationality),
+        asyncio.to_thread(_enrich_climate, dest, language),
+        asyncio.to_thread(_enrich_visa, dest, nationality, language),
         asyncio.to_thread(_enrich_local_info, dest, hobbies),
     )
     return dest.model_copy(update={
@@ -123,9 +141,10 @@ async def _enrich_one(dest: Destination, nationality: str, hobbies: list[str]) -
 
 async def enrichment_node(state: NomadState) -> dict:
     nationality = state.user_profile.nationality or "argentina"
-    hobbies = state.user_profile.hobbies or []
+    hobbies     = state.user_profile.hobbies or []
+    language    = state.language
 
     enriched = await asyncio.gather(*[
-        _enrich_one(dest, nationality, hobbies) for dest in state.destinations
+        _enrich_one(dest, nationality, hobbies, language) for dest in state.destinations
     ])
     return {"destinations": list(enriched)}

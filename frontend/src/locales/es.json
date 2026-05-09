@@ -68,6 +68,8 @@
     "visa": "Visa y requisitos",
     "flights": "Buscar vuelos",
     "flights_to": "Vuelos a {{city}}",
+    "from": "Desde",
+    "origin_placeholder": "Tu ciudad de salida (ej: Buenos Aires)",
     "flights_compare": "Comparar precios",
     "videos": "Videos de YouTube",
     "watch_video": "Ver video",

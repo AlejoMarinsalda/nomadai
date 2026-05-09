@@ -86,6 +86,65 @@ export default function DestinationDetail() {
 
   const months = i18n.language.startsWith('en') ? ALL_MONTHS : ALL_MONTHS_ES
 
+  const [originCity, setOriginCity] = useState<string>(
+    () => localStorage.getItem('nomadai_origin_city') ?? ''
+  )
+  function handleOriginChange(val: string) {
+    setOriginCity(val)
+    localStorage.setItem('nomadai_origin_city', val)
+  }
+
+  function slugify(s: string) {
+    return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[\s,]+/g, '-').replace(/[^a-z0-9-]/g, '')
+  }
+
+  function flightLinks(origin: string) {
+    const destSlug = slugify(dest!.city)
+    if (origin.trim()) {
+      const origSlug = slugify(origin)
+      return [
+        {
+          label: 'Google Flights',
+          url: `https://www.google.com/travel/flights?q=flights+from+${encodeURIComponent(origin)}+to+${encodeURIComponent(dest!.city)}`,
+          sub: `${origin} → ${dest!.city}`,
+          emoji: '🌐',
+        },
+        {
+          label: 'Kiwi.com',
+          url: `https://www.kiwi.com/en/search/results/${origSlug}/${destSlug}`,
+          sub: `${origin} → ${dest!.city}`,
+          emoji: '🥝',
+        },
+        {
+          label: 'Kayak',
+          url: `https://www.kayak.com/flights/${encodeURIComponent(origin)}-${encodeURIComponent(dest!.city)}`,
+          sub: `${origin} → ${dest!.city}`,
+          emoji: '🛶',
+        },
+      ]
+    }
+    return [
+      {
+        label: 'Google Flights',
+        url: `https://www.google.com/travel/flights?q=flights+to+${encodeURIComponent(dest!.city)}+${encodeURIComponent(dest!.country)}`,
+        sub: t('destination.flights_to', { city: dest!.city }),
+        emoji: '🌐',
+      },
+      {
+        label: 'Kiwi.com',
+        url: `https://www.kiwi.com/en/search/results/anywhere/${destSlug}`,
+        sub: t('destination.flights_to', { city: dest!.city }),
+        emoji: '🥝',
+      },
+      {
+        label: 'Kayak',
+        url: `https://www.kayak.com/explore?destination=${encodeURIComponent(dest!.city)}`,
+        sub: t('destination.flights_to', { city: dest!.city }),
+        emoji: '🛶',
+      },
+    ]
+  }
+
   if (fetching) return (
     <div className="h-full flex items-center justify-center" style={{ background: BG }}>
       <div className="w-8 h-8 border-2 border-stone-300 border-t-orange-700 rounded-full animate-spin" />
@@ -311,24 +370,25 @@ export default function DestinationDetail() {
         {/* ── Flights ── */}
         <div>
           <SectionTitle icon="✈️" label={t('destination.flights')} />
+
+          {/* Origin input */}
+          <div className="flex items-center gap-3 mb-3 px-4 py-3 rounded-xl" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
+            <span className="text-sm flex-shrink-0" style={{ color: MUTED }}>✈️ {t('destination.from')}</span>
+            <input
+              type="text"
+              value={originCity}
+              onChange={e => handleOriginChange(e.target.value)}
+              placeholder={t('destination.origin_placeholder')}
+              className="flex-1 bg-transparent text-sm outline-none"
+              style={{ color: DARK }}
+            />
+            {originCity && (
+              <button onClick={() => handleOriginChange('')} className="text-xs flex-shrink-0" style={{ color: MUTED }}>✕</button>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {[
-              {
-                label: 'Google Flights',
-                url: `https://www.google.com/travel/flights?q=flights+to+${encodeURIComponent(dest.city)}+${encodeURIComponent(dest.country)}`,
-                emoji: '🌐',
-              },
-              {
-                label: 'Kiwi.com',
-                url: `https://www.kiwi.com/en/search/results/anywhere/${dest.city.toLowerCase().replace(/\s+/g, '-')}`,
-                emoji: '🥝',
-              },
-              {
-                label: 'Kayak',
-                url: `https://www.kayak.com/explore?destination=${encodeURIComponent(dest.city)}`,
-                emoji: '🛶',
-              },
-            ].map(link => (
+            {flightLinks(originCity).map(link => (
               <a
                 key={link.label}
                 href={link.url}
@@ -342,7 +402,7 @@ export default function DestinationDetail() {
                 <span className="text-2xl flex-shrink-0">{link.emoji}</span>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold" style={{ color: DARK }}>{link.label}</p>
-                  <p className="text-xs" style={{ color: MUTED }}>{t('destination.flights_to', { city: dest.city })}</p>
+                  <p className="text-xs truncate" style={{ color: MUTED }}>{link.sub}</p>
                 </div>
                 <span className="ml-auto text-xs flex-shrink-0" style={{ color: ACCENT }}>→</span>
               </a>

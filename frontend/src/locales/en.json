@@ -68,6 +68,8 @@
     "visa": "Visa & requirements",
     "flights": "Search flights",
     "flights_to": "Flights to {{city}}",
+    "from": "From",
+    "origin_placeholder": "Your departure city (e.g. London)",
     "flights_compare": "Compare prices",
     "videos": "YouTube videos",
     "watch_video": "Watch video",

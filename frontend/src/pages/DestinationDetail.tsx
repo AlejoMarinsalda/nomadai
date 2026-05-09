@@ -116,10 +116,10 @@ export default function DestinationDetail() {
           emoji: '🥝',
         },
         {
-          label: 'Kayak',
-          url: `https://www.kayak.com/flights/${encodeURIComponent(origin)}-${encodeURIComponent(dest!.city)}`,
+          label: 'Momondo',
+          url: `https://www.momondo.com/flight-search/${encodeURIComponent(origin)}/${encodeURIComponent(dest!.city)}`,
           sub: `${origin} → ${dest!.city}`,
-          emoji: '🛶',
+          emoji: '🔍',
         },
       ]
     }
@@ -137,10 +137,10 @@ export default function DestinationDetail() {
         emoji: '🥝',
       },
       {
-        label: 'Kayak',
-        url: `https://www.kayak.com/explore?destination=${encodeURIComponent(dest!.city)}`,
+        label: 'Momondo',
+        url: `https://www.momondo.com/flight-search/Anywhere/${encodeURIComponent(dest!.city)}`,
         sub: t('destination.flights_to', { city: dest!.city }),
-        emoji: '🛶',
+        emoji: '🔍',
       },
     ]
   }

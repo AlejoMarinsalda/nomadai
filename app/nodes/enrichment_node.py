@@ -123,7 +123,7 @@ def _enrich_local_info(dest: Destination, hobbies: list[str]) -> str:
     return "\n\n".join(parts)
 
 
-async def _enrich_one(dest: Destination, nationality: str, hobbies: list[str], language: str) -> Destination:
+async def _enrich_one(dest: Destination, nationality: str, hobbies: list[str], language: str, budget: int | None = None) -> Destination:
     # LangGraph checkpoint deserialization may return dicts instead of Pydantic objects
     if isinstance(dest, dict):
         dest = Destination(**dest)
@@ -155,7 +155,7 @@ async def _enrich_one(dest: Destination, nationality: str, hobbies: list[str], l
         "climate": climate,
         "visa": visa,
         "local_info": local_info,
-        "accommodation_links": get_accommodation_links(dest.city, dest.country),
+        "accommodation_links": get_accommodation_links(dest.city, dest.country, budget),
     })
 
 
@@ -163,9 +163,10 @@ async def enrichment_node(state: NomadState) -> dict:
     nationality = state.user_profile.nationality or "argentina"
     hobbies     = state.user_profile.hobbies or []
     language    = state.language
+    budget      = state.user_profile.budget_usd_monthly
 
     results = await asyncio.gather(*[
-        _enrich_one(dest, nationality, hobbies, language) for dest in state.destinations
+        _enrich_one(dest, nationality, hobbies, language, budget) for dest in state.destinations
     ], return_exceptions=True)
 
     enriched = []

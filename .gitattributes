@@ -1,2 +1,6 @@
 * text=auto eol=lf
 *.bat text eol=crlf
+
+# Ignorar assets de diseño en estadísticas de lenguaje de GitHub
+assets/ linguist-vendored
+docs/ linguist-documentation

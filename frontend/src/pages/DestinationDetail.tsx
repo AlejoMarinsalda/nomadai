@@ -138,55 +138,40 @@ export default function DestinationDetail() {
   }
 
   function flightLinks(origin: string) {
-    const destSlug  = slugify(dest!.city)
     const destIATA  = getIATA(dest!.city)
     const origIATA  = origin.trim() ? getIATA(origin) : null
-    const origSlug  = slugify(origin)
     const hasOrigin = !!origin.trim()
-    const route     = `${origin} → ${dest!.city}`
+    const sub       = hasOrigin ? `${origin} → ${dest!.city}` : t('destination.flights_to', { city: dest!.city })
 
-    // Kayak: usa IATA si los tiene para ambos, si no usa Momondo como fallback
-    const kayakLink = (() => {
-      if (hasOrigin && origIATA && destIATA) {
-        return { label: 'Kayak', url: `https://www.kayak.com/flights/${origIATA}-${destIATA}`, sub: route, emoji: '🛶' }
-      }
-      if (!hasOrigin && destIATA) {
-        return { label: 'Kayak', url: `https://www.kayak.com/flights/anywhere-${destIATA}`, sub: t('destination.flights_to', { city: dest!.city }), emoji: '🛶' }
-      }
-      // Fallback a Momondo cuando no hay IATA
-      return hasOrigin
-        ? { label: 'Momondo', url: `https://www.momondo.com/flight-search/${encodeURIComponent(origin)}/${encodeURIComponent(dest!.city)}`, sub: route, emoji: '🔍' }
-        : { label: 'Momondo', url: `https://www.momondo.com/flight-search/Anywhere/${encodeURIComponent(dest!.city)}`, sub: t('destination.flights_to', { city: dest!.city }), emoji: '🔍' }
+    // Kiwi: IATA cuando disponible, slugs como fallback
+    const kiwiUrl = (() => {
+      if (hasOrigin && origIATA && destIATA) return `https://www.kiwi.com/en/search/results/${origIATA}/${destIATA}`
+      if (!hasOrigin && destIATA)            return `https://www.kiwi.com/en/search/results/${destIATA}`
+      if (hasOrigin && destIATA)             return `https://www.kiwi.com/en/search/results/${slugify(origin)}/${destIATA}`
+      return `https://www.kiwi.com/en/search/results/${slugify(dest!.city)}`
     })()
 
-    if (hasOrigin) {
-      return [
-        {
-          label: 'Google Flights',
-          url: `https://www.google.com/travel/flights?q=flights+from+${encodeURIComponent(origin)}+to+${encodeURIComponent(dest!.city)}`,
-          sub: route, emoji: '🌐',
-        },
-        {
-          label: 'Kiwi.com',
-          url: `https://www.kiwi.com/en/search/results/${origSlug}/${destSlug}`,
-          sub: route, emoji: '🥝',
-        },
-        kayakLink,
-      ]
-    }
-    return [
+    // Kayak: IATA cuando disponible
+    const kayakUrl = (() => {
+      if (hasOrigin && origIATA && destIATA) return `https://www.kayak.com/flights/${origIATA}-${destIATA}`
+      if (!hasOrigin && destIATA)            return `https://www.kayak.com/explore/${destIATA}`
+      return null
+    })()
+
+    const links = [
       {
         label: 'Google Flights',
-        url: `https://www.google.com/travel/flights?q=flights+to+${encodeURIComponent(dest!.city)}+${encodeURIComponent(dest!.country)}`,
-        sub: t('destination.flights_to', { city: dest!.city }), emoji: '🌐',
+        url: hasOrigin
+          ? `https://www.google.com/travel/flights?q=flights+from+${encodeURIComponent(origin)}+to+${encodeURIComponent(dest!.city)}`
+          : `https://www.google.com/travel/flights?q=flights+to+${encodeURIComponent(dest!.city)}+${encodeURIComponent(dest!.country)}`,
+        sub, emoji: '🌐',
       },
-      {
-        label: 'Kiwi.com',
-        url: `https://www.kiwi.com/en/search/results/anywhere/${destSlug}`,
-        sub: t('destination.flights_to', { city: dest!.city }), emoji: '🥝',
-      },
-      kayakLink,
+      { label: 'Kiwi.com', url: kiwiUrl, sub, emoji: '🥝' },
     ]
+
+    if (kayakUrl) links.push({ label: 'Kayak', url: kayakUrl, sub, emoji: '🛶' })
+
+    return links
   }
 
   if (fetching) return (

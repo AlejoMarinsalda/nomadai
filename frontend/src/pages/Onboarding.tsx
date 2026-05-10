@@ -72,6 +72,7 @@ const ACCENT = '#C84B1A'
 const BG     = '#F2EDE4'
 const DARK   = '#1C1917'
 const BORDER = '#E7E0D7'
+const MUTED  = '#9E9186'
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 

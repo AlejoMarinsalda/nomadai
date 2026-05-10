@@ -98,50 +98,94 @@ export default function DestinationDetail() {
     return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[\s,]+/g, '-').replace(/[^a-z0-9-]/g, '')
   }
 
+  // IATA codes for common nomad cities and origin cities
+  const IATA: Record<string, string> = {
+    // LATAM
+    'buenos aires': 'EZE', 'bogota': 'BOG', 'bogotá': 'BOG', 'medellin': 'MDE', 'medellín': 'MDE',
+    'cartagena': 'CTG', 'cali': 'CLO', 'lima': 'LIM', 'santiago': 'SCL', 'montevideo': 'MVD',
+    'mexico city': 'MEX', 'ciudad de mexico': 'MEX', 'guadalajara': 'GDL', 'cancun': 'CUN',
+    'cancún': 'CUN', 'oaxaca': 'OAX', 'merida': 'MID', 'mérida': 'MID', 'playa del carmen': 'CUN',
+    'sao paulo': 'GRU', 'são paulo': 'GRU', 'rio de janeiro': 'GIG', 'florianopolis': 'FLN',
+    'florianópolis': 'FLN', 'recife': 'REC', 'quito': 'UIO', 'caracas': 'CCS',
+    // Europa
+    'lisbon': 'LIS', 'lisboa': 'LIS', 'porto': 'OPO', 'madrid': 'MAD', 'barcelona': 'BCN',
+    'valencia': 'VLC', 'seville': 'SVQ', 'sevilla': 'SVQ', 'malaga': 'AGP', 'málaga': 'AGP',
+    'berlin': 'BER', 'berlín': 'BER', 'amsterdam': 'AMS', 'paris': 'CDG', 'rome': 'FCO',
+    'roma': 'FCO', 'milan': 'MXP', 'milán': 'MXP', 'athens': 'ATH', 'atenas': 'ATH',
+    'prague': 'PRG', 'praga': 'PRG', 'budapest': 'BUD', 'warsaw': 'WAW', 'varsovia': 'WAW',
+    'vienna': 'VIE', 'viena': 'VIE', 'zurich': 'ZRH', 'zürich': 'ZRH', 'london': 'LHR',
+    'londres': 'LHR', 'dublin': 'DUB', 'dublín': 'DUB', 'tallinn': 'TLL', 'riga': 'RIX',
+    'vilnius': 'VNO', 'sofia': 'SOF', 'bucharest': 'OTP', 'bucarest': 'OTP',
+    'split': 'SPU', 'dubrovnik': 'DBV', 'zagreb': 'ZAG', 'istanbul': 'IST',
+    'tbilisi': 'TBS', 'yerevan': 'EVN', 'tashkent': 'TAS',
+    // Asia
+    'bangkok': 'BKK', 'chiang mai': 'CNX', 'phuket': 'HKT', 'bali': 'DPS', 'ubud': 'DPS',
+    'denpasar': 'DPS', 'kuala lumpur': 'KUL', 'singapore': 'SIN', 'singapur': 'SIN',
+    'tokyo': 'NRT', 'tokio': 'NRT', 'osaka': 'KIX', 'seoul': 'ICN', 'seul': 'ICN',
+    'taipei': 'TPE', 'hong kong': 'HKG', 'ho chi minh': 'SGN', 'hanoi': 'HAN',
+    'phnom penh': 'PNH', 'kathmandu': 'KTM', 'mumbai': 'BOM', 'bangalore': 'BLR',
+    'bengaluru': 'BLR', 'goa': 'GOI', 'delhi': 'DEL', 'nueva delhi': 'DEL',
+    // Africa & Medio Oriente
+    'dubai': 'DXB', 'abu dhabi': 'AUH', 'cape town': 'CPT', 'ciudad del cabo': 'CPT',
+    'nairobi': 'NBO', 'marrakech': 'RAK', 'marrakesh': 'RAK', 'cairo': 'CAI', 'el cairo': 'CAI',
+    // Otros
+    'new york': 'JFK', 'nueva york': 'JFK', 'miami': 'MIA', 'los angeles': 'LAX',
+    'toronto': 'YYZ', 'montreal': 'YUL', 'sydney': 'SYD', 'melbourne': 'MEL',
+  }
+
+  function getIATA(city: string): string | null {
+    return IATA[city.toLowerCase().trim()] ?? null
+  }
+
   function flightLinks(origin: string) {
-    const destSlug = slugify(dest!.city)
-    if (origin.trim()) {
-      const origSlug = slugify(origin)
+    const destSlug  = slugify(dest!.city)
+    const destIATA  = getIATA(dest!.city)
+    const origIATA  = origin.trim() ? getIATA(origin) : null
+    const origSlug  = slugify(origin)
+    const hasOrigin = !!origin.trim()
+    const route     = `${origin} → ${dest!.city}`
+
+    // Kayak: usa IATA si los tiene para ambos, si no usa Momondo como fallback
+    const kayakLink = (() => {
+      if (hasOrigin && origIATA && destIATA) {
+        return { label: 'Kayak', url: `https://www.kayak.com/flights/${origIATA}-${destIATA}`, sub: route, emoji: '🛶' }
+      }
+      if (!hasOrigin && destIATA) {
+        return { label: 'Kayak', url: `https://www.kayak.com/flights/anywhere-${destIATA}`, sub: t('destination.flights_to', { city: dest!.city }), emoji: '🛶' }
+      }
+      // Fallback a Momondo cuando no hay IATA
+      return hasOrigin
+        ? { label: 'Momondo', url: `https://www.momondo.com/flight-search/${encodeURIComponent(origin)}/${encodeURIComponent(dest!.city)}`, sub: route, emoji: '🔍' }
+        : { label: 'Momondo', url: `https://www.momondo.com/flight-search/Anywhere/${encodeURIComponent(dest!.city)}`, sub: t('destination.flights_to', { city: dest!.city }), emoji: '🔍' }
+    })()
+
+    if (hasOrigin) {
       return [
         {
           label: 'Google Flights',
           url: `https://www.google.com/travel/flights?q=flights+from+${encodeURIComponent(origin)}+to+${encodeURIComponent(dest!.city)}`,
-          sub: `${origin} → ${dest!.city}`,
-          emoji: '🌐',
+          sub: route, emoji: '🌐',
         },
         {
           label: 'Kiwi.com',
           url: `https://www.kiwi.com/en/search/results/${origSlug}/${destSlug}`,
-          sub: `${origin} → ${dest!.city}`,
-          emoji: '🥝',
+          sub: route, emoji: '🥝',
         },
-        {
-          label: 'Momondo',
-          url: `https://www.momondo.com/flight-search/${encodeURIComponent(origin)}/${encodeURIComponent(dest!.city)}`,
-          sub: `${origin} → ${dest!.city}`,
-          emoji: '🔍',
-        },
+        kayakLink,
       ]
     }
     return [
       {
         label: 'Google Flights',
         url: `https://www.google.com/travel/flights?q=flights+to+${encodeURIComponent(dest!.city)}+${encodeURIComponent(dest!.country)}`,
-        sub: t('destination.flights_to', { city: dest!.city }),
-        emoji: '🌐',
+        sub: t('destination.flights_to', { city: dest!.city }), emoji: '🌐',
       },
       {
         label: 'Kiwi.com',
         url: `https://www.kiwi.com/en/search/results/anywhere/${destSlug}`,
-        sub: t('destination.flights_to', { city: dest!.city }),
-        emoji: '🥝',
+        sub: t('destination.flights_to', { city: dest!.city }), emoji: '🥝',
       },
-      {
-        label: 'Momondo',
-        url: `https://www.momondo.com/flight-search/Anywhere/${encodeURIComponent(dest!.city)}`,
-        sub: t('destination.flights_to', { city: dest!.city }),
-        emoji: '🔍',
-      },
+      kayakLink,
     ]
   }
 

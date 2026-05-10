@@ -155,7 +155,7 @@ async def _enrich_one(dest: Destination, nationality: str, hobbies: list[str], l
         "climate": climate,
         "visa": visa,
         "local_info": local_info,
-        "accommodation_links": get_accommodation_links(dest.city, dest.country, budget),
+        "accommodation_links": get_accommodation_links(dest.city, dest.country, budget, language),
     })
 
 

@@ -130,7 +130,7 @@ def _build_result_data(state: NomadState, llm_items: list[dict]) -> dict:
             "security":         llm.get("security", ""),
             "community":        llm.get("community", ""),
             "visa_summary":     visa_sum,
-            "visa":             {"type": visa_type, "max_stay_days": max_stay, "requirements": visa_reqs},
+            "visa":             {"required": visa_required, "type": visa_type, "max_stay_days": max_stay, "requirements": visa_reqs},
             "climate":          {"best_months": best_months, "avoid_months": avoid_months},
             "youtube_links":    youtube_links,
             "accommodation_links": accommodation,

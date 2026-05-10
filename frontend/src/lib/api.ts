@@ -21,7 +21,7 @@ export interface DestinationResult {
   security: string
   community: string
   visa_summary: string
-  visa: { type: string | null; max_stay_days: number | null; requirements: string[] }
+  visa: { required: boolean | null; type: string | null; max_stay_days: number | null; requirements: string[] }
   climate: { best_months: string[]; avoid_months: string[] }
   youtube_links: string[]
   accommodation_links: { label: string; url: string }[]

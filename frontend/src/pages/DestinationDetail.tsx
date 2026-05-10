@@ -394,19 +394,48 @@ export default function DestinationDetail() {
           {/* Visa */}
           <Card>
             <SectionTitle icon="🛂" label={t('destination.visa')} />
-            <div className="mb-3">
-              <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.4rem', fontWeight: 700, color: DARK }}>
-                {dest.visa_summary || '—'}
+
+            {/* Visa required badge */}
+            <div className="flex items-center gap-2 mb-3">
+              <span
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                style={{
+                  background: dest.visa.required === false ? '#DCFCE7' : '#FEF9C3',
+                  color:      dest.visa.required === false ? '#166534' : '#854D0E',
+                }}
+              >
+                {dest.visa.required === false ? '✅ ' + t('destination.visa_not_required') : '🛂 ' + t('destination.visa_required')}
               </span>
             </div>
+
+            {/* Visa type + days */}
+            <div className="flex flex-col gap-1 mb-4">
+              {dest.visa.type && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs" style={{ color: MUTED }}>{t('destination.visa_type')}</span>
+                  <span className="text-sm font-semibold" style={{ color: DARK }}>{dest.visa.type}</span>
+                </div>
+              )}
+              {dest.visa.max_stay_days && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs" style={{ color: MUTED }}>{t('destination.visa_duration')}</span>
+                  <span className="text-sm font-semibold" style={{ color: DARK }}>{dest.visa.max_stay_days} {t('destination.visa_days')}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Requirements */}
             {dest.visa.requirements?.length > 0 && (
-              <ul className="flex flex-col gap-1.5">
-                {dest.visa.requirements.map((r, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs" style={{ color: '#3C3530' }}>
-                    <span style={{ color: ACCENT }}>✓</span>{r}
-                  </li>
-                ))}
-              </ul>
+              <>
+                <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: MUTED }}>{t('destination.visa_requirements')}</p>
+                <ul className="flex flex-col gap-1.5">
+                  {dest.visa.requirements.map((r, i) => (
+                    <li key={i} className="flex items-start gap-2 text-xs" style={{ color: '#3C3530' }}>
+                      <span style={{ color: ACCENT }}>✓</span>{r}
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
           </Card>
         </div>

@@ -132,6 +132,11 @@
     "language_label": "What language do you want to practice?",
     "language_optional": "Optional — improves destination suggestions",
     "confirm_language": "Language to learn",
+    "quick_tag": "New search",
+    "quick_title": "Search with your saved profile",
+    "quick_subtitle": "We'll use your current profile to find new destinations.",
+    "quick_search_btn": "Find destinations →",
+    "edit_profile": "Edit profile",
     "pipeline_error": "There was an issue finding your destinations. Please try again.",
     "error_title": "Something went wrong",
     "retry": "Try again"
@@ -154,6 +159,7 @@
     "field_budget_label": "Budget",
     "field_timezone": "Timezone",
     "field_nationality": "Nationality",
-    "field_climate": "Preferred climate"
+    "field_climate": "Preferred climate",
+    "field_language": "Language to learn"
   }
 }

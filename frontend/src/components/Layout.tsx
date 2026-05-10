@@ -70,6 +70,7 @@ interface Session {
   created_at: string
   destinations: { city: string; country: string }[]
   report_text: string
+  result_json: import('../lib/api').ResultData | null
 }
 
 const BOTTOM_NAV_KEYS = [
@@ -107,6 +108,7 @@ export default function Layout() {
           created_at: r.created_at,
           destinations: r.destinations,
           report_text: r.report_text,
+          result_json: r.result_json ?? null,
         })))
       })
       .catch(() => {})
@@ -165,7 +167,7 @@ export default function Layout() {
           {/* Nueva búsqueda */}
           <div className="px-3 mb-2">
             <button
-              onClick={() => navigate('/onboarding')}
+              onClick={() => navigate(sessions.length > 0 ? '/onboarding?quick=1' : '/onboarding')}
               className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition-colors"
               style={{ color: ACCENT }}
               onMouseEnter={e => (e.currentTarget.style.background = '#EDE6DA')}
@@ -198,7 +200,10 @@ export default function Layout() {
                     onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = MUTED } }}
                   >
                     <button
-                      onClick={() => navigate(`/results/${s.session_id}`, { state: { report: s } })}
+                      onClick={() => s.result_json
+                        ? navigate(`/results/${s.session_id}`, { state: { result: s.result_json } })
+                        : navigate(`/history/${s.session_id}`, { state: { report: s } })
+                      }
                       className="flex-1 flex items-center gap-2 px-3 py-2 text-left min-w-0"
                     >
                       <span className="flex-shrink-0 text-xs">✈️</span>

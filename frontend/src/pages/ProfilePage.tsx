@@ -3,6 +3,24 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import { getProfile, patchProfile } from '../lib/api'
 
+const ACCENT = '#C84B1A'
+const BORDER = '#E7E0D7'
+
+const LANGUAGES = [
+  { id: 'English',    flag: '🇬🇧' }, { id: 'Español',    flag: '🇪🇸' },
+  { id: 'Português',  flag: '🇧🇷' }, { id: 'Français',   flag: '🇫🇷' },
+  { id: 'Deutsch',    flag: '🇩🇪' }, { id: 'Italiano',   flag: '🇮🇹' },
+  { id: 'Japanese',   flag: '🇯🇵' }, { id: 'Mandarin',   flag: '🇨🇳' },
+]
+
+function extractLang(goals: string[]): string {
+  const m = goals.find(g => g.startsWith('Learn '))
+  return m ? m.replace('Learn ', '') : ''
+}
+function regularGoals(goals: string[]): string[] {
+  return goals.filter(g => !g.startsWith('Learn '))
+}
+
 interface Profile {
   hobbies: string[]
   budget_usd_monthly: number | null
@@ -85,6 +103,7 @@ export default function ProfilePage() {
 
   const [hobbies, setHobbies]       = useState('')
   const [goals, setGoals]           = useState('')
+  const [targetLang, setTargetLang] = useState('')
   const [budget, setBudget]         = useState('')
   const [timezone, setTimezone]     = useState('')
   const [nationality, setNationality] = useState('')
@@ -101,7 +120,8 @@ export default function ProfilePage() {
   function startEdit() {
     if (!profile) return
     setHobbies(profile.hobbies.join(', '))
-    setGoals(profile.goals.join(', '))
+    setGoals(regularGoals(profile.goals).join(', '))
+    setTargetLang(extractLang(profile.goals))
     setBudget(profile.budget_usd_monthly?.toString() ?? '')
     setTimezone(profile.work_timezone ?? '')
     setNationality(profile.nationality ?? '')
@@ -113,9 +133,13 @@ export default function ProfilePage() {
     if (!userId || !credential) return
     setSaving(true)
     try {
+      const allGoals = [
+        ...toList(goals),
+        ...(targetLang ? [`Learn ${targetLang}`] : []),
+      ]
       const data = await patchProfile(userId, credential, {
         hobbies: toList(hobbies),
-        goals: toList(goals),
+        goals: allGoals,
         budget_usd_monthly: budget ? parseInt(budget) : null,
         work_timezone: timezone || null,
         nationality: nationality || null,
@@ -167,6 +191,29 @@ export default function ProfilePage() {
               <>
                 <TagsInput label={t('profile.field_hobbies')}    value={hobbies}     onChange={setHobbies} />
                 <TagsInput label={t('profile.field_goals')}      value={goals}       onChange={setGoals} />
+
+                {/* Language to learn */}
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs text-zinc-500 font-medium uppercase tracking-wide">{t('profile.field_language')}</span>
+                  <div className="flex flex-wrap gap-2">
+                    {LANGUAGES.map(l => (
+                      <button
+                        key={l.id}
+                        type="button"
+                        onClick={() => setTargetLang(targetLang === l.id ? '' : l.id)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all"
+                        style={{
+                          background:   targetLang === l.id ? ACCENT : 'transparent',
+                          borderColor:  targetLang === l.id ? ACCENT : BORDER,
+                          color:        targetLang === l.id ? 'white' : '#3C3530',
+                        }}
+                      >
+                        {l.flag} {l.id}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <FieldInput label={t('profile.field_budget')}    value={budget}      onChange={setBudget} />
                 <FieldInput label={t('profile.field_timezone')}  value={timezone}    onChange={setTimezone} />
                 <FieldInput label={t('profile.field_nationality')} value={nationality} onChange={setNationality} />
@@ -192,7 +239,8 @@ export default function ProfilePage() {
             ) : (
               <>
                 <TagsView  label={t('profile.field_hobbies')}       items={profile.hobbies} />
-                <TagsView  label={t('profile.field_goals')}         items={profile.goals} />
+                <TagsView  label={t('profile.field_goals')}         items={regularGoals(profile.goals)} />
+                <FieldView label={t('profile.field_language')}      value={extractLang(profile.goals) ? `${LANGUAGES.find(l => l.id === extractLang(profile.goals))?.flag ?? ''} ${extractLang(profile.goals)}` : null} />
                 <FieldView label={t('profile.field_budget_label')}  value={profile.budget_usd_monthly ? t('profile.budget_display', { amount: profile.budget_usd_monthly }) : null} />
                 <FieldView label={t('profile.field_timezone')}      value={profile.work_timezone} />
                 <FieldView label={t('profile.field_nationality')}   value={profile.nationality} />

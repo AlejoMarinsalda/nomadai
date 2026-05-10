@@ -79,12 +79,12 @@ class TestDestinationNode:
         assert result["destinations"][0].match_score == 92
 
     def test_english_goal_adds_constraint_to_prompt(self, complete_state):
-        from app.nodes.destination_node import destination_node, _has_english_goal
-        import json
+        from app.nodes.destination_node import _detect_language_goal
 
-        assert _has_english_goal(["inmersión en inglés", "networking"]) is True
-        assert _has_english_goal(["networking", "aventura"]) is False
-        assert _has_english_goal(["aprender ingles"]) is True
+        assert _detect_language_goal(["learn english", "networking"]) is not None
+        assert _detect_language_goal(["networking", "aventura"]) is None
+        assert _detect_language_goal(["learn spanish"]) is not None
+        assert _detect_language_goal(["learn french", "low cost"]) is not None
 
     def test_english_constraint_in_prompt(self, complete_state):
         from app.nodes.destination_node import destination_node

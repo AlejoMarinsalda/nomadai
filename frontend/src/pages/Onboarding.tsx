@@ -37,12 +37,22 @@ const HOBBY_OPTIONS = [
 const GOAL_OPTIONS = [
   { id: 'low_cost',   emoji: '💰', label: 'Low cost of living' },
   { id: 'community',  emoji: '🤝', label: 'Nomad community' },
-  { id: 'language',   emoji: '🗣️', label: 'Learn a language' },
   { id: 'weather',    emoji: '☀️', label: 'Great weather' },
   { id: 'nature',     emoji: '🌿', label: 'Nature & outdoors' },
   { id: 'nightlife',  emoji: '🌙', label: 'Nightlife' },
   { id: 'safety',     emoji: '🛡️', label: 'Safety & stability' },
   { id: 'transport',  emoji: '🚇', label: 'Good public transport' },
+]
+
+const LANGUAGE_OPTIONS = [
+  { id: 'english',    flag: '🇬🇧', label: 'English' },
+  { id: 'spanish',    flag: '🇪🇸', label: 'Español' },
+  { id: 'portuguese', flag: '🇧🇷', label: 'Português' },
+  { id: 'french',     flag: '🇫🇷', label: 'Français' },
+  { id: 'german',     flag: '🇩🇪', label: 'Deutsch' },
+  { id: 'italian',    flag: '🇮🇹', label: 'Italiano' },
+  { id: 'japanese',   flag: '🇯🇵', label: 'Japanese' },
+  { id: 'mandarin',   flag: '🇨🇳', label: 'Mandarin' },
 ]
 
 const TIMEZONES = [
@@ -109,6 +119,7 @@ export default function Onboarding() {
   const [customHobbies, setCustomHobbies] = useState<string[]>([])
   const [customInput, setCustomInput] = useState('')
   const [goals, setGoals]             = useState<string[]>([])
+  const [targetLanguage, setTargetLanguage] = useState<string>('')
 
   const budget = BUDGET_STEPS[budgetIdx]
 
@@ -149,7 +160,10 @@ export default function Onboarding() {
         ...HOBBY_OPTIONS.filter(h => hobbies.includes(h.id)).map(h => h.label),
         ...customHobbies,
       ]
-      const goalLabels   = GOAL_OPTIONS.filter(g => goals.includes(g.id)).map(g => g.label)
+      const goalLabels = [
+        ...GOAL_OPTIONS.filter(g => goals.includes(g.id)).map(g => g.label),
+        ...(targetLanguage ? [`Learn ${LANGUAGE_OPTIONS.find(l => l.id === targetLanguage)?.label ?? targetLanguage}`] : []),
+      ]
       const climateLabel = CLIMATE_OPTIONS.filter(c => climates.includes(c.id)).map(c => c.label).join(', ')
 
       await patchProfile(userId, credential, {
@@ -398,30 +412,59 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* ── Step 4: Goals ── */}
+          {/* ── Step 4: Goals + Language ── */}
           {step === 4 && (
-            <div>
-              <StepLabel n="01" label={t('onboarding.goals_label')} />
-              <p className="text-xs text-stone-400 mb-4">{t('onboarding.multi_select')}</p>
-              <div className="grid grid-cols-2 gap-3">
-                {GOAL_OPTIONS.map(opt => {
-                  const selected = goals.includes(opt.id)
-                  return (
-                    <button
-                      key={opt.id}
-                      onClick={() => toggleGoal(opt.id)}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl border text-left text-sm font-medium transition-all"
-                      style={{
-                        background:  selected ? DARK : 'white',
-                        borderColor: selected ? DARK : BORDER,
-                        color:       selected ? 'white' : '#3C3530',
-                      }}
-                    >
-                      <span className="text-lg">{opt.emoji}</span>
-                      {opt.label}
-                    </button>
-                  )
-                })}
+            <div className="flex flex-col gap-8">
+              <div>
+                <StepLabel n="01" label={t('onboarding.goals_label')} />
+                <p className="text-xs text-stone-400 mb-4">{t('onboarding.multi_select')}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {GOAL_OPTIONS.map(opt => {
+                    const selected = goals.includes(opt.id)
+                    return (
+                      <button
+                        key={opt.id}
+                        onClick={() => toggleGoal(opt.id)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl border text-left text-sm font-medium transition-all"
+                        style={{
+                          background:  selected ? DARK : 'white',
+                          borderColor: selected ? DARK : BORDER,
+                          color:       selected ? 'white' : '#3C3530',
+                        }}
+                      >
+                        <span className="text-lg">{opt.emoji}</span>
+                        {opt.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Language to learn */}
+              <div>
+                <StepLabel n="02" label={t('onboarding.language_label')} />
+                <p className="text-xs text-stone-400 mb-4">{t('onboarding.language_optional')}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {LANGUAGE_OPTIONS.map(opt => {
+                    const selected = targetLanguage === opt.id
+                    return (
+                      <button
+                        key={opt.id}
+                        onClick={() => setTargetLanguage(selected ? '' : opt.id)}
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl border text-left text-sm font-medium transition-all"
+                        style={{
+                          background:  selected ? ACCENT : 'white',
+                          borderColor: selected ? ACCENT : BORDER,
+                          color:       selected ? 'white' : '#3C3530',
+                        }}
+                      >
+                        <span className="text-lg">{opt.flag}</span>
+                        {opt.label}
+                        {selected && <span className="ml-auto text-xs">✓</span>}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           )}
@@ -437,6 +480,7 @@ export default function Onboarding() {
                   { label: t('onboarding.confirm_budget'),      value: `$${budget === 6000 ? '6,000+' : budget.toLocaleString()} /mo` },
                   { label: t('onboarding.confirm_climate'),     value: CLIMATE_OPTIONS.filter(c => climates.includes(c.id)).map(c => c.label).join(', ') || '—' },
                   { label: t('onboarding.confirm_hobbies'),     value: allHobbyLabels.join(', ') || '—' },
+                  { label: t('onboarding.confirm_language'),    value: LANGUAGE_OPTIONS.find(l => l.id === targetLanguage)?.label || '—' },
                   { label: t('onboarding.confirm_goals'),       value: GOAL_OPTIONS.filter(g => goals.includes(g.id)).map(g => g.label).join(', ') || '—' },
                 ].map(row => (
                   <div key={row.label} className="flex gap-4 px-5 py-3">

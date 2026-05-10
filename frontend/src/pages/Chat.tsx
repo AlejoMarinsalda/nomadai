@@ -46,7 +46,7 @@ function loadMessages(sessionId: string | null): Message[] {
 
 export default function Chat() {
   const { userId, userName, credential, logout } = useAuth()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const location = useLocation()
@@ -190,7 +190,7 @@ export default function Chat() {
     let jobSessionId: string | null = null
 
     try {
-      const { job_id, session_id } = await sendMessage(text, sessionRef.current, credential)
+      const { job_id, session_id } = await sendMessage(text, sessionRef.current, credential, i18n.language)
       jobSessionId = session_id
       sessionRef.current = session_id
       sessionStorage.setItem(SS_CURRENT_SESSION, session_id)

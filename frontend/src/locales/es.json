@@ -132,6 +132,11 @@
     "language_label": "¿Qué idioma querés practicar?",
     "language_optional": "Opcional — mejora las sugerencias de destino",
     "confirm_language": "Idioma a aprender",
+    "quick_tag": "Nueva búsqueda",
+    "quick_title": "Buscar con tu perfil guardado",
+    "quick_subtitle": "Usamos tu perfil actual para encontrar nuevos destinos.",
+    "quick_search_btn": "Buscar destinos →",
+    "edit_profile": "Editar perfil",
     "pipeline_error": "Hubo un problema al buscar tus destinos. Intentá de nuevo.",
     "error_title": "Algo salió mal",
     "retry": "Intentar de nuevo"
@@ -154,6 +159,7 @@
     "field_budget_label": "Presupuesto",
     "field_timezone": "Zona horaria",
     "field_nationality": "Nacionalidad",
-    "field_climate": "Clima preferido"
+    "field_climate": "Clima preferido",
+    "field_language": "Idioma a aprender"
   }
 }

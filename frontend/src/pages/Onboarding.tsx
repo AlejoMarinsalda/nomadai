@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
-import { getJobStatus, patchProfile, sendMessage } from '../lib/api'
+import { getJobStatus, getProfile, patchProfile, sendMessage } from '../lib/api'
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -104,11 +104,24 @@ export default function Onboarding() {
   const navigate = useNavigate()
   const { userId, credential } = useAuth()
   const { t, i18n } = useTranslation()
+  const [searchParams] = useSearchParams()
+  const isQuick = searchParams.get('quick') === '1'
 
   const [step, setStepp]              = useState(1)
   const [saving, setSaving]           = useState(false)
   const [pollingLabel, setPollingLabel] = useState('')
   const [pipelineError, setPipelineError] = useState('')
+  const [quickProfile, setQuickProfile] = useState<null | Record<string, unknown>>(null)
+  const [quickLoading, setQuickLoading] = useState(isQuick)
+
+  useEffect(() => {
+    if (!isQuick || !userId || !credential) { setQuickLoading(false); return }
+    getProfile(userId, credential)
+      .then(data => { if (data.found) setQuickProfile(data.profile) })
+      .catch(() => {})
+      .finally(() => setQuickLoading(false))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Form state
   const [timezone, setTimezone]       = useState(TIMEZONES[5])   // UTC-3 default
@@ -215,6 +228,90 @@ export default function Onboarding() {
       setSaving(false)
       setPollingLabel('')
     }
+  }
+
+  // ── Quick search mode ─────────────────────────────────────────────────────
+  if (isQuick) {
+    if (quickLoading) return (
+      <div className="h-dvh flex items-center justify-center" style={{ background: BG }}>
+        <div className="w-8 h-8 border-2 border-stone-300 border-t-orange-700 rounded-full animate-spin" />
+      </div>
+    )
+
+    return (
+      <div className="h-dvh flex flex-col overflow-hidden relative" style={{ background: BG }}>
+        <header className="flex-shrink-0 flex items-center justify-between px-6 h-14">
+          <span className="font-bold text-zinc-900" style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem' }}>
+            nomad<em style={{ color: ACCENT }}>ai</em>
+          </span>
+          <button onClick={() => navigate('/onboarding')} className="text-xs font-medium" style={{ color: MUTED }}>
+            {t('onboarding.edit_profile')}
+          </button>
+        </header>
+
+        <div className="flex-1 flex flex-col items-center justify-center px-6 gap-8">
+          <div className="text-center">
+            <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: ACCENT }}>
+              ↑ {t('onboarding.quick_tag')}
+            </p>
+            <h1 className="text-4xl font-bold text-zinc-900 mb-2" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
+              {t('onboarding.quick_title')}
+            </h1>
+            <p className="text-sm text-stone-500">{t('onboarding.quick_subtitle')}</p>
+          </div>
+
+          {quickProfile && (
+            <div className="w-full max-w-sm bg-white rounded-2xl border divide-y overflow-hidden" style={{ borderColor: BORDER }}>
+              {[
+                { label: t('onboarding.confirm_nationality'), value: (quickProfile.nationality as string) || '—' },
+                { label: t('onboarding.confirm_budget'),      value: `$${quickProfile.budget_usd_monthly || '—'} /mo` },
+                { label: t('onboarding.confirm_climate'),     value: (quickProfile.preferred_climate as string) || '—' },
+                { label: t('onboarding.confirm_hobbies'),     value: ((quickProfile.hobbies as string[]) || []).slice(0, 3).join(', ') || '—' },
+              ].map(row => (
+                <div key={row.label} className="flex gap-4 px-5 py-3">
+                  <span className="text-xs w-24 flex-shrink-0 pt-0.5" style={{ color: MUTED }}>{row.label}</span>
+                  <span className="text-sm font-medium text-zinc-800">{row.value}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            onClick={finish}
+            disabled={saving}
+            className="flex items-center gap-2 px-8 py-3 rounded-xl text-sm font-semibold text-white transition-all active:scale-95 disabled:opacity-50"
+            style={{ background: ACCENT }}
+          >
+            {saving ? t('onboarding.finding') : t('onboarding.quick_search_btn')}
+          </button>
+        </div>
+
+        {/* Polling overlay */}
+        {saving && pollingLabel && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 z-50" style={{ background: BG }}>
+            <div className="w-12 h-12 border-2 border-stone-300 border-t-orange-700 rounded-full animate-spin" />
+            <div className="text-center">
+              <p className="text-3xl font-bold text-zinc-900 mb-2" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
+                {t('onboarding.searching_title')}
+              </p>
+              <p className="text-sm text-stone-500">{pollingLabel}...</p>
+            </div>
+          </div>
+        )}
+        {pipelineError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 z-50 px-8" style={{ background: BG }}>
+            <div className="text-center max-w-sm">
+              <p className="text-4xl mb-4">⚠️</p>
+              <p className="text-2xl font-bold text-zinc-900 mb-3" style={{ fontFamily: 'Cormorant Garamond, serif' }}>{t('onboarding.error_title')}</p>
+              <p className="text-sm text-stone-500 mb-6">{pipelineError}</p>
+              <button onClick={() => { setPipelineError(''); setSaving(false) }} className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: ACCENT }}>
+                {t('onboarding.retry')}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    )
   }
 
   // ── All hobby labels for confirm step ─────────────────────────────────────

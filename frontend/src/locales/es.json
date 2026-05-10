@@ -123,6 +123,9 @@
     "confirm_climate": "Clima",
     "confirm_hobbies": "Hobbies",
     "confirm_goals": "Objetivos",
+    "language_label": "¿Qué idioma querés practicar?",
+    "language_optional": "Opcional — mejora las sugerencias de destino",
+    "confirm_language": "Idioma a aprender",
     "pipeline_error": "Hubo un problema al buscar tus destinos. Intentá de nuevo.",
     "error_title": "Algo salió mal",
     "retry": "Intentar de nuevo"

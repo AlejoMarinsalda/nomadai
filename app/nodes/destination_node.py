@@ -54,13 +54,58 @@ Nunca uses frases genéricas como "buena comunidad de nómadas". En cambio:
 - Zona horaria: diferencia horaria exacta y si es viable para el horario de trabajo del usuario"""
 
 
-_LANGUAGE_GOALS = {"inglés", "ingles", "english", "inmersión en inglés", "inmersion en ingles"}
 _MAX_TZ_DIFF_HOURS = 6
 
+_LANGUAGE_COUNTRIES: list[dict] = [
+    {
+        "keywords": {"english", "learn english"},
+        "countries": "Ireland, Malta, United Kingdom, Canada, Australia, New Zealand, South Africa, Singapore",
+        "exclude": "Colombia, Mexico, Spain, Portugal, France, Thailand, Argentina, Brazil",
+    },
+    {
+        "keywords": {"spanish", "learn spanish", "español", "aprender español"},
+        "countries": "Mexico, Colombia, Argentina, Spain, Costa Rica, Peru, Chile, Uruguay",
+        "exclude": "",
+    },
+    {
+        "keywords": {"portuguese", "learn portuguese", "portugués", "aprender portugués"},
+        "countries": "Portugal, Brazil",
+        "exclude": "",
+    },
+    {
+        "keywords": {"french", "learn french", "francés", "aprender francés"},
+        "countries": "France, Belgium, Switzerland",
+        "exclude": "",
+    },
+    {
+        "keywords": {"german", "learn german", "alemán", "aprender alemán"},
+        "countries": "Germany, Austria, Switzerland",
+        "exclude": "",
+    },
+    {
+        "keywords": {"italian", "learn italian", "italiano", "aprender italiano"},
+        "countries": "Italy",
+        "exclude": "",
+    },
+    {
+        "keywords": {"japanese", "learn japanese", "japonés", "aprender japonés"},
+        "countries": "Japan",
+        "exclude": "",
+    },
+    {
+        "keywords": {"mandarin", "learn mandarin", "chino", "aprender chino"},
+        "countries": "Taiwan, Singapore",
+        "exclude": "",
+    },
+]
 
-def _has_english_goal(goals: list[str]) -> bool:
+
+def _detect_language_goal(goals: list[str]) -> dict | None:
     goals_lower = " ".join(goals).lower()
-    return any(kw in goals_lower for kw in _LANGUAGE_GOALS)
+    for lang in _LANGUAGE_COUNTRIES:
+        if any(kw in goals_lower for kw in lang["keywords"]):
+            return lang
+    return None
 
 
 def _parse_utc_offset(tz: str | None) -> float | None:
@@ -104,11 +149,12 @@ def destination_node(state: NomadState) -> dict:
     profile = state.user_profile
 
     constraints = []
-    if _has_english_goal(profile.goals or []):
+    lang_goal = _detect_language_goal(profile.goals or [])
+    if lang_goal:
+        exclude_note = f" Quedan EXCLUIDOS: {lang_goal['exclude']}." if lang_goal["exclude"] else ""
         constraints.append(
-            "⚠️ FILTRO OBLIGATORIO: El usuario quiere INMERSIÓN EN INGLÉS. "
-            "Solo recomendá países de habla inglesa oficial. "
-            "Quedan EXCLUIDOS Colombia, México, España, Portugal, Francia, Tailandia y cualquier país no anglófono."
+            f"⚠️ FILTRO OBLIGATORIO DE IDIOMA: El usuario quiere practicar/aprender el idioma de este destino. "
+            f"Solo recomendá países donde ese idioma sea oficial o predominante: {lang_goal['countries']}.{exclude_note}"
         )
 
     if profile.budget_usd_monthly:

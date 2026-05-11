@@ -11,10 +11,10 @@ marked.use({
       const ytId = getYouTubeId(href)
       if (ytId) {
         return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="yt-card">` +
-          `<div class="yt-thumb-wrap">` +
+          `<span class="yt-thumb-wrap">` +
           `<img src="https://img.youtube.com/vi/${ytId}/hqdefault.jpg" alt="${text}" class="yt-thumb-img" loading="lazy"/>` +
-          `<div class="yt-play">▶</div>` +
-          `</div>` +
+          `<span class="yt-play">▶</span>` +
+          `</span>` +
           `<span class="yt-title">${text}</span>` +
           `</a>`
       }

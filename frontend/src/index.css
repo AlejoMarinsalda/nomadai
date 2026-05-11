@@ -143,6 +143,10 @@ body {
 }
 .prose-chat a.yt-card:hover { border-color: #C84B1A; background: #EDE6DA; }
 
+.prose-chat .yt-thumb-wrap, .prose-chat span.yt-thumb-wrap {
+  display: inline-flex;
+  position: relative;
+}
 .prose-chat .yt-thumb-wrap {
   position: relative;
   width: 130px; min-width: 130px; height: 73px;

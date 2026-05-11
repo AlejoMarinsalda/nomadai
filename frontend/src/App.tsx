@@ -1,4 +1,4 @@
-import { createHashRouter, Navigate, RouterProvider } from 'react-router-dom'
+import { createHashRouter, Navigate, RouterProvider, useParams } from 'react-router-dom'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import Layout from './components/Layout'
 import Login from './pages/Login'
@@ -15,6 +15,11 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
 }
 
+// Wrappers que fuerzan remount cuando cambia sessionId
+function ResultsKeyed()           { const { sessionId } = useParams(); return <Results key={sessionId} /> }
+function ReportDetailKeyed()      { const { sessionId } = useParams(); return <ReportDetail key={sessionId} /> }
+function DestinationDetailKeyed() { const { sessionId, rank } = useParams(); return <DestinationDetail key={`${sessionId}-${rank}`} /> }
+
 const router = createHashRouter([
   { path: '/login', element: <Login /> },
   {
@@ -22,13 +27,13 @@ const router = createHashRouter([
     element: <RequireAuth><Layout /></RequireAuth>,
     children: [
       { index: true, element: <Navigate to="/chat" replace /> },
-      { path: 'onboarding',             element: <Onboarding /> },
-      { path: 'results/:sessionId',           element: <Results /> },
-      { path: 'results/:sessionId/:rank',     element: <DestinationDetail /> },
-      { path: 'chat',                   element: <Chat /> },
-      { path: 'history',                element: <History /> },
-      { path: 'history/:sessionId',     element: <ReportDetail /> },
-      { path: 'profile',                element: <ProfilePage /> },
+      { path: 'onboarding',                 element: <Onboarding /> },
+      { path: 'results/:sessionId',         element: <ResultsKeyed /> },
+      { path: 'results/:sessionId/:rank',   element: <DestinationDetailKeyed /> },
+      { path: 'chat',                       element: <Chat /> },
+      { path: 'history',                    element: <History /> },
+      { path: 'history/:sessionId',         element: <ReportDetailKeyed /> },
+      { path: 'profile',                    element: <ProfilePage /> },
     ],
   },
 ])

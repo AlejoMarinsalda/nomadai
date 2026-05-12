@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { marked } from '../lib/marked'
 import { useAuth } from '../hooks/useAuth'
 import { deleteProfile, getJobStatus, getProfile, sendMessage, type ResultData } from '../lib/api'
+import { CompassIcon } from '../components/Logo'
 
 // Wrap every H3 section in a <details><summary> block for collapsible UX.
 // Split on <h3>, <h2> AND <hr> so that separators, city headings, and the
@@ -267,7 +268,7 @@ export default function Chat() {
 
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center gap-3" style={{ opacity: 0.4 }}>
-              <span className="text-4xl">✈️</span>
+              <CompassIcon size={48} />
               <p className="text-sm" style={{ color: '#9E9186' }}>{t('chat.empty')}</p>
             </div>
           )}

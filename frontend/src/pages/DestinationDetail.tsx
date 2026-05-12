@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import Logo from '../components/Logo'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { marked } from '../lib/marked'
@@ -201,12 +202,7 @@ export default function DestinationDetail() {
         >
           ← {t('destination.back')}
         </button>
-        <div className="flex items-center gap-1.5">
-          <span className="text-sm">✈️</span>
-          <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', fontWeight: 700, color: DARK }}>
-            nomad<em style={{ color: ACCENT }}>ai</em>
-          </span>
-        </div>
+        <Logo size={26} />
         <div style={{ width: 80 }} />
       </div>
 

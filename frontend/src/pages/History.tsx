@@ -96,12 +96,12 @@ export default function History() {
     <div className="h-full overflow-y-auto custom-scrollbar" style={{ background: BG }}>
       <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-3">
 
-        <p
-          className="text-xs font-semibold tracking-widest uppercase mb-1"
-          style={{ color: MUTED }}
+        <h2
+          className="text-2xl font-bold mb-1"
+          style={{ fontFamily: 'Cormorant Garamond, serif', color: DARK }}
         >
           {t('history.title')}
-        </p>
+        </h2>
 
         {reports.map(report => {
           const key = report.created_at

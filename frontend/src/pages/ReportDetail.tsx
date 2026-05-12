@@ -5,20 +5,18 @@ import { marked } from '../lib/marked'
 import { useAuth } from '../hooks/useAuth'
 import { getReports } from '../lib/api'
 
+// ── Design tokens ──────────────────────────────────────────────────────────────
+const BG     = '#F2EDE4'
+const ACCENT = '#C84B1A'
+const DARK   = '#1C1917'
+const BORDER = '#E7E0D7'
+const CARD   = '#FFFFFF'
+const MUTED  = '#9E9186'
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-interface Section {
-  title: string
-  content: string
-}
-
-interface Country {
-  heading: string
-  city: string
-  intro: string
-  sections: Section[]
-}
-
+interface Section { title: string; content: string }
+interface Country { heading: string; city: string; intro: string; sections: Section[] }
 interface Report {
   session_id: string
   created_at: string
@@ -36,7 +34,6 @@ function cityName(heading: string): string {
 function parseReport(markdown: string): Country[] {
   const lines = markdown.split('\n')
   const countries: Country[] = []
-
   let current: Country | null = null
   let currentSection: Section | null = null
   let buf: string[] = []
@@ -45,10 +42,8 @@ function parseReport(markdown: string): Country[] {
     if (!current || !currentSection) return
     currentSection.content = buf.join('\n').replace(/\n?---\s*$/, '').trim()
     current.sections.push(currentSection)
-    currentSection = null
-    buf = []
+    currentSection = null; buf = []
   }
-
   function flushIntro() {
     if (!current) return
     current.intro = buf.join('\n').replace(/\n?---\s*$/, '').trim()
@@ -57,38 +52,19 @@ function parseReport(markdown: string): Country[] {
 
   for (const line of lines) {
     if (/^##\s/.test(line) && !/^###/.test(line)) {
-      if (currentSection) flushSection()
-      else flushIntro()
-
+      if (currentSection) flushSection(); else flushIntro()
       const heading = line.replace(/^##\s+/, '').trim()
-      if (/alojarte/i.test(heading)) {
-        current = null
-        currentSection = null
-        buf = []
-        continue
-      }
-
+      if (/alojarte/i.test(heading)) { current = null; currentSection = null; buf = []; continue }
       current = { heading, city: cityName(heading), intro: '', sections: [] }
-      countries.push(current)
-      buf = []
+      countries.push(current); buf = []
     } else if (/^###\s/.test(line) && current) {
-      if (currentSection) flushSection()
-      else flushIntro()
-      const title = line.replace(/^###\s+/, '').trim()
-      currentSection = { title, content: '' }
-      buf = []
-    } else if (current !== null) {
-      buf.push(line)
-    }
+      if (currentSection) flushSection(); else flushIntro()
+      currentSection = { title: line.replace(/^###\s+/, '').trim(), content: '' }; buf = []
+    } else if (current !== null) { buf.push(line) }
   }
-
-  if (currentSection) flushSection()
-  else flushIntro()
-
+  if (currentSection) flushSection(); else flushIntro()
   return countries
 }
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, {
@@ -107,12 +83,10 @@ export default function ReportDetail() {
   const { t } = useTranslation()
 
   const stateReport = (location.state as { report?: Report } | null)?.report
-
   const [report, setReport] = useState<Report | null>(stateReport ?? null)
   const [fetching, setFetching] = useState(!stateReport)
   const [selected, setSelected] = useState(0)
 
-  // Fetch from API if state wasn't passed (direct URL access / page refresh)
   useEffect(() => {
     if (stateReport) { setFetching(false); return }
     if (!userId || !credential || !sessionId) { setFetching(false); return }
@@ -126,26 +100,24 @@ export default function ReportDetail() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId])
 
-  const countries = useMemo(
-    () => (report ? parseReport(report.report_text) : []),
-    [report],
-  )
+  const countries = useMemo(() => (report ? parseReport(report.report_text) : []), [report])
 
   if (fetching) return (
-    <div className="h-full flex flex-col gap-3 p-4 max-w-2xl mx-auto w-full">
-      {[1, 2, 3].map(i => (
-        <div key={i} className="h-16 bg-zinc-900 border border-zinc-800 rounded-xl animate-pulse" />
+    <div className="h-full p-4 max-w-2xl mx-auto w-full flex flex-col gap-3" style={{ background: BG }}>
+      {[1,2,3].map(i => (
+        <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: CARD, border: `1px solid ${BORDER}` }} />
       ))}
     </div>
   )
 
   if (!report) return (
-    <div className="h-full flex flex-col items-center justify-center gap-4 p-8 text-center">
+    <div className="h-full flex flex-col items-center justify-center gap-4 p-8 text-center" style={{ background: BG }}>
       <span className="text-4xl">📋</span>
-      <p className="text-sm text-zinc-400">{t('report.not_found')}</p>
+      <p className="text-sm" style={{ color: MUTED }}>{t('report.not_found')}</p>
       <button
         onClick={() => navigate('/history')}
-        className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+        className="text-sm font-medium transition-colors"
+        style={{ color: ACCENT }}
       >
         {t('report.back_link')}
       </button>
@@ -155,13 +127,19 @@ export default function ReportDetail() {
   const country = countries[selected] ?? null
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-full flex flex-col overflow-hidden" style={{ background: BG }}>
 
-      {/* Header */}
-      <div className="flex-shrink-0 flex items-center gap-3 px-4 h-12 border-b border-zinc-800/60 bg-zinc-950">
+      {/* ── Header ── */}
+      <div
+        className="flex-shrink-0 flex items-center gap-3 px-5 h-12"
+        style={{ background: BG, borderBottom: `1px solid ${BORDER}` }}
+      >
         <button
           onClick={() => navigate('/history')}
-          className="text-zinc-400 hover:text-zinc-100 transition-colors text-sm flex items-center gap-1.5"
+          className="flex items-center gap-1.5 text-sm font-medium transition-colors"
+          style={{ color: MUTED }}
+          onMouseEnter={e => e.currentTarget.style.color = DARK}
+          onMouseLeave={e => e.currentTarget.style.color = MUTED}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24"
                fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -169,40 +147,50 @@ export default function ReportDetail() {
           </svg>
           {t('report.back_btn')}
         </button>
-        <span className="text-zinc-700">·</span>
-        <span className="text-xs text-zinc-500">{formatDate(report.created_at)}</span>
+
+        <span style={{ color: BORDER }}>·</span>
+        <span className="text-xs" style={{ color: MUTED }}>{formatDate(report.created_at)}</span>
+
         <div className="ml-auto">
           <button
             onClick={() => navigate(`/chat?session=${report.session_id}`, { state: { report } })}
-            className="text-xs text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-400/50 px-3 py-1 rounded-lg transition-colors"
+            className="text-xs font-semibold px-3 py-1 rounded-lg transition-all"
+            style={{ color: ACCENT, border: `1px solid ${BORDER}` }}
+            onMouseEnter={e => { e.currentTarget.style.background = CARD }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
           >
-            {t('report.continue_chat')}
+            {t('report.continue_chat')} →
           </button>
         </div>
       </div>
 
       {countries.length === 0 ? (
-        /* Fallback: show raw markdown if parser found nothing */
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div
-            className="max-w-2xl mx-auto px-4 py-5 prose-chat text-sm"
+            className="max-w-2xl mx-auto px-5 py-6 prose-chat text-sm"
             dangerouslySetInnerHTML={{ __html: marked.parse(report.report_text) as string }}
           />
         </div>
       ) : (
         <>
-          {/* Country tabs — horizontal scrollable bar */}
-          <div className="flex-shrink-0 border-b border-zinc-800/60 overflow-x-auto">
-            <div className="flex gap-1 px-3 py-2.5 min-w-max">
+          {/* ── City tabs ── */}
+          <div
+            className="flex-shrink-0 overflow-x-auto"
+            style={{ borderBottom: `1px solid ${BORDER}`, background: BG }}
+          >
+            <div className="flex gap-1 px-4 py-2 min-w-max">
               {countries.map((c, i) => (
                 <button
                   key={i}
                   onClick={() => setSelected(i)}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap border
-                    ${selected === i
-                      ? 'bg-zinc-800 text-zinc-100 border-zinc-700'
-                      : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 border-transparent'
-                    }`}
+                  className="px-4 py-1.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap"
+                  style={{
+                    background:  selected === i ? DARK : 'transparent',
+                    color:       selected === i ? '#FFFFFF' : MUTED,
+                    border:      `1px solid ${selected === i ? DARK : 'transparent'}`,
+                  }}
+                  onMouseEnter={e => { if (selected !== i) { e.currentTarget.style.background = CARD; e.currentTarget.style.color = DARK } }}
+                  onMouseLeave={e => { if (selected !== i) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = MUTED } }}
                 >
                   {c.city}
                 </button>
@@ -210,25 +198,34 @@ export default function ReportDetail() {
             </div>
           </div>
 
-          {/* Sections */}
+          {/* ── Content ── */}
           {country && (
             <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <div className="max-w-2xl mx-auto px-4 py-5 flex flex-col gap-2.5">
+              <div className="max-w-2xl mx-auto px-5 py-6 flex flex-col gap-2.5">
 
-                {/* Score / cost intro */}
                 {country.intro && (
                   <div
-                    className="prose-chat text-sm px-1 pb-1"
+                    className="prose-chat text-sm pb-2"
                     dangerouslySetInnerHTML={{ __html: marked.parse(country.intro) as string }}
                   />
                 )}
 
-                {/* Collapsible sections */}
                 {country.sections.map((sec, j) => (
-                  <details key={j} className="section-block">
-                    <summary className="section-title">{sec.title}</summary>
+                  <details
+                    key={j}
+                    className="rounded-xl overflow-hidden"
+                    style={{ background: CARD, border: `1px solid ${BORDER}` }}
+                  >
+                    <summary
+                      className="flex items-center justify-between px-4 py-3 text-sm font-semibold cursor-pointer select-none"
+                      style={{ color: DARK }}
+                    >
+                      {sec.title}
+                      <span className="text-xs ml-2 flex-shrink-0" style={{ color: MUTED }}>▸</span>
+                    </summary>
                     <div
-                      className="section-body prose-chat text-sm"
+                      className="px-4 pb-4 prose-chat text-sm"
+                      style={{ borderTop: `1px solid ${BORDER}`, paddingTop: '0.75rem' }}
                       dangerouslySetInnerHTML={{ __html: marked.parse(sec.content) as string }}
                     />
                   </details>
@@ -239,7 +236,6 @@ export default function ReportDetail() {
           )}
         </>
       )}
-
     </div>
   )
 }

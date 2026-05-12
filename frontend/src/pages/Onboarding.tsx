@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import { getJobStatus, getProfile, patchProfile, sendMessage } from '../lib/api'
+import Logo from '../components/Logo'
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -242,9 +243,7 @@ export default function Onboarding() {
     return (
       <div className="h-dvh flex flex-col overflow-hidden relative" style={{ background: BG }}>
         <header className="flex-shrink-0 flex items-center justify-between px-6 h-14">
-          <span className="font-bold text-zinc-900" style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem' }}>
-            nomad<em style={{ color: ACCENT }}>ai</em>
-          </span>
+          <Logo size={26} />
           <button onClick={() => navigate('/onboarding')} className="text-xs font-medium" style={{ color: MUTED }}>
             {t('onboarding.edit_profile')}
           </button>
@@ -329,10 +328,7 @@ export default function Onboarding() {
       {/* Header */}
       <header className="flex-shrink-0 flex items-center justify-between px-6 h-14">
         <div className="flex items-center gap-2">
-          <span className="text-base">✈️</span>
-          <span className="font-bold text-zinc-900" style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem' }}>
-            nomad<em style={{ color: ACCENT }}>ai</em>
-          </span>
+          <Logo size={26} />
         </div>
         <div className="flex items-center gap-4">
           <ProgressBar step={step} />

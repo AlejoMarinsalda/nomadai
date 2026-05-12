@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'reac
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import { deleteReport, getReports } from '../lib/api'
+import LogoComponent, { CompassIcon } from './Logo'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const BG     = '#F2EDE4'
@@ -53,14 +54,7 @@ function LogoutIcon({ className, style }: { className?: string; style?: React.CS
 }
 
 function Logo() {
-  return (
-    <div className="flex items-center gap-1.5">
-      <span className="text-base">✈️</span>
-      <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.15rem', fontWeight: 700, color: DARK }}>
-        nomad<em style={{ color: ACCENT }}>ai</em>
-      </span>
-    </div>
-  )
+  return <LogoComponent size={28} />
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -206,7 +200,7 @@ export default function Layout() {
                       }
                       className="flex-1 flex items-center gap-2 px-3 py-2 text-left min-w-0"
                     >
-                      <span className="flex-shrink-0 text-xs">✈️</span>
+                      <CompassIcon size={12} />
                       <span className="truncate">{label}</span>
                     </button>
                     <button

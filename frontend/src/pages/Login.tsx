@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 import { googleLogin, guestLogin } from '../lib/api'
+import Logo, { CompassIcon } from '../components/Logo'
 
 const CLIENT_ID = '496610892208-7ejbi9l76b71hjdd28lghc7pruu9tr1t.apps.googleusercontent.com'
 
@@ -67,12 +68,7 @@ export default function Login() {
 
       {/* Header */}
       <header className="flex-shrink-0 h-14 flex items-center px-6" style={{ borderBottom: `1px solid ${BORDER}` }}>
-        <div className="flex items-center gap-1.5">
-          <span className="text-base">✈️</span>
-          <span style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.15rem', fontWeight: 700, color: DARK }}>
-            nomad<em style={{ color: ACCENT }}>ai</em>
-          </span>
-        </div>
+        <Logo size={28} />
       </header>
 
       {/* Content */}
@@ -81,9 +77,9 @@ export default function Login() {
 
           {/* Hero */}
           <div className="text-center">
-            <span className="text-5xl block mb-4">✈️</span>
+            <div className="flex justify-center mb-4"><CompassIcon size={72} /></div>
             <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '3.5rem', fontWeight: 700, color: DARK, letterSpacing: '-0.02em', lineHeight: 1 }}>
-              nomad<em style={{ color: ACCENT }}>ai</em>
+              nomadai
             </h1>
             <p className="mt-3 text-sm leading-relaxed" style={{ color: MUTED }}>
               {t('login.subtitle')}

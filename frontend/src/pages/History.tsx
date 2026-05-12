@@ -77,10 +77,10 @@ export default function History() {
     <div className="h-full flex flex-col items-center justify-center p-8 text-center" style={{ background: BG }}>
       <div className="max-w-sm flex flex-col items-center gap-4">
         <span className="text-4xl">🧭</span>
-        <h2 className="text-lg font-bold" style={{ fontFamily: 'Cormorant Garamond, serif', color: DARK }}>
+        <h2 className="text-2xl font-bold" style={{ fontFamily: 'Cormorant Garamond, serif', color: DARK }}>
           {t('history.empty_title')}
         </h2>
-        <p className="text-sm leading-relaxed" style={{ color: MUTED }}>{t('history.empty_desc')}</p>
+        <p className="text-sm leading-relaxed" style={{ color: DARK }}>{t('history.empty_desc')}</p>
         <button
           onClick={() => navigate('/onboarding')}
           className="mt-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all active:scale-95"

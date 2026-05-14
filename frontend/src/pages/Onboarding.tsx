@@ -57,6 +57,7 @@ const LANGUAGE_OPTIONS = [
 ]
 
 const TIMEZONES = [
+  'Flexible',
   'UTC-8 (Los Angeles)', 'UTC-7 (Denver)', 'UTC-6 (Chicago)',
   'UTC-5 (New York)', 'UTC-4 (Santiago)', 'UTC-3 (Buenos Aires)',
   'UTC-1 (Azores)', 'UTC+0 (London)', 'UTC+1 (Madrid)',

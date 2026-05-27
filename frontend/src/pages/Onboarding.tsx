@@ -120,7 +120,42 @@ export default function Onboarding() {
   useEffect(() => {
     if (!isQuick || !userId || !credential) { setQuickLoading(false); return }
     getProfile(userId, credential)
-      .then(data => { if (data.found) setQuickProfile(data.profile) })
+      .then(data => {
+        if (!data.found) return
+        const p = data.profile
+        setQuickProfile(p)
+        // Pre-populate state from saved profile so finish() uses current values
+        if (p.nationality)        setNationality(p.nationality)
+        if (p.work_timezone) {
+          const tz = TIMEZONES.find(t => t.startsWith(p.work_timezone)) ?? TIMEZONES[5]
+          setTimezone(tz)
+        }
+        if (p.budget_usd_monthly) {
+          const idx = BUDGET_STEPS.reduce((best, val, i) =>
+            Math.abs(val - p.budget_usd_monthly) < Math.abs(BUDGET_STEPS[best] - p.budget_usd_monthly) ? i : best, 0)
+          setBudgetIdx(idx)
+        }
+        if (p.preferred_climate) {
+          const ids = CLIMATE_OPTIONS.filter(o => p.preferred_climate.toLowerCase().includes(o.label.toLowerCase())).map(o => o.id)
+          if (ids.length) setClimates(ids)
+        }
+        if (Array.isArray(p.hobbies)) {
+          const ids = HOBBY_OPTIONS.filter(o => p.hobbies.some((h: string) => h.toLowerCase() === o.label.toLowerCase())).map(o => o.id)
+          setHobbies(ids)
+          const custom = (p.hobbies as string[]).filter((h: string) => !HOBBY_OPTIONS.some(o => o.label.toLowerCase() === h.toLowerCase()))
+          setCustomHobbies(custom)
+        }
+        if (Array.isArray(p.goals)) {
+          const ids = GOAL_OPTIONS.filter(o => p.goals.some((g: string) => g.toLowerCase() === o.label.toLowerCase())).map(o => o.id)
+          setGoals(ids)
+          const langGoal = (p.goals as string[]).find((g: string) => g.toLowerCase().startsWith('learn '))
+          if (langGoal) {
+            const langName = langGoal.replace(/^learn\s+/i, '').toLowerCase()
+            const found = LANGUAGE_OPTIONS.find(l => l.label.toLowerCase() === langName)
+            if (found) setTargetLanguage(found.id)
+          }
+        }
+      })
       .catch(() => {})
       .finally(() => setQuickLoading(false))
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -265,7 +300,6 @@ export default function Onboarding() {
             <div className="w-full max-w-sm bg-white rounded-2xl border divide-y overflow-hidden" style={{ borderColor: BORDER }}>
               {[
                 { label: t('onboarding.confirm_nationality'), value: (quickProfile.nationality as string) || '—' },
-                { label: t('onboarding.confirm_budget'),      value: `$${quickProfile.budget_usd_monthly || '—'} /mo` },
                 { label: t('onboarding.confirm_climate'),     value: (quickProfile.preferred_climate as string) || '—' },
                 { label: t('onboarding.confirm_hobbies'),     value: ((quickProfile.hobbies as string[]) || []).slice(0, 3).join(', ') || '—' },
               ].map(row => (
@@ -274,6 +308,21 @@ export default function Onboarding() {
                   <span className="text-sm font-medium text-zinc-800">{row.value}</span>
                 </div>
               ))}
+              {/* Budget — editable slider */}
+              <div className="px-5 py-4 flex flex-col gap-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs" style={{ color: MUTED }}>{t('onboarding.confirm_budget')}</span>
+                  <span className="text-sm font-semibold" style={{ color: DARK }}>${budget.toLocaleString()} /mo</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={BUDGET_STEPS.length - 1}
+                  value={budgetIdx}
+                  onChange={e => setBudgetIdx(Number(e.target.value))}
+                  className="w-full accent-orange-700"
+                />
+              </div>
             </div>
           )}
 

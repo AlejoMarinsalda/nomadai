@@ -86,6 +86,22 @@ class TestDestinationNode:
         assert _detect_language_goal(["learn spanish"]) is not None
         assert _detect_language_goal(["learn french", "low cost"]) is not None
 
+    def test_detect_language_goal_all_supported_languages(self):
+        from app.nodes.destination_node import _detect_language_goal
+
+        assert _detect_language_goal(["learn portuguese"]) is not None
+        assert _detect_language_goal(["learn german"]) is not None
+        assert _detect_language_goal(["learn italian"]) is not None
+        assert _detect_language_goal(["learn japanese"]) is not None
+        assert _detect_language_goal(["learn mandarin"]) is not None
+
+    def test_detect_language_goal_no_match(self):
+        from app.nodes.destination_node import _detect_language_goal
+
+        assert _detect_language_goal([]) is None
+        assert _detect_language_goal(["low cost", "safety", "nightlife"]) is None
+        assert _detect_language_goal(["networking", "great weather"]) is None
+
     def test_english_constraint_in_prompt(self, complete_state):
         from app.nodes.destination_node import destination_node
         import json
@@ -207,6 +223,75 @@ class TestCompilerNode:
         assert "Futbol 5 El Estadio" in formatted
         assert "Selina Medellín" in formatted
 
+    def test_result_data_includes_visa_required_field(self, complete_state, sample_destination):
+        from app.nodes.compiler_node import _build_result_data
+
+        sample_destination.visa.visa_required = False
+        complete_state.destinations = [sample_destination]
+
+        result = _build_result_data(complete_state, [])
+        visa = result["destinations"][0]["visa"]
+
+        assert "required" in visa
+        assert visa["required"] is False
+
+    def test_visa_required_true_in_result(self, complete_state, sample_destination):
+        from app.nodes.compiler_node import _build_result_data
+
+        sample_destination.visa.visa_required = True
+        sample_destination.visa.visa_type = "Tourist Visa"
+        sample_destination.visa.max_stay_days = 30
+        complete_state.destinations = [sample_destination]
+
+        result = _build_result_data(complete_state, [])
+        visa = result["destinations"][0]["visa"]
+
+        assert visa["required"] is True
+        assert visa["type"] == "Tourist Visa"
+        assert visa["max_stay_days"] == 30
+
+    def test_visa_required_none_when_unknown(self, complete_state, sample_destination):
+        from app.nodes.compiler_node import _build_result_data
+
+        sample_destination.visa.visa_required = None
+        complete_state.destinations = [sample_destination]
+
+        result = _build_result_data(complete_state, [])
+        visa = result["destinations"][0]["visa"]
+
+        assert visa["required"] is None
+
+    def test_visa_summary_not_required(self, sample_destination):
+        from app.nodes.compiler_node import _visa_summary
+
+        sample_destination.visa.visa_required = False
+        assert _visa_summary(sample_destination) == "No visa required"
+
+    def test_visa_summary_required_with_type_and_days(self, sample_destination):
+        from app.nodes.compiler_node import _visa_summary
+
+        sample_destination.visa.visa_required = True
+        sample_destination.visa.visa_type = "Tourist Visa"
+        sample_destination.visa.max_stay_days = 90
+        assert _visa_summary(sample_destination) == "Tourist Visa 90d"
+
+    def test_visa_summary_required_no_type(self, sample_destination):
+        from app.nodes.compiler_node import _visa_summary
+
+        sample_destination.visa.visa_required = True
+        sample_destination.visa.visa_type = None
+        sample_destination.visa.max_stay_days = None
+        assert _visa_summary(sample_destination) == "Visa"
+
+    def test_compiler_english_prompt(self, complete_state):
+        from app.nodes.compiler_node import _system_prompt
+
+        prompt_en = _system_prompt("en")
+        prompt_es = _system_prompt("es")
+
+        assert "ENGLISH" in prompt_en
+        assert "ESPAÑOL" in prompt_es
+
 
 class TestEnrichmentNode:
     def test_runs_all_enrichments_in_parallel(self, complete_state):
@@ -260,3 +345,45 @@ class TestAccommodationTool:
         links = get_accommodation_links("Lisboa", "Portugal")
         airbnb = next(l for l in links if l["platform"] == "Airbnb")
         assert "monthly_length=1" in airbnb["url"]
+
+    def test_budget_applies_price_filter_to_airbnb(self):
+        from app.tools.accommodation_tool import get_accommodation_links
+        links = get_accommodation_links("Bangkok", "Tailandia", budget_usd_monthly=2000)
+        airbnb = next(l for l in links if l["platform"] == "Airbnb")
+        # 40% de 2000 = 800
+        assert "price_max=800" in airbnb["url"]
+
+    def test_budget_applies_price_filter_to_booking(self):
+        from app.tools.accommodation_tool import get_accommodation_links
+        links = get_accommodation_links("Bangkok", "Tailandia", budget_usd_monthly=2000)
+        booking = next(l for l in links if l["platform"] == "Booking.com")
+        # nightly = max(10, 800 // 30) = 26
+        assert "26" in booking["url"]
+
+    def test_no_budget_no_price_filter(self):
+        from app.tools.accommodation_tool import get_accommodation_links
+        links = get_accommodation_links("Bangkok", "Tailandia", budget_usd_monthly=None)
+        airbnb = next(l for l in links if l["platform"] == "Airbnb")
+        booking = next(l for l in links if l["platform"] == "Booking.com")
+        assert "price_max" not in airbnb["url"]
+        assert "price" not in booking["url"]
+
+    def test_english_labels(self):
+        from app.tools.accommodation_tool import get_accommodation_links
+        links = get_accommodation_links("Lisbon", "Portugal", language="en")
+        airbnb = next(l for l in links if l["platform"] == "Airbnb")
+        booking = next(l for l in links if l["platform"] == "Booking.com")
+        hostelworld = next(l for l in links if l["platform"] == "Hostelworld")
+        assert "Monthly stays" in airbnb["label"]
+        assert "Apartments" in booking["label"]
+        assert "Accommodation" in hostelworld["label"]
+
+    def test_spanish_labels_default(self):
+        from app.tools.accommodation_tool import get_accommodation_links
+        links = get_accommodation_links("Lisboa", "Portugal", language="es")
+        airbnb = next(l for l in links if l["platform"] == "Airbnb")
+        booking = next(l for l in links if l["platform"] == "Booking.com")
+        hostelworld = next(l for l in links if l["platform"] == "Hostelworld")
+        assert "Estadías mensuales" in airbnb["label"]
+        assert "Apartamentos" in booking["label"]
+        assert "Hospedajes" in hostelworld["label"]

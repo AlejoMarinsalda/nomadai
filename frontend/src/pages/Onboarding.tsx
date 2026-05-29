@@ -66,6 +66,40 @@ const TIMEZONES = [
   'UTC+10 (Sydney)',
 ]
 
+const NATIONALITIES = [
+  'Afghan', 'Albanian', 'Algerian', 'American', 'Andorran', 'Angolan', 'Antiguan',
+  'Argentine', 'Armenian', 'Australian', 'Austrian', 'Azerbaijani', 'Bahamian',
+  'Bahraini', 'Bangladeshi', 'Barbadian', 'Belarusian', 'Belgian', 'Belizean',
+  'Beninese', 'Bhutanese', 'Bolivian', 'Bosnian', 'Botswanan', 'Brazilian',
+  'Bruneian', 'Bulgarian', 'Burkinabe', 'Burundian', 'Cabo Verdean', 'Cambodian',
+  'Cameroonian', 'Canadian', 'Central African', 'Chadian', 'Chilean', 'Chinese',
+  'Colombian', 'Comorian', 'Congolese', 'Costa Rican', 'Croatian', 'Cuban',
+  'Cypriot', 'Czech', 'Danish', 'Djiboutian', 'Dominican', 'Dutch', 'Ecuadorian',
+  'Egyptian', 'Emirati', 'Equatorial Guinean', 'Eritrean', 'Estonian', 'Eswatini',
+  'Ethiopian', 'Fijian', 'Finnish', 'French', 'Gabonese', 'Gambian', 'Georgian',
+  'German', 'Ghanaian', 'Greek', 'Grenadian', 'Guatemalan', 'Guinean',
+  'Guinea-Bissauan', 'Guyanese', 'Haitian', 'Honduran', 'Hungarian', 'Icelandic',
+  'Indian', 'Indonesian', 'Iranian', 'Iraqi', 'Irish', 'Israeli', 'Italian',
+  'Ivorian', 'Jamaican', 'Japanese', 'Jordanian', 'Kazakhstani', 'Kenyan',
+  'Kiribati', 'Kuwaiti', 'Kyrgyzstani', 'Laotian', 'Latvian', 'Lebanese',
+  'Lesothan', 'Liberian', 'Libyan', 'Liechtensteiner', 'Lithuanian', 'Luxembourger',
+  'Malagasy', 'Malawian', 'Malaysian', 'Maldivian', 'Malian', 'Maltese',
+  'Marshallese', 'Mauritanian', 'Mauritian', 'Mexican', 'Micronesian', 'Moldovan',
+  'Monacan', 'Mongolian', 'Montenegrin', 'Moroccan', 'Mozambican', 'Namibian',
+  'Nauruan', 'Nepali', 'New Zealander', 'Nicaraguan', 'Nigerian', 'Nigerien',
+  'North Korean', 'North Macedonian', 'Norwegian', 'Omani', 'Pakistani', 'Palauan',
+  'Palestinian', 'Panamanian', 'Papua New Guinean', 'Paraguayan', 'Peruvian',
+  'Filipino', 'Polish', 'Portuguese', 'Qatari', 'Romanian', 'Russian', 'Rwandan',
+  'Saint Lucian', 'Salvadoran', 'Samoan', 'Saudi', 'Senegalese', 'Serbian',
+  'Seychellois', 'Sierra Leonean', 'Singaporean', 'Slovak', 'Slovenian',
+  'Solomon Islander', 'Somali', 'South African', 'South Korean', 'South Sudanese',
+  'Spanish', 'Sri Lankan', 'Sudanese', 'Surinamese', 'Swedish', 'Swiss', 'Syrian',
+  'Taiwanese', 'Tajik', 'Tanzanian', 'Thai', 'Timorese', 'Togolese', 'Tongan',
+  'Trinidadian', 'Tunisian', 'Turkish', 'Turkmen', 'Tuvaluan', 'Ugandan',
+  'Ukrainian', 'Uruguayan', 'Uzbekistani', 'Vanuatuan', 'Venezuelan', 'Vietnamese',
+  'Yemeni', 'Zambian', 'Zimbabwean',
+]
+
 const TOTAL_STEPS = 5
 
 // ── Styles ─────────────────────────────────────────────────────────────────────
@@ -125,7 +159,7 @@ export default function Onboarding() {
         const p = data.profile
         setQuickProfile(p)
         // Pre-populate state from saved profile so finish() uses current values
-        if (p.nationality)        setNationality(p.nationality)
+        if (p.nationality)        { setNationality(p.nationality); setNationalityQuery(p.nationality) }
         if (p.work_timezone) {
           const tz = TIMEZONES.find(t => t.startsWith(p.work_timezone)) ?? TIMEZONES[5]
           setTimezone(tz)
@@ -164,6 +198,8 @@ export default function Onboarding() {
   // Form state
   const [timezone, setTimezone]       = useState(TIMEZONES[5])   // UTC-3 default
   const [nationality, setNationality] = useState('')
+  const [nationalityQuery, setNationalityQuery] = useState('')
+  const [nationalityOpen, setNationalityOpen] = useState(false)
   const [budgetIdx, setBudgetIdx]     = useState(4)               // $2500 default
   const [climates, setClimates]       = useState<string[]>([])    // multi-select
   const [hobbies, setHobbies]         = useState<string[]>([])
@@ -420,15 +456,35 @@ export default function Onboarding() {
                   {TIMEZONES.map(tz => <option key={tz} value={tz}>{tz}</option>)}
                 </select>
               </div>
-              <div>
+              <div className="relative">
                 <StepLabel n="02" label={t('onboarding.nationality_label')} />
                 <input
                   type="text"
-                  value={nationality}
-                  onChange={e => setNationality(e.target.value)}
+                  value={nationalityOpen ? nationalityQuery : nationality}
+                  onChange={e => { setNationalityQuery(e.target.value); setNationalityOpen(true) }}
+                  onFocus={() => { setNationalityQuery(''); setNationalityOpen(true) }}
+                  onBlur={() => setTimeout(() => setNationalityOpen(false), 150)}
                   placeholder={t('onboarding.nationality_placeholder')}
                   className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm text-zinc-800 outline-none focus:border-stone-400 transition-colors placeholder-stone-400"
                 />
+                {nationalityOpen && (() => {
+                  const filtered = NATIONALITIES.filter(n =>
+                    n.toLowerCase().includes(nationalityQuery.toLowerCase())
+                  ).slice(0, 8)
+                  return filtered.length > 0 ? (
+                    <ul className="absolute z-10 mt-1 w-full bg-white border border-stone-200 rounded-xl shadow-lg overflow-auto max-h-48">
+                      {filtered.map(n => (
+                        <li
+                          key={n}
+                          onMouseDown={() => { setNationality(n); setNationalityQuery(''); setNationalityOpen(false) }}
+                          className="px-4 py-2.5 text-sm text-zinc-800 cursor-pointer hover:bg-stone-50"
+                        >
+                          {n}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null
+                })()}
               </div>
             </div>
           )}

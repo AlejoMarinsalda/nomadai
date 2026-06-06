@@ -24,7 +24,7 @@ from google.auth.transport import requests as google_requests
 from app.graph import graph
 from app.services.profile_store import get_profile, save_profile, delete_profile
 from app.services.job_store import create_pending_job, get_job
-from app.services.report_store import get_reports, delete_report
+from app.services.report_store import get_reports, delete_report, save_feedback
 from app.services.auth import get_current_user
 from app.services.rate_limiter import rate_limit
 from app.config import settings
@@ -155,6 +155,20 @@ def delete_user_report(user_id: str, created_at: str, current_user: str = Depend
         raise HTTPException(status_code=403, detail="No autorizado")
     delete_report(user_id, created_at)
     return {"deleted": True}
+
+
+class FeedbackBody(BaseModel):
+    session_id: str
+    score: int  # 1 = useful, -1 = not useful
+    comment: str | None = None
+
+
+@app.post("/report/{user_id}/feedback")
+def submit_report_feedback(user_id: str, body: FeedbackBody, current_user: str = Depends(get_current_user)):
+    if user_id != current_user:
+        raise HTTPException(status_code=403, detail="No autorizado")
+    save_feedback(user_id, body.session_id, body.score, body.comment)
+    return {"ok": True}
 
 
 @app.delete("/profile/{user_id}")

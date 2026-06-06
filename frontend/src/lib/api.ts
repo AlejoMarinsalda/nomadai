@@ -112,6 +112,17 @@ export async function getReports(userId: string, credential: string) {
   }>
 }
 
+export async function submitFeedback(userId: string, credential: string, sessionId: string, score: 1 | -1) {
+  const res = await fetch(`${API}/report/${userId}/feedback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...auth(credential) },
+    body: JSON.stringify({ session_id: sessionId, score }),
+  })
+  if (res.status === 401) throw new Error('UNAUTHORIZED')
+  if (!res.ok) throw new Error('FEEDBACK_FAILED')
+  return res.json()
+}
+
 export async function deleteReport(userId: string, credential: string, createdAt: string) {
   const res = await fetch(`${API}/reports/${userId}/${encodeURIComponent(createdAt)}`, {
     method: 'DELETE',

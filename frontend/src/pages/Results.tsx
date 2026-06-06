@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
-import { getReports, type ResultData, type DestinationResult } from '../lib/api'
+import { getReports, submitFeedback, type ResultData, type DestinationResult } from '../lib/api'
 
 // ── Design tokens ──────────────────────────────────────────────────────────────
 const BG     = '#F2EDE4'
@@ -125,6 +125,19 @@ export default function Results() {
   const [resultData, setResultData] = useState<ResultData | null>(stateData ?? null)
   const [fetching, setFetching] = useState(!stateData)
   const [selected, setSelected] = useState(0)
+  const [feedbackScore, setFeedbackScore] = useState<1 | -1 | null>(null)
+  const [feedbackSent, setFeedbackSent] = useState(false)
+
+  async function handleFeedback(score: 1 | -1) {
+    if (feedbackSent || !userId || !credential || !sessionId) return
+    setFeedbackScore(score)
+    setFeedbackSent(true)
+    try {
+      await submitFeedback(userId, credential, sessionId, score)
+    } catch {
+      // fire-and-forget — don't disturb UX on failure
+    }
+  }
 
   useEffect(() => {
     if (stateData || !sessionId || !userId || !credential) { setFetching(false); return }
@@ -231,12 +244,37 @@ export default function Results() {
               >
                 {t('results.ask_questions')}
               </button>
-              <button
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium border transition-all"
-                style={{ borderColor: BORDER, color: DARK, background: 'transparent' }}
-              >
-                ♡ {t('results.save')}
-              </button>
+            </div>
+
+            {/* Feedback */}
+            <div className="flex items-center gap-3 mt-1">
+              {feedbackSent ? (
+                <p className="text-xs" style={{ color: '#9E9186' }}>
+                  {feedbackScore === 1 ? '👍' : '👎'} Gracias por tu feedback
+                </p>
+              ) : (
+                <>
+                  <span className="text-xs" style={{ color: '#9E9186' }}>¿Útil?</span>
+                  <button
+                    onClick={() => handleFeedback(1)}
+                    className="text-sm px-2.5 py-1 rounded-lg border transition-all active:scale-95"
+                    style={{ borderColor: BORDER, color: DARK, background: 'transparent' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = CARD }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                  >
+                    👍
+                  </button>
+                  <button
+                    onClick={() => handleFeedback(-1)}
+                    className="text-sm px-2.5 py-1 rounded-lg border transition-all active:scale-95"
+                    style={{ borderColor: BORDER, color: DARK, background: 'transparent' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = CARD }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                  >
+                    👎
+                  </button>
+                </>
+              )}
             </div>
           </div>
 

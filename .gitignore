@@ -11,3 +11,4 @@ dist/
 .DS_Store
 frontend/node_modules/
 frontend/dist/
+design-patterns/

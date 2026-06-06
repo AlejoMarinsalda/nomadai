@@ -68,6 +68,27 @@ def delete_report(user_id: str, created_at: str) -> None:
         logger.warning("delete_report failed for %s: %s", user_id, e)
 
 
+def save_feedback(user_id: str, session_id: str, score: int, comment: str | None = None) -> None:
+    try:
+        reports = get_reports(user_id)
+        target = next((r for r in reports if r["session_id"] == session_id), None)
+        if not target:
+            return
+        _db().update_item(
+            TableName=settings.reports_table,
+            Key={
+                "user_id":    {"S": user_id},
+                "created_at": {"S": target["created_at"]},
+            },
+            UpdateExpression="SET feedback = :f",
+            ExpressionAttributeValues={
+                ":f": {"S": json.dumps({"score": score, "comment": comment})}
+            },
+        )
+    except Exception as e:
+        logger.warning("save_feedback failed for %s: %s", user_id, e)
+
+
 def get_latest_report(user_id: str) -> dict | None:
     results = get_reports(user_id)
     return results[0] if results else None

@@ -20,6 +20,7 @@ LangGraph es un framework para construir agentes de IA como **grafos de estado**
 
 El estado es el objeto que fluye por todo el grafo. Cada nodo lo lee y puede modificar partes de él.
 
+
 ```python
 # app/graph/state.py
 

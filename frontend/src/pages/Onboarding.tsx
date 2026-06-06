@@ -321,7 +321,7 @@ export default function Onboarding() {
           </button>
         </header>
 
-        <div className="flex-1 flex flex-col items-center justify-center px-6 gap-8">
+        <div className="flex-1 overflow-y-auto flex flex-col items-center px-6 py-8 gap-6">
           <div className="text-center">
             <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: ACCENT }}>
               ↑ {t('onboarding.quick_tag')}
@@ -334,16 +334,97 @@ export default function Onboarding() {
 
           {quickProfile && (
             <div className="w-full max-w-sm bg-white rounded-2xl border divide-y overflow-hidden" style={{ borderColor: BORDER }}>
-              {[
-                { label: t('onboarding.confirm_nationality'), value: (quickProfile.nationality as string) || '—' },
-                { label: t('onboarding.confirm_climate'),     value: (quickProfile.preferred_climate as string) || '—' },
-                { label: t('onboarding.confirm_hobbies'),     value: ((quickProfile.hobbies as string[]) || []).slice(0, 3).join(', ') || '—' },
-              ].map(row => (
-                <div key={row.label} className="flex gap-4 px-5 py-3">
-                  <span className="text-xs w-24 flex-shrink-0 pt-0.5" style={{ color: MUTED }}>{row.label}</span>
-                  <span className="text-sm font-medium text-zinc-800">{row.value}</span>
+
+              {/* Nationality — read-only */}
+              <div className="flex gap-4 px-5 py-3">
+                <span className="text-xs w-28 flex-shrink-0 pt-0.5" style={{ color: MUTED }}>{t('onboarding.confirm_nationality')}</span>
+                <span className="text-sm font-medium text-zinc-800">{(quickProfile.nationality as string) || '—'}</span>
+              </div>
+
+              {/* Timezone — editable */}
+              <div className="px-5 py-3 flex flex-col gap-1.5">
+                <span className="text-xs" style={{ color: MUTED }}>{t('onboarding.timezone_label')}</span>
+                <select
+                  value={timezone}
+                  onChange={e => setTimezone(e.target.value)}
+                  className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-sm text-zinc-800 outline-none"
+                >
+                  {TIMEZONES.map(tz => <option key={tz} value={tz}>{tz}</option>)}
+                </select>
+              </div>
+
+              {/* Climate — editable */}
+              <div className="px-5 py-3 flex flex-col gap-2">
+                <span className="text-xs" style={{ color: MUTED }}>{t('onboarding.climate_label')}</span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {CLIMATE_OPTIONS.map(opt => {
+                    const sel = climates.includes(opt.id)
+                    return (
+                      <button
+                        key={opt.id}
+                        onClick={() => toggleClimate(opt.id)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg border text-left transition-all text-xs font-medium"
+                        style={{
+                          background:  sel ? DARK : 'transparent',
+                          borderColor: sel ? DARK : BORDER,
+                          color:       sel ? 'white' : DARK,
+                        }}
+                      >
+                        <span>{opt.icon}</span>{opt.label}
+                      </button>
+                    )
+                  })}
                 </div>
-              ))}
+              </div>
+
+              {/* Hobbies — editable */}
+              <div className="px-5 py-3 flex flex-col gap-2">
+                <span className="text-xs" style={{ color: MUTED }}>{t('onboarding.hobbies_label')}</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {HOBBY_OPTIONS.map(opt => {
+                    const sel = hobbies.includes(opt.id)
+                    return (
+                      <button
+                        key={opt.id}
+                        onClick={() => toggleHobby(opt.id)}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-medium transition-all"
+                        style={{
+                          background:  sel ? DARK : 'transparent',
+                          borderColor: sel ? DARK : BORDER,
+                          color:       sel ? 'white' : DARK,
+                        }}
+                      >
+                        <span>{opt.emoji}</span>{opt.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Goals — editable */}
+              <div className="px-5 py-3 flex flex-col gap-2">
+                <span className="text-xs" style={{ color: MUTED }}>{t('onboarding.goals_label')}</span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {GOAL_OPTIONS.map(opt => {
+                    const sel = goals.includes(opt.id)
+                    return (
+                      <button
+                        key={opt.id}
+                        onClick={() => toggleGoal(opt.id)}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-lg border text-left transition-all text-xs font-medium"
+                        style={{
+                          background:  sel ? DARK : 'transparent',
+                          borderColor: sel ? DARK : BORDER,
+                          color:       sel ? 'white' : DARK,
+                        }}
+                      >
+                        <span>{opt.emoji}</span>{opt.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
               {/* Budget — editable slider */}
               <div className="px-5 py-4 flex flex-col gap-2">
                 <div className="flex justify-between items-center">
@@ -359,6 +440,7 @@ export default function Onboarding() {
                   className="w-full accent-orange-700"
                 />
               </div>
+
             </div>
           )}
 

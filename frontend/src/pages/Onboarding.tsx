@@ -508,7 +508,7 @@ export default function Onboarding() {
                     className="w-full accent-orange-700 cursor-pointer"
                   />
                   <div className="flex justify-between mt-2">
-                    {['$800', 'backpacker', '$2,500', '$6,000+', 'luxury'].map(l => (
+                    {['$800', 'backpacker', '$2,500', '$4,000', '$6,000+', 'luxury'].map(l => (
                       <span key={l} className="text-xs text-stone-400">{l}</span>
                     ))}
                   </div>

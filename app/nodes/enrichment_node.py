@@ -3,6 +3,7 @@ import logging
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.runnables import RunnableConfig
 
 from app.graph.state import NomadState, Destination, DestinationMedia, ClimateInfo, VisaInfo
 from app.tools.youtube_tool import search_youtube_reviews
@@ -60,7 +61,7 @@ def _enrich_media(dest: Destination) -> DestinationMedia:
     return DestinationMedia(youtube_links=youtube_links, influencers=results[:3] if results else [])
 
 
-def _enrich_climate(dest: Destination, language: str) -> ClimateInfo:
+def _enrich_climate(dest: Destination, language: str, config: RunnableConfig | None = None) -> ClimateInfo:
     rag_results = search_rag(f"clima mejores meses {dest.city} {dest.country} nómada digital", k=2)
 
     if not rag_results:
@@ -73,7 +74,7 @@ def _enrich_climate(dest: Destination, language: str) -> ClimateInfo:
     try:
         llm = ChatGoogleGenerativeAI(model=settings.google_model_id, google_api_key=settings.google_api_key)
         prompt = _climate_prompt(dest.city, dest.country, context_text, language)
-        response = llm.invoke([HumanMessage(content=prompt)])
+        response = llm.invoke([HumanMessage(content=prompt)], config=config)
         data = extract_json(response.content)
         if isinstance(data, dict):
             return ClimateInfo(
@@ -88,7 +89,7 @@ def _enrich_climate(dest: Destination, language: str) -> ClimateInfo:
     return get_climate_summary(dest.city, dest.country)
 
 
-def _enrich_visa(dest: Destination, nationality: str, language: str) -> VisaInfo:
+def _enrich_visa(dest: Destination, nationality: str, language: str, config: RunnableConfig | None = None) -> VisaInfo:
     rag_results = search_rag(f"visa {nationality} ciudadanos {dest.country} nómada digital", k=3)
 
     if rag_results:
@@ -100,7 +101,7 @@ def _enrich_visa(dest: Destination, nationality: str, language: str) -> VisaInfo
     try:
         llm = ChatGoogleGenerativeAI(model=settings.google_model_id, google_api_key=settings.google_api_key)
         prompt = f"Nationality: {nationality}\nDestination: {dest.city}, {dest.country}\n\n{context}\n\nReturn the JSON."
-        response = llm.invoke([SystemMessage(content=_visa_system(language)), HumanMessage(content=prompt)])
+        response = llm.invoke([SystemMessage(content=_visa_system(language)), HumanMessage(content=prompt)], config=config)
         data = extract_json(response.content)
         if isinstance(data, dict):
             return VisaInfo(**data)
@@ -123,15 +124,15 @@ def _enrich_local_info(dest: Destination, hobbies: list[str]) -> str:
     return "\n\n".join(parts)
 
 
-async def _enrich_one(dest: Destination, nationality: str, hobbies: list[str], language: str, budget: int | None = None) -> Destination:
+async def _enrich_one(dest: Destination, nationality: str, hobbies: list[str], language: str, budget: int | None = None, config: RunnableConfig | None = None) -> Destination:
     # LangGraph checkpoint deserialization may return dicts instead of Pydantic objects
     if isinstance(dest, dict):
         dest = Destination(**dest)
 
     results = await asyncio.gather(
         asyncio.to_thread(_enrich_media, dest),
-        asyncio.to_thread(_enrich_climate, dest, language),
-        asyncio.to_thread(_enrich_visa, dest, nationality, language),
+        asyncio.to_thread(_enrich_climate, dest, language, config),
+        asyncio.to_thread(_enrich_visa, dest, nationality, language, config),
         asyncio.to_thread(_enrich_local_info, dest, hobbies),
         return_exceptions=True,
     )
@@ -159,14 +160,14 @@ async def _enrich_one(dest: Destination, nationality: str, hobbies: list[str], l
     })
 
 
-async def enrichment_node(state: NomadState) -> dict:
+async def enrichment_node(state: NomadState, config: RunnableConfig) -> dict:
     nationality = state.user_profile.nationality or "argentina"
     hobbies     = state.user_profile.hobbies or []
     language    = state.language
     budget      = state.user_profile.budget_usd_monthly
 
     results = await asyncio.gather(*[
-        _enrich_one(dest, nationality, hobbies, language, budget) for dest in state.destinations
+        _enrich_one(dest, nationality, hobbies, language, budget, config) for dest in state.destinations
     ], return_exceptions=True)
 
     enriched = []

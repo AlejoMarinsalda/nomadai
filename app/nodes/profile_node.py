@@ -1,5 +1,6 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.runnables import RunnableConfig
 from app.graph.state import NomadState, UserProfile
 from app.config import settings
 from app.utils import extract_json
@@ -37,7 +38,7 @@ Si el usuario quiere CAMBIAR algo del perfil, recopilá los cambios. Cuando teng
 Respondé siempre en español de forma conversacional."""
 
 
-def profile_node(state: NomadState) -> dict:
+def profile_node(state: NomadState, config: RunnableConfig) -> dict:
     if state.profile_complete:
         return {}
 
@@ -63,7 +64,7 @@ def profile_node(state: NomadState) -> dict:
             HumanMessage(content=f"Perfil actual:\n{profile_summary}"),
         ] + state.messages
 
-        response = llm.invoke(messages)
+        response = llm.invoke(messages, config=config)
         data = extract_json(response.content)
 
         if isinstance(data, dict):

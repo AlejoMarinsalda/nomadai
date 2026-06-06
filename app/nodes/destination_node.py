@@ -1,6 +1,7 @@
 import re
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.runnables import RunnableConfig
 from app.graph.state import NomadState, Destination
 from app.config import settings
 from app.utils import extract_json
@@ -140,7 +141,7 @@ def _timezone_constraint(work_timezone: str | None) -> str | None:
     )
 
 
-def destination_node(state: NomadState) -> dict:
+def destination_node(state: NomadState, config: RunnableConfig) -> dict:
     llm = ChatGoogleGenerativeAI(
         model=settings.google_model_id,
         google_api_key=settings.google_api_key,
@@ -188,7 +189,7 @@ los mejores disponibles con match_score reducido y la razón del incumplimiento 
         else "Escribí match_reasons en ESPAÑOL."
     )
     system = _SYSTEM + f"\n\n{lang_note}"
-    response = llm.invoke([SystemMessage(content=system), HumanMessage(content=prompt)])
+    response = llm.invoke([SystemMessage(content=system), HumanMessage(content=prompt)], config=config)
 
     data = extract_json(response.content)
     if isinstance(data, list) and data:

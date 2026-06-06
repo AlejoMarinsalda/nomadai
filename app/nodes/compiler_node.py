@@ -3,6 +3,7 @@ import re
 import logging
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.runnables import RunnableConfig
 from app.graph.state import NomadState, Destination
 from app.config import settings
 
@@ -173,7 +174,7 @@ def _result_data_to_markdown(result_data: dict) -> str:
     return "\n".join(lines)
 
 
-def compiler_node(state: NomadState) -> dict:
+def compiler_node(state: NomadState, config: RunnableConfig) -> dict:
     llm = ChatGoogleGenerativeAI(
         model=settings.google_model_id,
         google_api_key=settings.google_api_key,
@@ -196,7 +197,7 @@ def compiler_node(state: NomadState) -> dict:
     )
 
     try:
-        response = llm.invoke([SystemMessage(content=_system_prompt(state.language)), HumanMessage(content=prompt)])
+        response = llm.invoke([SystemMessage(content=_system_prompt(state.language)), HumanMessage(content=prompt)], config=config)
         content = re.sub(r"```(?:json)?\s*|\s*```", "", response.content).strip()
         llm_items = json.loads(content).get("destinations", [])
     except Exception as e:

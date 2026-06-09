@@ -11,7 +11,7 @@ class TestProfileNode:
     def test_skips_when_profile_complete(self, complete_state):
         from app.nodes.profile_node import profile_node
         complete_state.profile_complete = True
-        result = profile_node(complete_state)
+        result = profile_node(complete_state, {})
         assert result == {}
 
     def test_extracts_profile_from_json_response(self, sample_profile):
@@ -34,7 +34,7 @@ class TestProfileNode:
         state = NomadState(messages=[HumanMessage(content="soy argentino...")])
 
         with patch("app.nodes.profile_node.ChatGoogleGenerativeAI", return_value=mock_llm):
-            result = profile_node(state)
+            result = profile_node(state, {})
 
         assert result["profile_complete"] is True
         assert result["user_profile"].nationality == "argentina"
@@ -49,7 +49,7 @@ class TestProfileNode:
         state = NomadState(messages=[HumanMessage(content="Hola")])
 
         with patch("app.nodes.profile_node.ChatGoogleGenerativeAI", return_value=mock_llm):
-            result = profile_node(state)
+            result = profile_node(state, {})
 
         assert "messages" in result
         assert "profile_complete" not in result
@@ -72,7 +72,7 @@ class TestDestinationNode:
         mock_llm.invoke.return_value = AIMessage(content=destinations_json)
 
         with patch("app.nodes.destination_node.ChatGoogleGenerativeAI", return_value=mock_llm):
-            result = destination_node(complete_state)
+            result = destination_node(complete_state, {})
 
         assert len(result["destinations"]) == 1
         assert result["destinations"][0].city == "Dublín"
@@ -110,7 +110,7 @@ class TestDestinationNode:
 
         captured_prompt = []
         mock_llm = MagicMock()
-        mock_llm.invoke.side_effect = lambda msgs: (
+        mock_llm.invoke.side_effect = lambda msgs, **kw: (
             captured_prompt.extend(msgs) or
             AIMessage(content=json.dumps([{
                 "city": "Dublín", "country": "Irlanda",
@@ -119,7 +119,7 @@ class TestDestinationNode:
         )
 
         with patch("app.nodes.destination_node.ChatGoogleGenerativeAI", return_value=mock_llm):
-            destination_node(complete_state)
+            destination_node(complete_state, {})
 
         prompt_text = " ".join(m.content for m in captured_prompt)
         assert "EXCLUIDOS" in prompt_text
@@ -144,7 +144,7 @@ class TestDestinationNode:
 
         captured_prompt = []
         mock_llm = MagicMock()
-        mock_llm.invoke.side_effect = lambda msgs: (
+        mock_llm.invoke.side_effect = lambda msgs, **kw: (
             captured_prompt.extend(msgs) or
             AIMessage(content=json.dumps([{
                 "city": "Lisboa", "country": "Portugal",
@@ -153,7 +153,7 @@ class TestDestinationNode:
         )
 
         with patch("app.nodes.destination_node.ChatGoogleGenerativeAI", return_value=mock_llm):
-            destination_node(complete_state)
+            destination_node(complete_state, {})
 
         prompt_text = " ".join(m.content for m in captured_prompt)
         assert "ZONA HORARIA" in prompt_text
@@ -168,7 +168,7 @@ class TestDestinationNode:
 
         captured_prompt = []
         mock_llm = MagicMock()
-        mock_llm.invoke.side_effect = lambda msgs: (
+        mock_llm.invoke.side_effect = lambda msgs, **kw: (
             captured_prompt.extend(msgs) or
             AIMessage(content=json.dumps([{
                 "city": "Bangkok", "country": "Tailandia",
@@ -177,7 +177,7 @@ class TestDestinationNode:
         )
 
         with patch("app.nodes.destination_node.ChatGoogleGenerativeAI", return_value=mock_llm):
-            destination_node(complete_state)
+            destination_node(complete_state, {})
 
         prompt_text = " ".join(m.content for m in captured_prompt)
         assert "ZONA HORARIA OBLIGATORIA" not in prompt_text
@@ -191,7 +191,7 @@ class TestCompilerNode:
         mock_llm.invoke.return_value = AIMessage(content="# Tu reporte de nómada\n\nMedellín es perfecto para vos.")
 
         with patch("app.nodes.compiler_node.ChatGoogleGenerativeAI", return_value=mock_llm):
-            result = compiler_node(complete_state)
+            result = compiler_node(complete_state, {})
 
         assert result["final_report"]
         assert "Medellín" in result["final_report"]
@@ -207,7 +207,7 @@ class TestCompilerNode:
         mock_llm.invoke.return_value = AIMessage(content="Reporte sin links de alojamiento.")
 
         with patch("app.nodes.compiler_node.ChatGoogleGenerativeAI", return_value=mock_llm):
-            result = compiler_node(complete_state)
+            result = compiler_node(complete_state, {})
 
         report = result["final_report"]
         assert "🏠 Dónde alojarte" in report
@@ -307,7 +307,7 @@ class TestEnrichmentNode:
              patch("app.nodes.enrichment_node._enrich_visa", return_value=mock_visa), \
              patch("app.nodes.enrichment_node._enrich_local_info", return_value="info local"), \
              patch("app.services.rag_store._load", return_value=None):
-            result = asyncio.run(enrichment_node(complete_state))
+            result = asyncio.run(enrichment_node(complete_state, {}))
 
         assert len(result["destinations"]) == 1
         dest = result["destinations"][0]

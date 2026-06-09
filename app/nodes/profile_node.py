@@ -86,7 +86,7 @@ def profile_node(state: NomadState, config: RunnableConfig) -> dict:
 
     # New user — collect profile conversationally
     messages = [SystemMessage(content=_SYSTEM)] + state.messages
-    response = llm.invoke(messages)
+    response = llm.invoke(messages, config=config)
 
     data = extract_json(response.content)
     if isinstance(data, dict) and data.get("profile_complete"):

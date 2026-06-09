@@ -590,8 +590,10 @@ export default function Onboarding() {
                     className="w-full accent-orange-700 cursor-pointer"
                   />
                   <div className="flex justify-between mt-2">
-                    {['$800', 'backpacker', '$2,500', '$4,000', '$6,000+', 'luxury'].map(l => (
-                      <span key={l} className="text-xs text-stone-400">{l}</span>
+                    {[0, 2, 4, 6, 8].map(i => (
+                      <span key={i} className="text-xs text-stone-400">
+                        {i === 8 ? '$6,000+' : `$${BUDGET_STEPS[i].toLocaleString()}`}
+                      </span>
                     ))}
                   </div>
                 </div>

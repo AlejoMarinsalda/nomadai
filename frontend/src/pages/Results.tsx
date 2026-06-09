@@ -122,11 +122,25 @@ export default function Results() {
   const { t } = useTranslation()
 
   const stateData = (location.state as { result?: ResultData } | null)?.result
-  const [resultData, setResultData] = useState<ResultData | null>(stateData ?? null)
-  const [fetching, setFetching] = useState(!stateData)
+
+  const ssKey = sessionId ? `nomadai_result_${sessionId}` : null
+
+  const [resultData, setResultData] = useState<ResultData | null>(() => {
+    if (stateData) return stateData
+    if (ssKey) {
+      try { return JSON.parse(sessionStorage.getItem(ssKey) || 'null') } catch { return null }
+    }
+    return null
+  })
+  const [fetching, setFetching] = useState(!resultData)
   const [selected, setSelected] = useState(0)
   const [feedbackScore, setFeedbackScore] = useState<1 | -1 | null>(null)
   const [feedbackSent, setFeedbackSent] = useState(false)
+
+  // Persist result to sessionStorage so guest users can navigate back without losing it
+  useEffect(() => {
+    if (stateData && ssKey) sessionStorage.setItem(ssKey, JSON.stringify(stateData))
+  }, [stateData, ssKey])
 
   async function handleFeedback(score: 1 | -1) {
     if (feedbackSent || !userId || !credential || !sessionId) return
@@ -140,7 +154,7 @@ export default function Results() {
   }
 
   useEffect(() => {
-    if (stateData || !sessionId || !userId || !credential) { setFetching(false); return }
+    if (resultData || !sessionId || !userId || !credential) { setFetching(false); return }
     getReports(userId, credential)
       .then(data => {
         const report = data.reports.find(r => r.session_id === sessionId)

@@ -17,21 +17,29 @@ from app.utils import extract_json
 logger = logging.getLogger(__name__)
 
 
-def _climate_prompt(city: str, country: str, context: str, language: str) -> str:
+def _climate_system(language: str) -> str:
     if language.startswith("en"):
         return (
-            f"What are the best months to visit {city}, {country} as a digital nomad?\n"
-            f"{context}\n"
-            'Reply ONLY with JSON:\n'
+            "You are a climate expert for digital nomads. Reply ONLY with JSON:\n"
             '{"best_months": ["Jan", "Feb"], "avoid_months": ["Jul", "Aug"], "rainy_season": "brief description or null"}\n'
             "Use English month abbreviations: Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec."
         )
     return (
-        f"¿Cuáles son los mejores meses para visitar {city}, {country} como nómada digital?\n"
-        f"{context}\n"
-        'Respondé SOLO con JSON:\n'
+        "Sos un experto en clima para nómadas digitales. Respondé SOLO con JSON:\n"
         '{{"best_months": ["Ene", "Feb"], "avoid_months": ["Jul", "Ago"], "rainy_season": "descripción breve o null"}}\n'
         "Usá abreviaciones en español: Ene, Feb, Mar, Abr, May, Jun, Jul, Ago, Sep, Oct, Nov, Dic."
+    )
+
+
+def _climate_prompt(city: str, country: str, context: str, language: str) -> str:
+    if language.startswith("en"):
+        return (
+            f"What are the best months to visit {city}, {country} as a digital nomad?"
+            f"{context}"
+        )
+    return (
+        f"¿Cuáles son los mejores meses para visitar {city}, {country} como nómada digital?"
+        f"{context}"
     )
 
 
@@ -74,7 +82,7 @@ def _enrich_climate(dest: Destination, language: str, config: RunnableConfig | N
     try:
         llm = ChatGoogleGenerativeAI(model=settings.google_model_id, google_api_key=settings.google_api_key)
         prompt = _climate_prompt(dest.city, dest.country, context_text, language)
-        response = llm.invoke([HumanMessage(content=prompt)], config=config)
+        response = llm.invoke([SystemMessage(content=_climate_system(language)), HumanMessage(content=prompt)], config=config)
         data = extract_json(response.content)
         if isinstance(data, dict):
             return ClimateInfo(
